@@ -22,6 +22,7 @@ namespace BR.Services
             _emailService = emailService;
         }
 
+        /*
         public async Task AddNewClient(Client client)
         {
             ToBeClient toBeClient = await _repository.GetToBeClient(client.ToBeClientId);
@@ -44,6 +45,7 @@ namespace BR.Services
                 throw ex;
             }
         }
+        */
 
         public async Task<bool> DeleteClient(int id)
         {

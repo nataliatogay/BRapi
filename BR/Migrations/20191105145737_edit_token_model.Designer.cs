@@ -3,15 +3,17 @@ using System;
 using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191105145737_edit_token_model")]
+    partial class edit_token_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,6 +81,10 @@ namespace BR.Migrations
 
                     b.Property<int>("CloseTime");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
                     b.Property<string>("IdentityId");
 
                     b.Property<bool>("IsChildrenZone");
@@ -105,6 +111,8 @@ namespace BR.Migrations
                         .HasMaxLength(30);
 
                     b.Property<int>("OpenTime");
+
+                    b.Property<string>("Password");
 
                     b.Property<int>("ToBeClientId");
 
@@ -456,9 +464,16 @@ namespace BR.Migrations
                     b.Property<string>("LastName")
                         .HasMaxLength(50);
 
+                    b.Property<int>("PhoneCodeId");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(25);
+
                     b.HasKey("Id");
 
                     b.HasIndex("IdentityId");
+
+                    b.HasIndex("PhoneCodeId");
 
                     b.ToTable("ApplicationUsers");
                 });
@@ -810,6 +825,11 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+
+                    b.HasOne("BR.Models.PhoneCode", "PhoneCode")
+                        .WithMany("Users")
+                        .HasForeignKey("PhoneCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

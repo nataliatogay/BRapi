@@ -24,30 +24,24 @@ namespace BR.Services
             _authOptions = options.Value;
         }            
 
-        public async Task<LogInResponse> LogIn(string email, string password)
+        public async Task<LogInResponse> LogIn(IdentityUser identityUser)
         {
-            Admin admin = await _repository.GetAdminByEmail(email);
-            
-            if (admin is null)
-            {
-                return null;
-            }
-            return await Authentication(admin);
+            return await Authentication(identityUser);
         }
 
 
         public async Task LogOut(string refreshToken)
         {            
-            AdminAccountToken accountToken = await _repository.GetAdminToken(refreshToken);
+            AccountToken accountToken = await _repository.GetToken(refreshToken);
             if (!(accountToken is null))
             {
-                await _repository.RemoveAdminToken(accountToken);
+                await _repository.RemoveToken(accountToken);
             }
         }
 
         public async Task<LogInResponse> UpdateToken(string refreshToken)
         {
-            AdminAccountToken token = await _repository.GetAdminToken(refreshToken);
+            AccountToken token = await _repository.GetToken(refreshToken);
             if (token is null)
             {
                 return null;
@@ -56,37 +50,38 @@ namespace BR.Services
             {
                 return null;
             }
-            Admin admin = await _repository.GetAdminById(token.AdminId);            
+            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
+            //Admin admin = await _repository.GetAdminById(token.AdminId);            
 
-            if (admin is null)
+            if (identityUser is null)
             {
                 return null;
             }
-            return await Authentication(admin);
+            return await Authentication(identityUser);
         }
 
-        public async Task<Admin> GetInfo(int id)
+        public async Task<Admin> GetInfo(string identityId)
         {
-            return await _repository.GetAdminById(id);
+            return await _repository.GetAdminByIdentityId(identityId);
         }
 
         public async Task<Admin> AddNewAdmin(IdentityUser user)
         {
             Admin admin = new Admin()
             {
-                Email = user.Email,
-                Password = user.PasswordHash,
+                //Email = user.Email,
+                //Password = user.PasswordHash,
                 IdentityId = user.Id
             };
             return await _repository.AddAdmin(admin);
         }
 
 
-        private async Task<LogInResponse> Authentication(Admin admin)
+        private async Task<LogInResponse> Authentication(IdentityUser identityUser)
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, admin.Email), //username
+                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName), //username
              //   new Claim("id", admin.Id.ToString())
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
@@ -105,14 +100,13 @@ namespace BR.Services
 
             LogInResponse resp = new LogInResponse()
             {
-                Email = admin.Email,
                 AccessToken = tokenStr,
                 RefreshToken = Guid.NewGuid().ToString()
             };
 
-            await _repository.AddAdminToken(new AdminAccountToken()
+            await _repository.AddToken(new AccountToken()
             {
-                AdminId = admin.Id,
+                IdentityUserId = identityUser.Id,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });            

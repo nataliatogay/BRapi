@@ -1,4 +1,5 @@
 ﻿using BR.Models;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,27 +9,22 @@ namespace BR.EF
 {
     public interface IAsyncRepository
     {
-        Task<IEnumerable<Client>> GetClients();
-        Task<Client> GetClientById(int id);
-        Task<Client> GetClientByEmail(string email);
+        Task<IdentityUser> GetIdentityUser(string id);
         Task<Client> AddClient(Client client);
-        Task UpdateClient(Client client);
         Task DeleteClient(Client client);
+        Task<Client> GetClientById(int id);
+        Task<IEnumerable<Client>> GetClients();
+        Task UpdateClient(Client client);
+        Task<Admin> GetAdminByIdentityId(string identityId);
+        Task<Client> GeClientByIdentityId(string identityId);
         Task<IEnumerable<ToBeClient>> GetToBeClients();
         Task<ToBeClient> GetToBeClient(int id);
-        Task AddToBeClient(ToBeClient toBeClient);
         Task UpdateToBeClient(ToBeClient toBeClient);
-
-        Task<AdminAccountToken> GetAdminToken(string adminRefreshToken);
-        Task<AdminAccountToken> GetAdminToken(int adminId);
-        Task AddAdminToken(AdminAccountToken token);
-        Task RemoveAdminToken(AdminAccountToken adminRefreshToken);
-        Task<Admin> GetAdminById(int id);
-        Task<Admin> GetAdminByEmail(string email);
+        Task AddToBeClient(ToBeClient toBeClient);
         Task<Admin> AddAdmin(Admin admin);
+        Task<AccountToken> GetToken(string refreshToken);
+        Task AddToken(AccountToken refreshToken);
+        Task RemoveToken(AccountToken refreshToken);
 
-        Task AddClientToken(ClientAccountToken token);
-        Task<ClientAccountToken> GetClientToken(string clientRefreshToken);
-        Task RemoveClientToken(ClientAccountToken clientRefreshToken);
     }
 }

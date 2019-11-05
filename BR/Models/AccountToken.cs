@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace BR.Models
 {
-    public class AdminAccountToken
+    public class AccountToken
     {
         [Key]
         public int Id { get; set; }
 
-        public int AdminId { get; set; }
+        [Required]
+        public string IdentityUserId { get; set; }
 
         [Required]
         public string RefreshToken { get; set; }
@@ -16,6 +18,6 @@ namespace BR.Models
         [Required]
         public DateTime Expires { get; set; }
 
-        public virtual Admin Admin { get; set; }
+        public virtual IdentityUser IdentityUser { get; set; }
     }
 }

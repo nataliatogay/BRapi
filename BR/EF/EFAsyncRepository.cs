@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BR.EF
@@ -14,6 +15,11 @@ namespace BR.EF
         public EFAsyncRepository(BRDbContext db)
         {
             _db = db;
+        }
+
+        public async Task<IdentityUser> GetIdentityUser(string id)
+        {
+            return await _db.Users.FindAsync(id);
         }
 
         public async Task<Client> AddClient(Client client)
@@ -46,42 +52,14 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
-        public async Task<AdminAccountToken> GetAdminToken(string refreshToken)
+        public async Task<Admin> GetAdminByIdentityId(string identityId)
         {
-            return await _db.AdminAccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+            return await _db.Admins.FirstOrDefaultAsync(a => a.IdentityId == identityId);
         }
 
-        public async Task<AdminAccountToken> GetAdminToken(int adminId)
+        public async Task<Client> GeClientByIdentityId(string identityId)
         {
-            return await _db.AdminAccountTokens.FirstOrDefaultAsync(t => t.AdminId == adminId);
-        }
-
-        public async Task<Admin> GetAdminById(int id)
-        {
-            return await _db.Admins.FindAsync(id);
-        }
-
-        public async Task<Client> GetClientByEmail(string email)
-        {
-            return await _db.Clients
-                .FirstOrDefaultAsync(c => c.Email == email);
-        }
-
-        public async Task<Admin> GetAdminByEmail(string email)
-        {
-            return await _db.Admins.FirstOrDefaultAsync(a => a.Email == email);
-        }
-
-        public async Task AddAdminToken(AdminAccountToken adminRefreshToken)
-        {
-            await _db.AdminAccountTokens.AddAsync(adminRefreshToken);
-            await _db.SaveChangesAsync();           
-        }
-
-        public async Task RemoveAdminToken(AdminAccountToken adminRefreshToken)
-        {
-            _db.AdminAccountTokens.Remove(adminRefreshToken);
-            await _db.SaveChangesAsync();
+            return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
 
         public async Task<IEnumerable<ToBeClient>> GetToBeClients()
@@ -114,21 +92,78 @@ namespace BR.EF
             return res.Entity;
         }
 
-        public async Task AddClientToken(ClientAccountToken clientRefreshToken)
+
+        public async Task<AccountToken> GetToken(string refreshToken)
         {
-            await _db.ClientAccountTokens.AddAsync(clientRefreshToken);
+            return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+        }
+
+        public async Task AddToken(AccountToken refreshToken)
+        {
+            await _db.AccountTokens.AddAsync(refreshToken);
             await _db.SaveChangesAsync();
         }
 
-        public async Task<ClientAccountToken> GetClientToken(string refreshToken)
+        public async Task RemoveToken(AccountToken refreshToken)
         {
-            return await _db.ClientAccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
-        }
-
-        public async Task RemoveClientToken(ClientAccountToken clientRefreshToken)
-        {
-            _db.ClientAccountTokens.Remove(clientRefreshToken);
+            _db.AccountTokens.Remove(refreshToken);
             await _db.SaveChangesAsync();
         }
     }
 }
+
+
+
+
+/*
+
+public async Task<Admin> GetAdminByEmail(string email)
+{
+    return await _db.Admins.FirstOrDefaultAsync(a => a.Email == email);
+}
+
+public async Task<Client> GetClientByEmail(string email)
+{
+    return await _db.Clients
+        .FirstOrDefaultAsync(c => c.Email == email);
+}
+
+public async Task<AccountToken> GetAdminToken(string refreshToken)
+{
+    return await _db.AdminAccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+}
+
+public async Task<AccountToken> GetAdminToken(int adminId)
+{
+    return await _db.AdminAccountTokens.FirstOrDefaultAsync(t => t.AdminId == adminId);
+}
+
+public async Task AddAdminToken(AccountToken adminRefreshToken)
+{
+    await _db.AdminAccountTokens.AddAsync(adminRefreshToken);
+    await _db.SaveChangesAsync();
+}
+
+public async Task RemoveAdminToken(AccountToken adminRefreshToken)
+{
+    _db.AdminAccountTokens.Remove(adminRefreshToken);
+    await _db.SaveChangesAsync();
+}
+
+public async Task AddClientToken(ClientAccountToken clientRefreshToken)
+{
+    await _db.ClientAccountTokens.AddAsync(clientRefreshToken);
+    await _db.SaveChangesAsync();
+}
+
+public async Task<ClientAccountToken> GetClientToken(string refreshToken)
+{
+    return await _db.ClientAccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+}
+
+public async Task RemoveClientToken(ClientAccountToken clientRefreshToken)
+{
+    _db.ClientAccountTokens.Remove(clientRefreshToken);
+    await _db.SaveChangesAsync();
+}
+*/

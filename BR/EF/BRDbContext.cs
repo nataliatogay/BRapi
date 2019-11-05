@@ -32,8 +32,7 @@ namespace BR.EF
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Invitee> Invitees { get; set; }
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
-        public DbSet<AdminAccountToken> AdminAccountTokens { get; set; }
-        public DbSet<ClientAccountToken> ClientAccountTokens { get; set; }
+        public DbSet<AccountToken> AccountTokens { get; set; }
 
 
 

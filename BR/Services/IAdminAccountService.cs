@@ -10,10 +10,10 @@ namespace BR.Services
 {
     public interface IAdminAccountService
     {
-        Task<LogInResponse> LogIn(string email, string password);
+        Task<LogInResponse> LogIn(IdentityUser identityUser);
         Task LogOut(string refreshToken);
         Task<LogInResponse> UpdateToken(string refreshToken);
-        Task<Admin> GetInfo(int id);
+        Task<Admin> GetInfo(string identityId);
         Task<Admin> AddNewAdmin(IdentityUser user);
 
     }

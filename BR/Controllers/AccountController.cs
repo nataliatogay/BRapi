@@ -21,30 +21,27 @@ namespace BR.Controllers
     {
         private IAdminAccountService _adminAccountService;
         private readonly UserManager<IdentityUser> _userManager;
-        //private readonly SignInManager<IdentityUser> _signInManager;
         private IClientAccountService _clientAccountService;
 
         public AccountController(IAdminAccountService adminAccountService, 
             UserManager<IdentityUser> userManager,
-            IClientAccountService clientAccountService
-            /*SignInManager<IdentityUser> signInManager*/)
+            IClientAccountService clientAccountService)
         {
             _adminAccountService = adminAccountService;
             _userManager = userManager;
-            //_signInManager = signInManager;
             _clientAccountService = clientAccountService;
         }
 
-        [HttpPost("Login")] //api/account/login
+        [HttpPost("AdminLogin")] 
         public async Task<IActionResult> AdminLogIn([FromBody]LogInRequest model)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
-            if (user != null)
+            IdentityUser identityUser = await _userManager.FindByNameAsync(model.Email);
+            if (identityUser != null)
             {
-                bool checkPassword = await _userManager.CheckPasswordAsync(user, model.Password);
+                bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 if(checkPassword)
                 {
-                    LogInResponse resp = await _adminAccountService.LogIn(model.Email, model.Password);
+                    LogInResponse resp = await _adminAccountService.LogIn(identityUser);
                     if (resp != null)
                     {
                         return new JsonResult(resp);
@@ -71,6 +68,8 @@ namespace BR.Controllers
         public async Task<IActionResult> GetInfo()
         { // claim based policy
             
+            var claims = User.Claims;
+            /*
             StringValues token;
             HttpContext.Request.Headers.TryGetValue("Authorization", out token);
             var encodedToken = token.ToString().Substring(token.ToString().IndexOf(" ") + 1);
@@ -79,13 +78,15 @@ namespace BR.Controllers
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadToken(encodedToken);
             string userId = ((JwtSecurityToken)jsonToken).Payload["id"].ToString();
+            */
 
-            //User. 
-            if (userId == null)
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if(identityUser == null)
             {
                 return NotFound();
             }
-            Admin adminAccount = await _adminAccountService.GetInfo(Int32.Parse(userId));
+
+            Admin adminAccount = await _adminAccountService.GetInfo(identityUser.Id);
             if (adminAccount is null)
             {
                 return NotFound();
@@ -93,8 +94,8 @@ namespace BR.Controllers
             return new JsonResult(adminAccount);
         }
 
-       // [Authorize]
-        [HttpGet("LogOut")] //api/account/logout
+        [Authorize]
+        [HttpGet("LogOut")] 
         public async Task<IActionResult> LogOut(string refreshToken)
         {
 
@@ -134,13 +135,13 @@ namespace BR.Controllers
         [HttpPost("ClientLogin")] 
         public async Task<IActionResult> ClientLogIn([FromBody]LogInRequest model)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
-            if (user != null)
+            var identityUser = await _userManager.FindByNameAsync(model.Email);
+            if (identityUser != null)
             {
-                bool checkPassword = await _userManager.CheckPasswordAsync(user, model.Password);
+                bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 if (checkPassword)
                 {
-                    LogInResponse resp = await _clientAccountService.LogIn(model.Email, model.Password);
+                    LogInResponse resp = await _clientAccountService.LogIn(identityUser);
                     if (resp != null)
                     {
                         return new JsonResult(resp);

@@ -8,6 +8,7 @@ using BR.DTO;
 using BR.EF;
 using BR.Models;
 using BR.Utils;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,23 +25,17 @@ namespace BR.Services
             _authOptions = options.Value;
         }
 
-        public async Task<LogInResponse> LogIn(string email, string password)
+        public async Task<LogInResponse> LogIn(IdentityUser identityUser)
         {
-            Client client = await _repository.GetClientByEmail(email);
-
-            if (client is null)
-            {
-                return null;
-            }
-            return await Authentication(client);
+            return await Authentication(identityUser);
         }
 
         public async Task LogOut(string refreshToken)
         {
-            ClientAccountToken accountToken = await _repository.GetClientToken(refreshToken);
+            AccountToken accountToken = await _repository.GetToken(refreshToken);
             if (!(accountToken is null))
             {
-                await _repository.RemoveClientToken(accountToken);
+                await _repository.RemoveToken(accountToken);
             }
         }
 
@@ -51,7 +46,7 @@ namespace BR.Services
 
         public async Task<LogInResponse> UpdateToken(string refreshToken)
         {
-            ClientAccountToken token = await _repository.GetClientToken(refreshToken);
+            AccountToken token = await _repository.GetToken(refreshToken);
             if (token is null)
             {
                 return null;
@@ -60,21 +55,21 @@ namespace BR.Services
             {
                 return null;
             }
-            Client client = await _repository.GetClientById(token.ClientId);
+            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
+           // Client client = await _repository.GetClientById(token.ClientId);
 
-            if (client is null)
+            if (identityUser is null)
             {
                 return null;
             }
-            return await Authentication(client);
+            return await Authentication(identityUser);
         }
 
-        private async Task<LogInResponse> Authentication(Client client)
+        private async Task<LogInResponse> Authentication(IdentityUser identityUser)
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, client.Email),
-                new Claim("id", client.Id.ToString())
+                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName)
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
@@ -92,19 +87,16 @@ namespace BR.Services
 
             LogInResponse resp = new LogInResponse()
             {
-                Email = client.Email,
                 AccessToken = tokenStr,
                 RefreshToken = Guid.NewGuid().ToString()
             };
 
-            await _repository.AddClientToken(new ClientAccountToken()
+            await _repository.AddToken(new AccountToken()
             {
-                ClientId = client.Id,
+                IdentityUserId = identityUser.Id,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });
-
-
             return resp;
         }
     }

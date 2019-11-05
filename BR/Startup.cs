@@ -58,13 +58,16 @@ namespace BR
             services.AddScoped<IAdminAccountService, AdminAccountService>();
             services.AddScoped<IClientAccountService, ClientAccountService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            //services.AddIdentityCore().
-            services.AddIdentity<IdentityUser, IdentityRole>(s =>
-            {
-                
+            services.AddIdentityCore<IdentityUser>().AddSignInManager<SignInManager<IdentityUser>>()
+                .AddUserManager<UserManager<IdentityUser>>()
+                .AddEntityFrameworkStores<BRDbContext>();
+            
+            //services.AddIdentityCore<IdentityUser>().
 
-
-            }).AddEntityFrameworkStores<BRDbContext>();
+            //services.AddIdentity<IdentityUser, IdentityRole>(s =>
+            //{
+            //}).AddEntityFrameworkStores<BRDbContext>();
+            
             //services.AddAuthorization(s =>
             //{
                 

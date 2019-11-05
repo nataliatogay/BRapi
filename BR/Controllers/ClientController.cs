@@ -43,6 +43,8 @@ namespace BR.Features.Admin
             return new JsonResult(await _clientService.GetClient(id));
         }
 
+        /*
+
         [HttpPost("")]
         public async Task<IActionResult> NewClient([FromBody]Client client)
         {
@@ -64,6 +66,7 @@ namespace BR.Features.Admin
             await _clientService.AddNewClient(client);
             return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
+        */
 
         [HttpPut("")]
         public async Task<IActionResult> UpdateClient([FromBody]Client client)
