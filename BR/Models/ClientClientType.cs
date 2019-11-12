@@ -5,12 +5,16 @@ namespace BR.Models
 {
     public class ClientClientType
     {
+        //[Key]
+       // public int Id { get; set; }
         [Key]
-        [Column(Order = 1)]
+         [Column(Order = 1)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int ClientId { get; set; }
 
         [Key]
         [Column(Order = 2)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int ClientTypeId { get; set; }
 
         [ForeignKey("ClientId")]

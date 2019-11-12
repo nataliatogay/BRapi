@@ -57,6 +57,8 @@ namespace BR
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IAdminAccountService, AdminAccountService>();
             services.AddScoped<IClientAccountService, ClientAccountService>();
+            services.AddScoped<IAdminMailService, AdminMailService>();
+            services.AddScoped<IClientRequestService, ClientRequestService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddIdentityCore<IdentityUser>().AddSignInManager<SignInManager<IdentityUser>>()
                 .AddUserManager<UserManager<IdentityUser>>()

@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 
 namespace BR.Services
 {
-    public interface IClientAccountService
+    interface IUserAccountService
     {
-        Task<LogInResponse> LogIn(IdentityUser identityUser); 
+       // Task Register(string phoneNumber);
+        Task<LogInResponse> LogIn(IdentityUser identityUser);
         Task LogOut(string refreshToken);
         Task<LogInResponse> UpdateToken(string refreshToken);
-        Task<Client> GetInfo(string identityId);
+        Task<User> GetInfo(string identityId);
     }
 }

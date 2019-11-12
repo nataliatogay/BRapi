@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BR.DTO;
 using BR.Models;
 using BR.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,94 +20,83 @@ namespace BR.Features.Admin
     {
         private readonly IClientService _clientService;
         private readonly UserManager<IdentityUser> _userManager;
-        
+        private readonly IEmailService _emailService;
+
 
         public ClientController(IClientService clientService,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IEmailService emailService)
         {
             _clientService = clientService;
             _userManager = userManager;
+            _emailService = emailService;
             
         }
 
         
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<Client>>> GetClients()
+        public async Task<ActionResult<IEnumerable<Client>>> Get()
         {
-            //return (await _clientService.GetAllClients()).ToList();
             return new JsonResult((await _clientService.GetAllClients()).ToList());
         }
 
         [HttpGet("{id}")] 
-        public async Task<IActionResult> GetClient(int id)
+        public async Task<IActionResult> Get(int id)
         {
             return new JsonResult(await _clientService.GetClient(id));
         }
 
-        /*
+        
 
         [HttpPost("")]
-        public async Task<IActionResult> NewClient([FromBody]Client client)
+        public async Task<IActionResult> Post([FromBody]NewClientRequest newClient)
         {
-            // string password = Guid.NewGuid().ToString();
             string password = _clientService.GeneratePassword();
-            IdentityUser user = new IdentityUser()
+            IdentityUser identityUser = new IdentityUser()
             {
-                Email = client.Email,
-                UserName = client.Email 
+                Email = newClient.Email,
+                UserName = newClient.Email 
             };
 
-            IdentityResult res = await _userManager.CreateAsync(user, password);
+            IdentityResult res = await _userManager.CreateAsync(identityUser, password);
 
-            user = await _userManager.FindByNameAsync(client.Email);
-            client.IdentityId = user.Id;
+            identityUser = await _userManager.FindByNameAsync(newClient.Email);
+            
 
-            client.Password = password;
-
-            await _clientService.AddNewClient(client);
+            await _clientService.AddNewClient(newClient, identityUser);
+            try
+            {
+                string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
+                
+                await _emailService.SendAsync(identityUser.Email, "Registration info", msgBody);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
-        */
+        
 
         [HttpPut("")]
-        public async Task<IActionResult> UpdateClient([FromBody]Client client)
+        public async Task<IActionResult> Update([FromBody]Client client)
         {
             client = await _clientService.UpdateClient(client);
             return new JsonResult(await _clientService.GetClient(client.Id));
         }
 
         [HttpDelete("{id}")] 
-        public async Task<IActionResult> DeleteClient(int id) 
+        public async Task<IActionResult> Delete(int id) 
         {
             await _clientService.DeleteClient(id);
             return new JsonResult((await _clientService.GetAllClients()).ToList());
         }
 
-        [HttpGet("Requests")]
-        public async Task<ActionResult<IEnumerable<ToBeClient>>> ToBeClients()
-        {
-            return new JsonResult((await _clientService.GetAllToBeClients()).ToList());
-        }
-
-        [HttpGet("Requests/{id}")]
-        public async Task<ActionResult<ToBeClient>> GetToBeClient(int id)
-        {
-            return new JsonResult(await _clientService.GetToBeClient(id));
-        }
+        
 
 
 
-        [HttpPost("NewRequest")]
-        public async Task<IActionResult> AddNewToBeClient([FromBody]Client client)
-        {
-            ToBeClient toBeClient = new ToBeClient()
-            {
-                RegisteredDate = DateTime.Now,
-                JsonInfo = JsonConvert.SerializeObject(client)
-            };
-            await _clientService.AddNewToBeClient(toBeClient);
-            return new JsonResult((await _clientService.GetAllToBeClients()).ToList());
-        }
+        
     }
 }
 

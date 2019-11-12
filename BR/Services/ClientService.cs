@@ -6,46 +6,67 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.EF;
 using BR.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace BR.Services
 {
-    
+
     public class ClientService : IClientService
     {
         private readonly IAsyncRepository _repository;
-        private readonly IEmailService _emailService;
+        //private readonly IEmailService _emailService;
 
-        public ClientService(IAsyncRepository repository,
-            IEmailService emailService)
+        public ClientService(IAsyncRepository repository)
         {
             _repository = repository;
-            _emailService = emailService;
         }
 
-        /*
-        public async Task AddNewClient(Client client)
+
+        public async Task AddNewClient(NewClientRequest newClientRequest, IdentityUser identityUser)
         {
-            ToBeClient toBeClient = await _repository.GetToBeClient(client.ToBeClientId);
+            ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ToBeClientId);
+            Client client = new Client()
+            {
+                Name = newClientRequest.Name,
+                Address = newClientRequest.Address,
+                Lat = newClientRequest.Lat,
+                Long = newClientRequest.Long,
+                OpenTime = newClientRequest.OpenTime,
+                CloseTime = newClientRequest.CloseTime,
+                IsPasking = newClientRequest.IsPasking,
+                IsWiFi = newClientRequest.IsWiFi,
+                IsLiveMusic = newClientRequest.IsLiveMusic,
+                IsOpenSpace = newClientRequest.IsOpenSpace,
+                IsChildrenZone = newClientRequest.IsChildrenZone,
+                AdditionalInfo = newClientRequest.AdditionalInfo,
+                MainImagePath = newClientRequest.MainImage,
+                MaxReservDays = newClientRequest.MaxReserveDays,
+                ToBeClientId = newClientRequest.ToBeClientId,
+                IdentityId = identityUser.Id
+            };
+
             Client addedClient = await _repository.AddClient(client);
-            toBeClient.ClientId = addedClient.Id;
-            await _repository.UpdateToBeClient(toBeClient);
-            try
+            foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
             {
-                string msgBody = $"Login: {client.Email}\nPassword: {client.Password}";
-                var sendMail = new SendMailRequest()
-                {
-                    ToAddress = client.Email,
-                    Subject = "Registration info",
-                    Body = msgBody
-                };
-                await _emailService.SendAsync(sendMail);
-            }
-            catch (Exception ex)
+                await _repository.AddClientPaymentType(addedClient.Id, paymentTypeId);
+             }
+            foreach (var clientTypeId in newClientRequest.ClientTypeIds)
             {
-                throw ex;
+                await _repository.AddClientClientType(addedClient.Id, clientTypeId);
             }
+            foreach (var cuisineId in newClientRequest.CuisineIds)
+            {
+                await _repository.AddClientCuisine(addedClient.Id, cuisineId);
+            }
+            foreach (var link in newClientRequest.SocialLinks)
+            {
+                await _repository.AddClientSocialLink(addedClient.Id, link);
+            }
+
+            clientRequest.ClientId = addedClient.Id;
+            await _repository.UpdateClientRequest(clientRequest);
         }
-        */
+
 
         public async Task<bool> DeleteClient(int id)
         {
@@ -61,36 +82,11 @@ namespace BR.Services
         public async Task<IEnumerable<Client>> GetAllClients()
         {
             return await _repository.GetClients();
-        }
-
-        public async Task AddNewToBeClient(ToBeClient toBeClient)
-        {
-            await _repository.AddToBeClient(toBeClient);
-        }
-
-        public async Task<IEnumerable<ToBeClient>> GetAllToBeClients()
-        {
-            return await _repository.GetToBeClients();
-        }
+        }        
 
         public async Task<Client> GetClient(int id)
         {
             return await _repository.GetClientById(id);
-        }
-
-        public async Task<ToBeClient> GetToBeClient(int id)
-        {
-            return await _repository.GetToBeClient(id);
-        }
-
-        public async Task<int> ToBeClientCount()
-        {
-            var res = await _repository.GetToBeClients();
-            if (res is null)
-            {
-                return 0;
-            }
-            return res.Count();
         }
 
         public async Task<Client> UpdateClient(Client client)

@@ -20,18 +20,18 @@ namespace BR.Services
         }
 
 
-        public async Task SendAsync(SendMailRequest sendMailInfo)
+        public async Task SendAsync(string recipentMail, string subject, string body)
         {
             var message = new MimeMessage();
             try
             {
                 message.From.Add(new MailboxAddress("Baku Reservation", _emailConfiguration.SmtpUsername));
-                message.To.Add(new MailboxAddress("", sendMailInfo.ToAddress));
-                message.Subject = sendMailInfo.Subject;
+                message.To.Add(new MailboxAddress("", recipentMail));
+                message.Subject = subject;
                 //message.Body = new TextPart(TextFormat.Html : TextFormat.Text)
                 message.Body = new TextPart(TextFormat.Html)
                 {
-                    Text = sendMailInfo.Body
+                    Text = body
                 };
             }
             catch (Exception ex)

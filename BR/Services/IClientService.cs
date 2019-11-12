@@ -1,4 +1,6 @@
-﻿using BR.Models;
+﻿using BR.DTO;
+using BR.Models;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +12,10 @@ namespace BR.Services
     {
         Task<IEnumerable<Client>> GetAllClients();
         Task<Client> GetClient(int id);
-        //Task AddNewClient(Client client);
+        Task AddNewClient(NewClientRequest newClientRequest, IdentityUser identityUser);
         Task<Client> UpdateClient(Client client);
         Task<bool> DeleteClient(int id);
-        Task<IEnumerable<ToBeClient>> GetAllToBeClients();
-
-        Task<ToBeClient> GetToBeClient(int id);
-        Task AddNewToBeClient(ToBeClient toBeClient);
-        Task<int> ToBeClientCount();
+        
         string GeneratePassword();
 
     }

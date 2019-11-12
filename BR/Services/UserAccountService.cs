@@ -1,28 +1,31 @@
-﻿using System;
+﻿using BR.DTO;
+using BR.EF;
+using BR.Models;
+using BR.Utils;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using BR.DTO;
-using BR.EF;
-using BR.Models;
-using BR.Utils;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BR.Services
 {
-    public class ClientAccountService : IClientAccountService
+    public class UserAccountService : IUserAccountService
     {
         private readonly IAsyncRepository _repository;
         private readonly AuthOptions _authOptions;
 
-        public ClientAccountService(IAsyncRepository repository, IOptions<AuthOptions> options)
+        public UserAccountService(IAsyncRepository repository, AuthOptions authOptions)
         {
             _repository = repository;
-            _authOptions = options.Value;
+            _authOptions = authOptions;
+        }
+        public Task<User> GetInfo(string identityId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<LogInResponse> LogIn(IdentityUser identityUser)
@@ -30,39 +33,14 @@ namespace BR.Services
             return await Authentication(identityUser);
         }
 
-        public async Task LogOut(string refreshToken)
+        public Task LogOut(string refreshToken)
         {
-            AccountToken accountToken = await _repository.GetToken(refreshToken);
-            if (!(accountToken is null))
-            {
-                await _repository.RemoveToken(accountToken);
-            }
+            throw new NotImplementedException();
         }
 
-        public async Task<Client> GetInfo(string identityId)
+        public Task<LogInResponse> UpdateToken(string refreshToken)
         {
-            return await _repository.GetClientByIdentityId(identityId);
-        }
-
-        public async Task<LogInResponse> UpdateToken(string refreshToken)
-        {
-            AccountToken token = await _repository.GetToken(refreshToken);
-            if (token is null)
-            {
-                return null;
-            }
-            if (token.Expires <= DateTime.Now)
-            {
-                return null;
-            }
-            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
-           // Client client = await _repository.GetClientById(token.ClientId);
-
-            if (identityUser is null)
-            {
-                return null;
-            }
-            return await Authentication(identityUser);
+            throw new NotImplementedException();
         }
 
         private async Task<LogInResponse> Authentication(IdentityUser identityUser)

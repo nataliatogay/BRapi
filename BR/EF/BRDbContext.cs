@@ -13,7 +13,7 @@ namespace BR.EF
     {
         public DbSet<User> ApplicationUsers { get; set; }
         public DbSet<Admin> Admins { get; set; }
-        public DbSet<ToBeClient> ToBeClients { get; set; }
+        public DbSet<ClientRequest> ClientRequests { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<SocialLink> SocialLinks { get; set; }
         public DbSet<PhoneCode> PhoneCodes { get; set; }
@@ -33,6 +33,9 @@ namespace BR.EF
         public DbSet<Invitee> Invitees { get; set; }
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
         public DbSet<AccountToken> AccountTokens { get; set; }
+        public DbSet<ClientMail> ClientMails { get; set; }
+        public DbSet<UserMail> UserMails { get; set; }
+
 
 
 
@@ -47,6 +50,8 @@ namespace BR.EF
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClientPaymentType>().HasKey(p => new { p.ClientId, p.PaymentTypeId });
+            //modelBuilder.Entity<ClientPaymentType>().Property(p => p.ClientId).ValueGeneratedNever();
+            //modelBuilder.Entity<ClientPaymentType>().Property(p => p.PaymentTypeId).ValueGeneratedNever();
             modelBuilder.Entity<ClientClientType>().HasKey(c => new { c.ClientId, c.ClientTypeId });
             modelBuilder.Entity<ClientCuisine>().HasKey(c => new { c.ClientId, c.CuisineId });
             modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });

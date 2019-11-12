@@ -8,6 +8,6 @@ namespace BR.Services
 {
     public interface IEmailService
     {
-        Task SendAsync(SendMailRequest sendMailInfo /*, string userId = null*/);
+        Task SendAsync(string recipentMail, string subject, string body);
     }
 }
