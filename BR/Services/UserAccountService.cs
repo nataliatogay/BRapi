@@ -3,12 +3,14 @@ using BR.EF;
 using BR.Models;
 using BR.Utils;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BR.Services
@@ -18,19 +20,31 @@ namespace BR.Services
         private readonly IAsyncRepository _repository;
         private readonly AuthOptions _authOptions;
 
-        public UserAccountService(IAsyncRepository repository, AuthOptions authOptions)
+        public UserAccountService(IAsyncRepository repository, IOptions<AuthOptions> options)
         {
             _repository = repository;
-            _authOptions = authOptions;
+            _authOptions = options.Value;
         }
+
+        public string GenerateCode()
+        {
+            Random random = new Random();
+            StringBuilder password = new StringBuilder();
+            for (int i = 0; i < 6; ++i)
+            {
+                password.Append(random.Next(0, 10).ToString());
+            }
+            return password.ToString();
+        }
+
         public Task<User> GetInfo(string identityId)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<LogInResponse> LogIn(IdentityUser identityUser)
+        public async Task<LogInResponse> LogIn(string userName, string identityId)
         {
-            return await Authentication(identityUser);
+            return await Authentication(userName, identityId);
         }
 
         public Task LogOut(string refreshToken)
@@ -38,16 +52,21 @@ namespace BR.Services
             throw new NotImplementedException();
         }
 
+        public async Task<User> Register(User user)
+        {
+            return await _repository.AddUser(user);
+        }
+
         public Task<LogInResponse> UpdateToken(string refreshToken)
         {
             throw new NotImplementedException();
         }
 
-        private async Task<LogInResponse> Authentication(IdentityUser identityUser)
+        private async Task<LogInResponse> Authentication(string userName, string identityId)
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
@@ -71,7 +90,7 @@ namespace BR.Services
 
             await _repository.AddToken(new AccountToken()
             {
-                IdentityUserId = identityUser.Id,
+                IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });

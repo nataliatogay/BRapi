@@ -47,13 +47,9 @@ namespace BR.DTO
 
         public ICollection<int> CuisineIds { get; set; }
 
-        public ICollection<Phone> Phones { get; set; }
+        public ICollection<string> Phones { get; set; }
 
     }
 
-    public class Phone
-    {
-        public int PhoneCodeId { get; set; }
-        public string PhoneNumber { get; set; }
-    }
+   
 }

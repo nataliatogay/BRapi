@@ -57,12 +57,14 @@ namespace BR
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IAdminAccountService, AdminAccountService>();
             services.AddScoped<IClientAccountService, ClientAccountService>();
+            services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddScoped<IAdminMailService, AdminMailService>();
             services.AddScoped<IClientRequestService, ClientRequestService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddIdentityCore<IdentityUser>().AddSignInManager<SignInManager<IdentityUser>>()
                 .AddUserManager<UserManager<IdentityUser>>()
                 .AddEntityFrameworkStores<BRDbContext>();
+            services.AddIdentityCore<IdentityUser>().AddDefaultTokenProviders();
             
             //services.AddIdentityCore<IdentityUser>().
 
@@ -96,6 +98,7 @@ namespace BR
                     options.Password.RequireDigit = false;
                     options.Password.RequiredLength = 5;
                     options.Password.RequireUppercase = false;
+                    options.Password.RequireLowercase = false;
                     options.Password.RequireNonAlphanumeric = false;
                 });
             services.AddSingleton<IEmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());

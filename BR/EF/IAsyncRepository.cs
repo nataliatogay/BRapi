@@ -48,5 +48,6 @@ namespace BR.EF
 
 
         Task<User> GetUser(int id);
+        Task<User> AddUser(User user);
     }
 }

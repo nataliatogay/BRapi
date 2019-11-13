@@ -21,15 +21,12 @@ namespace BR.Controllers
     {
         private readonly IAdminAccountService _adminAccountService;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IClientAccountService _clientAccountService;
 
         public AdminAccountController(IAdminAccountService adminAccountService, 
-            UserManager<IdentityUser> userManager,
-            IClientAccountService clientAccountService)
+            UserManager<IdentityUser> userManager)
         {
             _adminAccountService = adminAccountService;
             _userManager = userManager;
-            _clientAccountService = clientAccountService;
         }
 
         [HttpPost("Login")] 
@@ -41,7 +38,7 @@ namespace BR.Controllers
                 bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 if(checkPassword)
                 {
-                    LogInResponse resp = await _adminAccountService.LogIn(identityUser);
+                    LogInResponse resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id);
                     if (resp != null)
                     {
                         return new JsonResult(resp);
@@ -67,18 +64,7 @@ namespace BR.Controllers
         [HttpGet("getinfo")] 
         public async Task<IActionResult> GetInfo()
         { // claim based policy
-            
-            var claims = User.Claims;
-            /*
-            StringValues token;
-            HttpContext.Request.Headers.TryGetValue("Authorization", out token);
-            var encodedToken = token.ToString().Substring(token.ToString().IndexOf(" ") + 1);
-           // var jwt = new JwtSecurityToken(encodedToken);
-            
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(encodedToken);
-            string userId = ((JwtSecurityToken)jsonToken).Payload["id"].ToString();
-            */
+                       
             
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if(identityUser == null)
@@ -124,10 +110,14 @@ namespace BR.Controllers
             IdentityResult res = await _userManager.CreateAsync(user, "admin");
 
             user = await _userManager.FindByNameAsync(adminEmail);
+            Admin admin = new Admin()
+            {
+                IdentityId = user.Id
+            };
             
 
 
-            return new JsonResult(await _adminAccountService.AddNewAdmin(user));
+            return new JsonResult(await _adminAccountService.AddNewAdmin(admin));
         }
 
 

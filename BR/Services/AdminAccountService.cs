@@ -24,9 +24,9 @@ namespace BR.Services
             _authOptions = options.Value;
         }            
 
-        public async Task<LogInResponse> LogIn(IdentityUser identityUser)
+        public async Task<LogInResponse> LogIn(string userName, string identityId)
         {
-            return await Authentication(identityUser);
+            return await Authentication(userName, identityId);
         }
 
 
@@ -57,7 +57,7 @@ namespace BR.Services
             {
                 return null;
             }
-            return await Authentication(identityUser);
+            return await Authentication(identityUser.UserName, identityUser.Id);
         }
 
         public async Task<Admin> GetInfo(string identityId)
@@ -65,23 +65,17 @@ namespace BR.Services
             return await _repository.GetAdminByIdentityId(identityId);
         }
 
-        public async Task<Admin> AddNewAdmin(IdentityUser user)
+        public async Task<Admin> AddNewAdmin(Admin admin)
         {
-            Admin admin = new Admin()
-            {
-                //Email = user.Email,
-                //Password = user.PasswordHash,
-                IdentityId = user.Id
-            };
             return await _repository.AddAdmin(admin);
         }
 
 
-        private async Task<LogInResponse> Authentication(IdentityUser identityUser)
+        private async Task<LogInResponse> Authentication(string userName, string identityId)
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName), //username
+                new Claim(ClaimsIdentity.DefaultNameClaimType, userName), //username
              //   new Claim("id", admin.Id.ToString())
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
@@ -106,7 +100,7 @@ namespace BR.Services
 
             await _repository.AddToken(new AccountToken()
             {
-                IdentityUserId = identityUser.Id,
+                IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });            

@@ -230,6 +230,13 @@ namespace BR.EF
         {
             return await _db.ApplicationUsers.FindAsync(id);
         }
+
+        public async Task<User> AddUser(User user)
+        {
+            var res = await _db.ApplicationUsers.AddAsync(user);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
     }
 }
 
