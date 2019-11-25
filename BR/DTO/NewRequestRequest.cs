@@ -33,6 +33,8 @@ namespace BR.DTO
 
         public bool IsChildrenZone { get; set; }
 
+        public bool IsBusinessLunch { get; set; }
+
         public string AdditionalInfo { get; set; }
 
         public string MainImage { get; set; }
@@ -42,12 +44,13 @@ namespace BR.DTO
         public ICollection<string> SocialLinks { get; set; }
 
         public ICollection<int> PaymentTypeIds { get; set; }
+        public ICollection<int> MealTypeIds { get; set; }
 
         public ICollection<int> ClientTypeIds { get; set; }
 
         public ICollection<int> CuisineIds { get; set; }
 
-        public ICollection<string> Phones { get; set; }
+        public ICollection<Phone> Phones { get; set; }
 
     }
 

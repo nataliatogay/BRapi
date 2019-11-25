@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace BR.Services
 {
+    /*
     public class AdminMailService : IAdminMailService
     {
         private readonly IAsyncRepository _repository;
@@ -108,4 +109,5 @@ namespace BR.Services
         }
 
     }
+    */
 }

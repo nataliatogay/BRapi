@@ -33,6 +33,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.0" />
+    <PackageReference Include="Sms" Version="2.5.6" />
+    <PackageReference Include="Twilio" Version="5.35.1" />
   </ItemGroup>
 
 </Project>

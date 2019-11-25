@@ -59,21 +59,27 @@ namespace BR.Features.Admin
             };
 
             IdentityResult res = await _userManager.CreateAsync(identityUser, password);
-
-            identityUser = await _userManager.FindByNameAsync(newClient.Email);
-            
-
-            await _clientService.AddNewClient(newClient, identityUser);
-            try
+            if (res.Succeeded)
             {
-                string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
-                
-                await _emailService.SendAsync(identityUser.Email, "Registration info", msgBody);
+                identityUser = await _userManager.FindByNameAsync(newClient.Email);
+                await _clientService.AddNewClient(newClient, identityUser.Id);
+                try
+                {
+                    string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
+
+                    await _emailService.SendAsync(identityUser.Email, "Registration info", msgBody);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+
+
+
+
+
+
             return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
         
@@ -86,7 +92,7 @@ namespace BR.Features.Admin
         }
 
         [HttpDelete("{id}")] 
-        public async Task<IActionResult> Delete(int id) 
+        public async Task<IActionResult> Delete(int id)  
         {
             await _clientService.DeleteClient(id);
             return new JsonResult((await _clientService.GetAllClients()).ToList());

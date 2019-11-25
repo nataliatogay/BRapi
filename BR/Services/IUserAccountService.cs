@@ -10,12 +10,12 @@ namespace BR.Services
 {
     public interface IUserAccountService
     {
-        Task<User> Register(User user);
-       
-        Task<LogInResponse> LogIn(string userName, string identityId);
-        Task LogOut(string refreshToken);
+        Task<User> Register(User user);       
+        Task<LogInUserResponse> LogIn(string userName, string identityId);
+        Task LogOut(string identityId);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<User> GetInfo(string identityId);
+        Task<bool> UserIsBlocked(string identityId);
         string GenerateCode();
     }
 }

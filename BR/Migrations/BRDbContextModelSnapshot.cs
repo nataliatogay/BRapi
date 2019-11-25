@@ -77,9 +77,15 @@ namespace BR.Migrations
                         .IsRequired()
                         .HasMaxLength(150);
 
+                    b.Property<int>("ClientRequestId");
+
                     b.Property<int>("CloseTime");
 
                     b.Property<string>("IdentityId");
+
+                    b.Property<bool>("IsBlocked");
+
+                    b.Property<bool>("IsBusinessLunch");
 
                     b.Property<bool>("IsChildrenZone");
 
@@ -98,15 +104,13 @@ namespace BR.Migrations
                     b.Property<string>("MainImagePath")
                         .IsRequired();
 
-                    b.Property<int>("MaxReservDays");
+                    b.Property<int>("MaxReserveDays");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30);
 
                     b.Property<int>("OpenTime");
-
-                    b.Property<int>("ToBeClientId");
 
                     b.HasKey("Id");
 
@@ -141,30 +145,17 @@ namespace BR.Migrations
                     b.ToTable("ClientCuisines");
                 });
 
-            modelBuilder.Entity("BR.Models.ClientMail", b =>
+            modelBuilder.Entity("BR.Models.ClientMealType", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AdminId");
-
-                    b.Property<string>("Body");
-
                     b.Property<int>("ClientId");
 
-                    b.Property<bool>("IsRead");
+                    b.Property<int>("MealTypeId");
 
-                    b.Property<string>("Subject");
+                    b.HasKey("ClientId", "MealTypeId");
 
-                    b.Property<DateTime>("TimeSend");
+                    b.HasIndex("MealTypeId");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdminId");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientMails");
+                    b.ToTable("ClientMealTypes");
                 });
 
             modelBuilder.Entity("BR.Models.ClientPaymentType", b =>
@@ -182,18 +173,19 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.ClientPhone", b =>
                 {
-                    b.Property<string>("PhoneNumber")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("ClientId");
 
-                    b.Property<int>("PhoneCodeId");
+                    b.Property<bool>("IsShow");
 
-                    b.HasKey("PhoneNumber");
+                    b.Property<string>("Number")
+                        .IsRequired();
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ClientId");
-
-                    b.HasIndex("PhoneCodeId");
 
                     b.ToTable("ClientPhones");
                 });
@@ -291,6 +283,19 @@ namespace BR.Migrations
                     b.HasAlternateKey("ReservationId", "UserId");
 
                     b.ToTable("Invitees");
+                });
+
+            modelBuilder.Entity("BR.Models.MealType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MealTypes");
                 });
 
             modelBuilder.Entity("BR.Models.News", b =>
@@ -470,6 +475,8 @@ namespace BR.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime?>("BirthDate");
+
                     b.Property<string>("FirstName")
                         .HasMaxLength(50);
 
@@ -478,6 +485,8 @@ namespace BR.Migrations
                     b.Property<string>("IdentityId");
 
                     b.Property<string>("ImagePath");
+
+                    b.Property<bool>("IsBlocked");
 
                     b.Property<string>("LastName")
                         .HasMaxLength(50);
@@ -489,30 +498,29 @@ namespace BR.Migrations
                     b.ToTable("ApplicationUsers");
                 });
 
-            modelBuilder.Entity("BR.Models.UserMail", b =>
+            modelBuilder.Entity("BR.Models.Waiter", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("AdminId");
+                    b.Property<int>("ClientId");
 
-                    b.Property<string>("Body");
+                    b.Property<string>("FirstName")
+                        .IsRequired();
 
-                    b.Property<bool>("IsRead");
+                    b.Property<string>("IdentityId")
+                        .IsRequired();
 
-                    b.Property<string>("Subject");
-
-                    b.Property<DateTime>("TimeSend");
-
-                    b.Property<int>("UserId");
+                    b.Property<string>("LastName")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminId");
+                    b.HasIndex("ClientId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("IdentityId");
 
-                    b.ToTable("UserMails");
+                    b.ToTable("Waiters");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -732,16 +740,16 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientMail", b =>
+            modelBuilder.Entity("BR.Models.ClientMealType", b =>
                 {
-                    b.HasOne("BR.Models.Admin", "Admin")
-                        .WithMany("ClientMails")
-                        .HasForeignKey("AdminId")
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientMealTypes")
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
+                    b.HasOne("BR.Models.MealType", "MealType")
+                        .WithMany("ClientMealTypes")
+                        .HasForeignKey("MealTypeId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -763,11 +771,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Client", "Client")
                         .WithMany("ClientPhones")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BR.Models.PhoneCode", "PhoneCode")
-                        .WithMany("ClientPhones")
-                        .HasForeignKey("PhoneCodeId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -877,16 +880,16 @@ namespace BR.Migrations
                         .HasForeignKey("IdentityId");
                 });
 
-            modelBuilder.Entity("BR.Models.UserMail", b =>
+            modelBuilder.Entity("BR.Models.Waiter", b =>
                 {
-                    b.HasOne("BR.Models.Admin", "Admin")
-                        .WithMany("UserMails")
-                        .HasForeignKey("AdminId")
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("Waiters")
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("BR.Models.User", "User")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("IdentityId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

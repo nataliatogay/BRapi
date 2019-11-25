@@ -14,5 +14,6 @@ namespace BR.Services
         Task LogOut(string refreshToken);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<Client> GetInfo(string identityId);
+        Task<bool> ClientIsBlocked(string identityId);
     }
 }

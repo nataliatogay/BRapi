@@ -11,10 +11,12 @@ namespace BR.DTO
         public Dictionary<int, string> Cuisines { get; set; }
         public Dictionary<int, string> PaymentTypes { get; set; }
         public Dictionary<int, string> ClientTypes { get; set; }
+        public Dictionary<int, string> MealTypes { get; set; }
 
         //public IEnumerable<Cuisine> Cuisines { get; set; }
         //public IEnumerable<PaymentType> PaymentTypes { get; set; }
         //public IEnumerable<ClientType> ClientTypes { get; set; }
+        //public IEnumerable<MealType> MealTypes { get; set; }
 
     }
 }

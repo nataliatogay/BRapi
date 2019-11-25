@@ -60,7 +60,7 @@ namespace BR.Services
             return await Authentication(identityUser.UserName, identityUser.Id);
         }
 
-        public async Task<Admin> GetInfo(string identityId)
+        public async Task<Admin> GetAdmin(string identityId)
         {
             return await _repository.GetAdminByIdentityId(identityId);
         }

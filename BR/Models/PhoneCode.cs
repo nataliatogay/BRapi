@@ -13,12 +13,12 @@ namespace BR.Models
         [Required]
         public int Code { get; set; }
 
-        public virtual ICollection<ClientPhone> ClientPhones { get; set; }
+        //public virtual ICollection<ClientPhone> ClientPhones { get; set; }
        // public virtual ICollection<User> Users { get; set; }
 
         public PhoneCode()
         {
-            ClientPhones = new HashSet<ClientPhone>();
+            //ClientPhones = new HashSet<ClientPhone>();
           //  Users = new HashSet<User>();
         }
     }

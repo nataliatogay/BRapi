@@ -37,30 +37,68 @@ namespace BR.Services
             return password.ToString();
         }
 
-        public Task<User> GetInfo(string identityId)
+        public async Task<User> GetInfo(string identityId)
         {
-            throw new NotImplementedException();
+            return await _repository.GetUser(identityId);
         }
 
-        public async Task<LogInResponse> LogIn(string userName, string identityId)
+        public async Task<LogInUserResponse> LogIn(string userName, string identityId)
         {
-            return await Authentication(userName, identityId);
+            LogInResponse resp = await Authentication(userName, identityId);
+            User user = await this._repository.GetUser(identityId);
+            return new LogInUserResponse()
+            {
+                AccessToken = resp.AccessToken,
+                RefreshToken = resp.RefreshToken,
+                User = user
+            };
         }
 
-        public Task LogOut(string refreshToken)
+        public async Task LogOut(string refreshToken)
         {
-            throw new NotImplementedException();
+            AccountToken accountToken = await _repository.GetToken(refreshToken);
+            if (!(accountToken is null))
+            {
+                await _repository.RemoveToken(accountToken);
+            }
         }
 
         public async Task<User> Register(User user)
         {
+            user.IsBlocked = false;
             return await _repository.AddUser(user);
         }
 
-        public Task<LogInResponse> UpdateToken(string refreshToken)
+        public async Task<LogInResponse> UpdateToken(string refreshToken)
         {
-            throw new NotImplementedException();
+            AccountToken token = await _repository.GetToken(refreshToken);
+            if (token is null)
+            {
+                return null;
+            }
+            if (token.Expires <= DateTime.Now)
+            {
+                return null;
+            }
+            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
+
+            if (identityUser is null)
+            {
+                return null;
+            }
+            return await Authentication(identityUser.UserName, identityUser.Id);
         }
+
+        public async Task<bool> UserIsBlocked(string identityId)
+        {
+            var user = await _repository.GetUser(identityId);
+            if (user != null && !user.IsBlocked)
+            {
+                return true;
+            }
+            return false;
+        }
+
 
         private async Task<LogInResponse> Authentication(string userName, string identityId)
         {

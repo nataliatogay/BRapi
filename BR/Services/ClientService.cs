@@ -22,9 +22,9 @@ namespace BR.Services
         }
 
 
-        public async Task AddNewClient(NewClientRequest newClientRequest, IdentityUser identityUser)
+        public async Task AddNewClient(NewClientRequest newClientRequest, string identityId)
         {
-            ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ToBeClientId);
+            ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ClientRequestId);
             Client client = new Client()
             {
                 Name = newClientRequest.Name,
@@ -38,33 +38,55 @@ namespace BR.Services
                 IsLiveMusic = newClientRequest.IsLiveMusic,
                 IsOpenSpace = newClientRequest.IsOpenSpace,
                 IsChildrenZone = newClientRequest.IsChildrenZone,
+                IsBusinessLunch = newClientRequest.IsBusinessLunch,
                 AdditionalInfo = newClientRequest.AdditionalInfo,
                 MainImagePath = newClientRequest.MainImage,
-                MaxReservDays = newClientRequest.MaxReserveDays,
-                ToBeClientId = newClientRequest.ToBeClientId,
-                IdentityId = identityUser.Id
+                MaxReserveDays = newClientRequest.MaxReserveDays,
+                ClientRequestId = newClientRequest.ClientRequestId,
+                IsBlocked = false,
+                IdentityId = identityId
             };
 
             Client addedClient = await _repository.AddClient(client);
+
             foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
             {
                 await _repository.AddClientPaymentType(addedClient.Id, paymentTypeId);
-             }
+            }
+
+            foreach (var mealTypeId in newClientRequest.MealTypeIds)
+            {
+                await _repository.AddClientMealType(addedClient.Id, mealTypeId);
+            }
+
             foreach (var clientTypeId in newClientRequest.ClientTypeIds)
             {
                 await _repository.AddClientClientType(addedClient.Id, clientTypeId);
             }
+
             foreach (var cuisineId in newClientRequest.CuisineIds)
             {
                 await _repository.AddClientCuisine(addedClient.Id, cuisineId);
             }
+
             foreach (var link in newClientRequest.SocialLinks)
             {
                 await _repository.AddClientSocialLink(addedClient.Id, link);
             }
 
+            foreach (var phone in newClientRequest.Phones)
+            {
+                await _repository.AddClientPhone(
+                    addedClient.Id, 
+                    phone.Number, 
+                    phone.IsShow
+                    );
+            }
+
+
             clientRequest.ClientId = addedClient.Id;
             await _repository.UpdateClientRequest(clientRequest);
+            
         }
 
 
@@ -73,8 +95,10 @@ namespace BR.Services
             var client = await _repository.GetClientById(id);
             if (client != null)
             {
-                await _repository.DeleteClient(client);
-                return true;
+                var clientRequest = await _repository.GetClientRequest(client.ClientRequestId);
+                clientRequest.ClientId = null;
+                await _repository.UpdateClientRequest(clientRequest);
+                return await _repository.DeleteClient(client);
             }
             return false;
         }
@@ -92,6 +116,10 @@ namespace BR.Services
         public async Task<Client> UpdateClient(Client client)
         {
             var clientToUpdate = await _repository.GetClientById(client.Id);
+            if(clientToUpdate is null)
+            {
+                return null;
+            }
             clientToUpdate.Name = client.Name ?? clientToUpdate.Name;
             clientToUpdate.Address = client.Address ?? clientToUpdate.Address;
             clientToUpdate.OpenTime = client.OpenTime;

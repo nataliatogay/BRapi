@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace BR.Services
 {
+    /*
     public interface IAdminMailService
     {
 
@@ -24,4 +25,5 @@ namespace BR.Services
         Task SendClientMail(string adminName, SendMailRequest sendMailRequestl);
         Task DeleteClientMail(int clientMailId);
     }
+    */
 }

@@ -7,7 +7,8 @@ namespace BR.DTO
 {
     public class NewClientRequest
     {
-        public int ToBeClientId { get; set; }
+        public int ClientRequestId { get; set; }
+
         public string Name { get; set; }
 
         public string Email { get; set; }
@@ -32,6 +33,8 @@ namespace BR.DTO
 
         public bool IsChildrenZone { get; set; }
 
+        public bool IsBusinessLunch { get; set; }
+
         public string AdditionalInfo { get; set; }
 
         public string MainImage { get; set; }
@@ -44,9 +47,21 @@ namespace BR.DTO
 
         public ICollection<int> ClientTypeIds { get; set; }
 
+        public ICollection<int> MealTypeIds { get; set; }
+
         public ICollection<int> CuisineIds { get; set; }
 
-        public ICollection<string> Phones { get; set; }
+        public ICollection<Phone> Phones { get; set; }
 
+    }
+
+    public class Phone
+    {
+        public string Number { get; set; }
+        public bool IsShow { get; set; }
+
+        //public bool IsWhatsApp { get; set; }
+        //public bool IsTelegram { get; set; }
+        //public bool IsViber { get; set; }
     }
 }

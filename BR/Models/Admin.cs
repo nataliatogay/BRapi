@@ -24,15 +24,15 @@ namespace BR.Models
         public virtual IdentityUser Identity { get; set; }
 
         public virtual ICollection<AccountToken> AccountTokens { get; set; }
-        public virtual ICollection<ClientMail> ClientMails { get; set; }
-        public virtual ICollection<UserMail> UserMails { get; set; }
+        //public virtual ICollection<ClientMail> ClientMails { get; set; }
+        //public virtual ICollection<UserMail> UserMails { get; set; }
 
 
         public Admin()
         {
             AccountTokens = new HashSet<AccountToken>();
-            ClientMails = new HashSet<ClientMail>();
-            UserMails = new HashSet<UserMail>();
+           // ClientMails = new HashSet<ClientMail>();
+           // UserMails = new HashSet<UserMail>();
         }
     }
 }

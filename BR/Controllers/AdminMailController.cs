@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BR.Controllers
 {
+    /*
     [Route("api/[controller]")]
     [ApiController]
     public class AdminMailController : ControllerBase
@@ -77,4 +78,5 @@ namespace BR.Controllers
             return Ok();
         }
     }
+    */
 }

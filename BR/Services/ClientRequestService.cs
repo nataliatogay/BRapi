@@ -29,18 +29,7 @@ namespace BR.Services
             return await _repository.GetClientRequest(id);
         }
 
-        public async Task<IEnumerable<PaymentType>> GetAllPaymentTypes()
-        {
-            return await _repository.GetAllPaymentTypes();
-        }
-        public async Task<IEnumerable<Cuisine>> GetAllCuisines()
-        {
-            return await _repository.GetAllCuisines();
-        }
-        public async Task<IEnumerable<ClientType>> GetAllClientTypes()
-        {
-            return await _repository.GetAllClientTypes();
-        }
+        
 
         public async Task<int> ClientRequestCount()
         {

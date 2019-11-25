@@ -12,7 +12,7 @@ namespace BR.Services
     {
         Task<IEnumerable<Client>> GetAllClients();
         Task<Client> GetClient(int id);
-        Task AddNewClient(NewClientRequest newClientRequest, IdentityUser identityUser);
+        Task AddNewClient(NewClientRequest newClientRequest, string identityId);
         Task<Client> UpdateClient(Client client);
         Task<bool> DeleteClient(int id);
         

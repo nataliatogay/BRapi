@@ -19,9 +19,11 @@ namespace BR.EF
         public DbSet<PhoneCode> PhoneCodes { get; set; }
         public DbSet<Cuisine> Cuisines { get; set; }
         public DbSet<ClientType> ClientTypes { get; set; }
+        public DbSet<MealType> MealTypes { get; set; }
         public DbSet<ClientPhone> ClientPhones { get; set; }
         public DbSet<PaymentType> PaymentTypes { get; set; }
         public DbSet<ClientPaymentType> ClientPaymentTypes { get; set; }        
+        public DbSet<ClientMealType> ClientMealTypes { get; set; }
         public DbSet<ClientClientType> ClientClientTypes { get; set; }
         public DbSet<ClientCuisine> ClientCuisines { get; set; }
         public DbSet<Floor> Floor { get; set; }
@@ -33,8 +35,9 @@ namespace BR.EF
         public DbSet<Invitee> Invitees { get; set; }
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
         public DbSet<AccountToken> AccountTokens { get; set; }
-        public DbSet<ClientMail> ClientMails { get; set; }
-        public DbSet<UserMail> UserMails { get; set; }
+        public DbSet<Waiter> Waiters { get; set; }
+        //public DbSet<ClientMail> ClientMails { get; set; }
+        //public DbSet<UserMail> UserMails { get; set; }
 
 
 
@@ -50,8 +53,7 @@ namespace BR.EF
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClientPaymentType>().HasKey(p => new { p.ClientId, p.PaymentTypeId });
-            //modelBuilder.Entity<ClientPaymentType>().Property(p => p.ClientId).ValueGeneratedNever();
-            //modelBuilder.Entity<ClientPaymentType>().Property(p => p.PaymentTypeId).ValueGeneratedNever();
+            modelBuilder.Entity<ClientMealType>().HasKey(p => new { p.ClientId, p.MealTypeId });
             modelBuilder.Entity<ClientClientType>().HasKey(c => new { c.ClientId, c.ClientTypeId });
             modelBuilder.Entity<ClientCuisine>().HasKey(c => new { c.ClientId, c.CuisineId });
             modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });

@@ -43,6 +43,9 @@ namespace BR.Models
         [Required]
         public bool IsChildrenZone { get; set; }
 
+        [Required]
+        public bool IsBusinessLunch { get; set; }
+
         [MaxLength(250)]
         public string AdditionalInfo { get; set; }
 
@@ -60,9 +63,11 @@ namespace BR.Models
         public string MainImagePath { get; set; }
 
         [Required]
-        public int MaxReservDays { get; set; }
+        public int MaxReserveDays { get; set; }
 
-        public int ToBeClientId { get; set; }
+        public bool IsBlocked { get; set; }
+
+        public int ClientRequestId { get; set; }
 
         public string IdentityId { get; set; }
 
@@ -73,10 +78,14 @@ namespace BR.Models
         public virtual ICollection<ClientPhone> ClientPhones { get; set; }
         public virtual ICollection<Floor> Floors { get; set; }
         public virtual ICollection<ClientPaymentType> ClientPaymentTypes { get; set; }
+        public virtual ICollection<ClientMealType> ClientMealTypes { get; set; }
         public virtual ICollection<ClientClientType> ClientClientTypes { get; set; }
         public virtual ICollection<ClientCuisine> ClientCuisines { get; set; }
         public virtual ICollection<News> News { get; set; }
         public virtual ICollection<AccountToken> AccountTokens { get; set; }
+        public virtual ICollection<Waiter> Waiters { get; set; }
+
+        //public virtual ICollection<ClientMail> ClientMails { get; set; }
 
         public Client()
         {
@@ -84,10 +93,13 @@ namespace BR.Models
             ClientPhones = new HashSet<ClientPhone>();
             Floors = new HashSet<Floor>();
             ClientPaymentTypes = new HashSet<ClientPaymentType>();
+            ClientMealTypes = new HashSet<ClientMealType>();
             ClientClientTypes = new HashSet<ClientClientType>();
             ClientCuisines = new HashSet<ClientCuisine>();
             News = new HashSet<News>();
             AccountTokens = new HashSet<AccountToken>();
+            Waiters = new HashSet<Waiter>();
+            // ClientMails = new HashSet<ClientMail>();
         }
     }
 }

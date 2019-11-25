@@ -65,6 +65,16 @@ namespace BR.Services
             return await Authentication(identityUser);
         }
 
+        public async Task<bool> ClientIsBlocked(string identityId)
+        {
+            var client = await _repository.GetClientByIdentityId(identityId);
+            if (client != null && client.IsBlocked)
+            {
+                return true;
+            }
+            return false;
+        }
+
         private async Task<LogInResponse> Authentication(IdentityUser identityUser)
         {
             List<Claim> claims = new List<Claim>()

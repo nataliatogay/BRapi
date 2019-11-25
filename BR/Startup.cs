@@ -55,11 +55,13 @@ namespace BR
             services.AddScoped<BRDbContext>();
             services.AddScoped<IAsyncRepository, EFAsyncRepository>();
             services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IWaiterService, WaiterService>();
             services.AddScoped<IAdminAccountService, AdminAccountService>();
             services.AddScoped<IClientAccountService, ClientAccountService>();
             services.AddScoped<IUserAccountService, UserAccountService>();
-            services.AddScoped<IAdminMailService, AdminMailService>();
+            //services.AddScoped<IAdminMailService, AdminMailService>();
             services.AddScoped<IClientRequestService, ClientRequestService>();
+            services.AddScoped<IParameterService, ParameterService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddIdentityCore<IdentityUser>().AddSignInManager<SignInManager<IdentityUser>>()
                 .AddUserManager<UserManager<IdentityUser>>()
@@ -102,7 +104,9 @@ namespace BR
                     options.Password.RequireNonAlphanumeric = false;
                 });
             services.AddSingleton<IEmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());
+            services.AddSingleton<ISMSConfiguration>(Configuration.GetSection("TwilioConfiguration").Get<TwilioConfiguration>());
             services.AddTransient<IEmailService, EmailService>();
+            services.AddMemoryCache();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
