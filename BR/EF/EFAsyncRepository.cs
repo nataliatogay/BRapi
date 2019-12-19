@@ -43,7 +43,7 @@ namespace BR.EF
             }
         }
 
-        public async Task<Client> GetClientById(int id)
+        public async Task<Client> GetClient(int id)
         {
             return await _db.Clients
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -52,6 +52,17 @@ namespace BR.EF
         public async Task<IEnumerable<Client>> GetClients()
         {
             return await _db.Clients.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Client>> GetClientsByMeal(string mealType)
+        {
+            return await _db.ClientMealTypes.Where(t => t.MealType.Title.ToUpper().Equals(mealType.ToUpper())).Select(c => c.Client).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Client>> GetClientsByName(string title)
+        {
+            return await _db.Clients.Where(c => c.Name.ToUpper().Contains(title.ToUpper())).ToListAsync();
+
         }
 
         public async Task UpdateClient(Client client)
@@ -76,7 +87,7 @@ namespace BR.EF
 
         }
 
-        public async Task<Client> GetClientByIdentityId(string identityId)
+        public async Task<Client> GetClient(string identityId)
         {
             return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
@@ -355,6 +366,18 @@ namespace BR.EF
             return res.Entity;
         }
 
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            return await _db.ApplicationUsers.ToListAsync();
+        }
+
+        public async Task<User> UpdateUser(User user)
+        {
+            var res = _db.ApplicationUsers.Update(user);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
 
 
 
@@ -397,6 +420,32 @@ namespace BR.EF
             }
         }
 
+
+        public async Task<Waiter> GetWaiter(string identityId)
+        {
+            return await _db.Waiters.FirstOrDefaultAsync(w => w.IdentityId == identityId);
+        }
+
+
+
+
+
+        public async Task<Reservation> AddNewReservation(Reservation reservation)
+        {
+            var reservationAdded = await _db.Reservations.AddAsync(reservation);
+            await _db.SaveChangesAsync();
+            return reservationAdded.Entity;
+        }
+
+        public async Task AddTableReservation(int reservationId, int tableId)
+        {
+            await _db.TableReservations.AddAsync(new TableReservation()
+            {
+                ReservationId = reservationId,
+                TableId = tableId
+            });
+            await _db.SaveChangesAsync();
+        }
 
 
 

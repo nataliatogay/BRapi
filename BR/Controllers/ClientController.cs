@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
@@ -13,7 +14,8 @@ using Newtonsoft.Json;
 
 namespace BR.Features.Admin
 {
-   // [Authorize]
+    // [Authorize]
+   // [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
@@ -30,23 +32,50 @@ namespace BR.Features.Admin
             _clientService = clientService;
             _userManager = userManager;
             _emailService = emailService;
-            
+
         }
 
-        
+        // for users and clients
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<Client>>> Get()
+        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Get()
         {
-            return new JsonResult((await _clientService.GetAllClients()).ToList());
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+
+            return new JsonResult(await _clientService.GetAllClients(role));
+          
         }
 
-        [HttpGet("{id}")] 
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("mealtype")]
+        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Get(string mealType)
         {
-            return new JsonResult(await _clientService.GetClient(id));
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+
+            return new JsonResult(await _clientService.GetClientsByMeal(mealType, role));
         }
 
-        
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Search(string name)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+
+            return new JsonResult(await _clientService.GetClientsByName(name, role));
+        }
+
+
+        //?
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ClientInfoResponse>> Get(int id)
+        {
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+
+            return new JsonResult(await _clientService.GetClient(id, role));
+        }
+
+
 
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewClientRequest newClient)
@@ -55,7 +84,7 @@ namespace BR.Features.Admin
             IdentityUser identityUser = new IdentityUser()
             {
                 Email = newClient.Email,
-                UserName = newClient.Email 
+                UserName = newClient.Email
             };
 
             IdentityResult res = await _userManager.CreateAsync(identityUser, password);
@@ -75,55 +104,47 @@ namespace BR.Features.Admin
                 }
             }
 
+            return new JsonResult(await _clientService.GetAllClients("Admin"));
 
 
 
 
 
-            return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
+
+           // return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
-        
+
 
         [HttpPut("")]
         public async Task<IActionResult> Update([FromBody]Client client)
         {
             client = await _clientService.UpdateClient(client);
-            return new JsonResult(await _clientService.GetClient(client.Id));
+            return Ok();
+            //return new JsonResult(await _clientService.GetClient(client.Id));
         }
 
-        [HttpDelete("{id}")] 
-        public async Task<IActionResult> Delete(int id)  
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
             await _clientService.DeleteClient(id);
-            return new JsonResult((await _clientService.GetAllClients()).ToList());
+            return Ok();
+          //  return new JsonResult((await _clientService.GetAllClients()).ToList());
         }
 
-        
 
+        // [Authorize]
+        [HttpPost("UploadImage")]
+        public async Task<IActionResult> UploadImage([FromBody]string imageString)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult("Client not found");
+            }
+            await _clientService.UploadImage(identityUser.Id, imageString);
+            return Ok();
+        }
 
-
-        
     }
 }
-
-
-/*
- 
-    {
-	"Name": "Client new",
-	"Address" : "Address new",
-	"Latitude" : 7.7,
-	"Longitude" : 8.8,
-	"StartTime" : 730,
-	"EndTime" : 3000,
-	"IsPasking" : true,
-	"IsWiFi" : false,
-	"IsLiveMusic": false,
-	"IsOpenSpace": false,
-    "IsChildrenZone": false,
-	"AdditionalInfo" : "AdditionalInfo new",
-    "Email": "new_email@email.com",
-    "MainImagePath": "main_image_path_new",
-    "MaxReservDays": 4
-}
- */

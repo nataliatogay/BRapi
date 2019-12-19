@@ -13,18 +13,13 @@ namespace BR.Models
     {
         public int Id { get; set; }
 
-         [MaxLength(50)]
+        // [MaxLength(50)]
+        [Required]
         public string FirstName { get; set; }
 
-        [MaxLength(50)]
+       // [MaxLength(50)]
+       [Required]
         public string LastName { get; set; }
-
-       // [Required]
-      //  public int PhoneCodeId { get; set; }
-
-       // [MaxLength(25)]
-       // [DataType(DataType.PhoneNumber)]
-       // public string PhoneNumber { get; set; }
 
         public string ImagePath { get; set; }
 
@@ -34,11 +29,7 @@ namespace BR.Models
 
        // public string Email { get; set; } -> хранится в Identity
         public DateTime? BirthDate { get; set; }
-
         
-
-       // public virtual PhoneCode PhoneCode { get; set; }
-
         public string IdentityId { get; set; }
 
         [ForeignKey("IdentityId")]

@@ -3,6 +3,7 @@ using BR.EF;
 using BR.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace BR.Services
 
         public async Task<IEnumerable<Waiter>> GetAllWaiters(string clientIdentityId)
         {
-            var client = _repository.GetClientByIdentityId(clientIdentityId);
+            var client = _repository.GetClient(clientIdentityId);
             if(client is null)
             {
                 return null;
@@ -33,19 +34,23 @@ namespace BR.Services
         }
         public async Task<Waiter> AddNewWaiter(NewWaiterRequest newWaiterRequest, string identityId, string clientIdentityId)
         {
-            var client = await _repository.GetClientByIdentityId(clientIdentityId);
+            var client = await _repository.GetClient(clientIdentityId);
             if(client != null)
             {
-                return await _repository.AddWaiter(new Waiter()
+                Waiter waiter = new Waiter()
                 {
                     FirstName = newWaiterRequest.FirstName,
                     LastName = newWaiterRequest.LastName,
-                    Gender = newWaiterRequest.Gender,
-                    BirthDate = newWaiterRequest.BirthDate,
-                    PhoneNumber = newWaiterRequest.PhoneNumber,
-                    ClientId=client.Id,
+                 //   Gender = newWaiterRequest.Gender,
+                 //   BirthDate = null,
+                    ClientId = client.Id,
                     IdentityId = identityId
-                });
+                };
+                if (newWaiterRequest.BirthDate != null)
+                {
+                  //  waiter.BirthDate = DateTime.ParseExact(newWaiterRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                }
+                return await _repository.AddWaiter(waiter);
 
             }
             return null;

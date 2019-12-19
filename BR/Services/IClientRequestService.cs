@@ -12,6 +12,7 @@ namespace BR.Services
         Task<IEnumerable<ClientRequest>> GetAllClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task AddNewClientRequest(ClientRequest clientRequest);
+        Task AddNewClientRequest(NewRequestRequest newClientRequest);
         Task<int> ClientRequestCount();
         
 

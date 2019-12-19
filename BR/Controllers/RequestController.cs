@@ -24,13 +24,16 @@ namespace BR.Controllers
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewRequestRequest newClientRequest)
         {
-            ClientRequest clientRequest = new ClientRequest()
-            {
-                RegisteredDate = DateTime.Now,
-                JsonInfo = JsonConvert.SerializeObject(newClientRequest)
-            };
-            await _clientRequestService.AddNewClientRequest(clientRequest);
-            return new JsonResult((await _clientRequestService.GetAllClientRequests()).ToList());
+            //ClientRequest clientRequest = new ClientRequest()
+            //{
+            //    RegisteredDate = DateTime.Now,
+            //    JsonInfo = JsonConvert.SerializeObject(newClientRequest)
+            //};
+            //await _clientRequestService.AddNewClientRequest(clientRequest);
+
+            await _clientRequestService.AddNewClientRequest(newClientRequest);
+            return Ok();
+            //return new JsonResult((await _clientRequestService.GetAllClientRequests()).ToList());
         }
 
         [HttpGet("")]

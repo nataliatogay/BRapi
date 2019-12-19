@@ -67,13 +67,13 @@ namespace BR.Models
 
         public bool IsBlocked { get; set; }
 
-        public int ClientRequestId { get; set; }
+        //public int ClientRequestId { get; set; }
 
         public string IdentityId { get; set; }
 
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
-        public virtual ClientRequest ClientRequest { get; set; }
+        //public virtual ClientRequest ClientRequest { get; set; }
         public virtual ICollection<SocialLink> SocialLinks { get; set; }
         public virtual ICollection<ClientPhone> ClientPhones { get; set; }
         public virtual ICollection<Floor> Floors { get; set; }

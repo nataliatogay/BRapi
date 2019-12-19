@@ -1,5 +1,7 @@
-﻿using BR.EF;
+﻿using BR.DTO;
+using BR.EF;
 using BR.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +12,28 @@ namespace BR.Services
     public class ClientRequestService :IClientRequestService
     {
         private readonly IAsyncRepository _repository;
-        public ClientRequestService(IAsyncRepository repository)
+        private readonly IBlobService _blobService;
+        public ClientRequestService(IAsyncRepository repository,
+            IBlobService blobService)
         {
             _repository = repository;
+            _blobService = blobService;
         }
         public async Task AddNewClientRequest(ClientRequest clientRequest)
         {
+
+            await _repository.AddClientRequest(clientRequest);
+        }
+
+        public async Task AddNewClientRequest(NewRequestRequest newClientRequest)
+        {
+            var imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
+            newClientRequest.MainImage = imagePath;
+            ClientRequest clientRequest = new ClientRequest()
+            {
+                RegisteredDate = DateTime.Now,
+                JsonInfo = JsonConvert.SerializeObject(newClientRequest)
+            };
             await _repository.AddClientRequest(clientRequest);
         }
 

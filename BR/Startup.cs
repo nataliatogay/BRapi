@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BR.DTO;
 using BR.EF;
 using BR.Models;
 using BR.Services;
 using BR.Utils;
+using BR.Utils.Notification;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +19,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace BR
 {
@@ -40,16 +46,16 @@ namespace BR
             {
                 Configuration.GetSection("AuthOptions").Bind(options);
             });
-
+            services.Configure<AzureStorageAccountOptions>(Configuration.GetSection("AzureStorageAccountOptions"));
 
             services.AddDbContext<BRDbContext>(
                 options =>
                 {
-                    string connstr = Configuration.GetConnectionString("DefaultConnection");
-                    //string connstr2 = Configuration.GetConnectionString("DefaultConnection2");
-                    options.UseNpgsql(connstr);
-                    //options.UseSqlServer(connstr2);
-                    //options.UseLazyLoadingProxies();
+                   // string connStrAzure = Configuration.GetConnectionString("AzureDbConnectionString");
+                    string connStrPostgre = Configuration.GetConnectionString("PostgreSQLConnectionString");
+                    options.UseNpgsql(connStrPostgre);
+                    //options.UseSqlServer(connStrAzure);
+                    options.UseLazyLoadingProxies();
                 });
 
             services.AddScoped<BRDbContext>();
@@ -59,24 +65,50 @@ namespace BR
             services.AddScoped<IAdminAccountService, AdminAccountService>();
             services.AddScoped<IClientAccountService, ClientAccountService>();
             services.AddScoped<IUserAccountService, UserAccountService>();
+            services.AddScoped<IWaiterAccountService, WaiterAccountService>();
             //services.AddScoped<IAdminMailService, AdminMailService>();
             services.AddScoped<IClientRequestService, ClientRequestService>();
             services.AddScoped<IParameterService, ParameterService>();
+            services.AddScoped<IBlobService, BlobService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddSwaggerGen(options => {
+                options.SwaggerDoc("v1", new Info
+                {
+                    Title = "MyApi",
+                    Version = "v1"
+                });
+                options.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                    In = "header",
+                    Name = "Authorization",
+                    Type = "apiKey"
+                });
+            });
+
             services.AddIdentityCore<IdentityUser>().AddSignInManager<SignInManager<IdentityUser>>()
                 .AddUserManager<UserManager<IdentityUser>>()
+                .AddRoles<IdentityRole>()
+              // .AddRoleValidator<RoleValidator<IdentityRole>>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
                 .AddEntityFrameworkStores<BRDbContext>();
             services.AddIdentityCore<IdentityUser>().AddDefaultTokenProviders();
-            
+
+            services.AddScoped<RoleManager<IdentityRole>>();
+
+            // services.AddIdentityCore<IdentityUser>().AddRoles<IdentityRole>().AddRoleManager<RoleManager<IdentityRole>>();
+
             //services.AddIdentityCore<IdentityUser>().
 
             //services.AddIdentity<IdentityUser, IdentityRole>(s =>
             //{
             //}).AddEntityFrameworkStores<BRDbContext>();
-            
+
             //services.AddAuthorization(s =>
             //{
-                
+
             //});
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -101,12 +133,30 @@ namespace BR
                     options.Password.RequiredLength = 5;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireLowercase = false;
-                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireNonAlphanumeric = false;                    
                 });
             services.AddSingleton<IEmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());
             services.AddSingleton<ISMSConfiguration>(Configuration.GetSection("TwilioConfiguration").Get<TwilioConfiguration>());
             services.AddTransient<IEmailService, EmailService>();
             services.AddMemoryCache();
+
+            // Add Quartz services
+            services.AddSingleton<IJobFactory, JobFactory>();
+            services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
+            services.AddSingleton<QuartzJobRunner>();
+
+            // Add our job
+            //services.AddSingleton<ReservationNotificationJob>();
+            services.AddScoped<ReservationReminderJob>();
+            // services.AddSingleton(new JobSchedule(
+            //     jobType: typeof(ReservationReminderJob),
+            //     cronExpression: "0/5 * * * * ?")); 
+                // run every 5 seconds
+            // "0 0 12 * * ?" => every day at noon
+
+            services.AddHostedService<QuartzHostedService>();
+            
+            services.Configure<NotificationHubConfiguration>(Configuration.GetSection("NotificationHubConfiguration"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -124,6 +174,14 @@ namespace BR
             app.UseAuthentication();
 
             app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+
+            app.UseSwagger();
+            app.UseSwaggerUI(setup => {
+                setup.SwaggerEndpoint(
+                    "/swagger/v1/swagger.json",
+                    "My API v1"
+                );
+            });
 
             app.UseMvc();
         }

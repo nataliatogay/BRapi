@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO
 {
-    public class ConfirmPhoneRequest
+    public class ConfirmPhoneRequest 
     {
         public string PhoneNumber { get; set; }
         public string Code { get; set; }

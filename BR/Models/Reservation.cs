@@ -21,6 +21,8 @@ namespace BR.Models
         [Required]
         public int GuestCount { get; set; }
 
+        public string Comments { get; set; }
+
         [Required]
         public int ReservationStateId { get; set; }
 

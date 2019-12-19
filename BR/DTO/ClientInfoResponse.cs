@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace BR.DTO
 {
-    public class ClientInfoRequest
+    public class ClientInfoResponse
     {
-       // public int Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
         public float Lat { get; set; }
@@ -23,11 +23,12 @@ namespace BR.DTO
         public string AdditionalInfo { get; set; }
         public string MainImage { get; set; }
         public int MaxReserveDays { get; set; }
+        public string Email { get; set; }
         public ICollection<string> SocialLinks { get; set; }
         public ICollection<string> PaymentTypes { get; set; } 
         public ICollection<string> ClientTypes { get; set; }
         public ICollection<string> MealTypes { get; set; }
         public ICollection<string> Cuisines { get; set; }
-        public ICollection<string> Phones { get; set; }//
+        public ICollection<string> Phones { get; set; }
     }
 }

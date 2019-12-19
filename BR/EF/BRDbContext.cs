@@ -32,6 +32,7 @@ namespace BR.EF
         public DbSet<Table> Tables { get; set; }
         public DbSet<ReservationState> ReservationStates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<TableReservation> TableReservations { get; set; }
         public DbSet<Invitee> Invitees { get; set; }
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
         public DbSet<AccountToken> AccountTokens { get; set; }
@@ -59,8 +60,10 @@ namespace BR.EF
             modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });
             modelBuilder.Entity<Invitee>().HasKey(i => new { i.UserId, i.ReservationId });
 
+            modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }
+
     }
 }

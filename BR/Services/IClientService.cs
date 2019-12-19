@@ -10,13 +10,14 @@ namespace BR.Services
 {
     public interface IClientService
     {
-        Task<IEnumerable<Client>> GetAllClients();
-        Task<Client> GetClient(int id);
+        Task<IEnumerable<ClientInfoResponse>> GetAllClients(string role);
+        Task<IEnumerable<ClientInfoResponse>> GetClientsByMeal(string mealType, string role);
+        Task<IEnumerable<ClientInfoResponse>> GetClientsByName(string title, string role);
+        Task<ClientInfoResponse> GetClient(int id, string role);
         Task AddNewClient(NewClientRequest newClientRequest, string identityId);
         Task<Client> UpdateClient(Client client);
-        Task<bool> DeleteClient(int id);
-        
+        Task<bool> DeleteClient(int id);        
         string GeneratePassword();
-
+        Task UploadImage(string identityId, string imageString);
     }
 }

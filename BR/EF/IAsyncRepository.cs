@@ -10,12 +10,15 @@ namespace BR.EF
         Task<IdentityUser> GetIdentityUser(string id);
         Task<Client> AddClient(Client client);
         Task<bool> DeleteClient(Client client);
-        Task<Client> GetClientById(int id);
+        Task<Client> GetClient(int id);
+        Task<Client> GetClient(string identityId);
         Task<IEnumerable<Client>> GetClients();
+        Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
+        Task<IEnumerable<Client>> GetClientsByName(string title);
         Task UpdateClient(Client client);
         Task<Admin> GetAdminByIdentityId(string identityId);
         Task<Admin> GetAdminByIdentityName(string identityName);
-        Task<Client> GetClientByIdentityId(string identityId);
+        
         Task<IEnumerable<ClientRequest>> GetClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task UpdateClientRequest(ClientRequest clientRequest);
@@ -59,6 +62,8 @@ namespace BR.EF
         Task<User> GetUser(int id);
         Task<User> GetUser(string identityId);
         Task<User> AddUser(User user);
+        Task<User> UpdateUser(User user);
+        Task<IEnumerable<User>> GetUsers();
 
 
 
@@ -67,6 +72,11 @@ namespace BR.EF
         Task<Waiter> AddWaiter(Waiter waiter);
         Task UpdateWaiter(Waiter waiter);
         Task<bool> DeleteWaiter(Waiter waiter);
+        Task<Waiter> GetWaiter(string identityId);
+
+
+        Task<Reservation> AddNewReservation(Reservation reservation);
+        Task AddTableReservation(int reservationId, int tableId);
     }
 }
 

@@ -41,7 +41,7 @@ namespace BR.Services
 
         public async Task<Client> GetInfo(string identityId)
         {
-            return await _repository.GetClientByIdentityId(identityId);
+            return await _repository.GetClient(identityId);
         }
 
         public async Task<LogInResponse> UpdateToken(string refreshToken)
@@ -67,7 +67,7 @@ namespace BR.Services
 
         public async Task<bool> ClientIsBlocked(string identityId)
         {
-            var client = await _repository.GetClientByIdentityId(identityId);
+            var client = await _repository.GetClient(identityId);
             if (client != null && client.IsBlocked)
             {
                 return true;
@@ -79,7 +79,8 @@ namespace BR.Services
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, "Client")
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);

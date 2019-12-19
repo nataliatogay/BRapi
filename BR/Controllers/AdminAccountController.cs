@@ -23,18 +23,21 @@ namespace BR.Controllers
     {
         private readonly IAdminAccountService _adminAccountService;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IMemoryCache _cache;
 
         public AdminAccountController(IAdminAccountService adminAccountService,
             UserManager<IdentityUser> userManager,
             IEmailService emailService,
+            RoleManager<IdentityRole> roleManager,
             IMemoryCache cache)
         {
             _adminAccountService = adminAccountService;
             _userManager = userManager;
             _emailService = emailService;
             _cache = cache;
+            _roleManager = roleManager;
         }
 
         [HttpPost("Login")]
@@ -99,20 +102,59 @@ namespace BR.Controllers
             return Ok();
         }
 
+        [HttpPost("AddRole")]
+        public async Task<IActionResult> AddRole([FromBody]string role)
+        {
+            var res = await _roleManager.CreateAsync(new IdentityRole(role));
+            return new JsonResult(res);
+        }
+
+        [HttpGet("AddUserRole")]
+        public async Task<IActionResult> AddRoleToIdentityUser()
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            var res = await _userManager.AddToRoleAsync(user, "Admin");
+            //var res = await _roleManager.CreateAsync(new IdentityRole(role));
+            return new JsonResult(res);
+        }
+
 
         [HttpPost("Register")]
         public async Task<IActionResult> AdminRegister([FromBody]string adminEmail)
         {
-            IdentityUser identityUser = new IdentityUser()
+            var identityUser = await _userManager.FindByEmailAsync(adminEmail);
+            if (identityUser is null || !(await _userManager.IsEmailConfirmedAsync(identityUser)))
             {
-                Email = adminEmail,
-                UserName = adminEmail
-            };
-            IdentityResult res = await _userManager.CreateAsync(identityUser, "admin");
-            if (res.Succeeded)
-            {
-                identityUser = await _userManager.FindByNameAsync(adminEmail);
+                if(identityUser == null)
+                {
+                    identityUser = new IdentityUser()
+                    {
+                        Email = adminEmail,
+                        UserName = adminEmail
+                    };
+                    IdentityResult res = await _userManager.CreateAsync(identityUser, "admin");
+                    if (!res.Succeeded)
+                    {
+                        StringBuilder errors = new StringBuilder();
+                        foreach (var error in res.Errors)
+                        {
+                            errors.Append(error);
+                        }
+                        return new JsonResult(errors.ToString());
+                    }
+                    identityUser = await _userManager.FindByNameAsync(adminEmail);
+                }
+                else
+                {
+                    string emailCache = null;
+                    _cache.TryGetValue(identityUser.Id, out emailCache);
+                    if(emailCache != null)
+                    {
+                        return new JsonResult("Link has already been sent");
+                    }
+                }
 
+                _cache.Set(identityUser.Id, adminEmail, TimeSpan.FromMinutes(3));
 
                 var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
                 var callbackUrl = Url.Action(
@@ -130,17 +172,14 @@ namespace BR.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _cache.Remove(identityUser.Id);
                     throw ex;
                 }
+
             }
             else
             {
-                StringBuilder errors = new StringBuilder();
-                foreach (var error in res.Errors)
-                {
-                    errors.Append(error);
-                }
-                return new JsonResult(errors.ToString());
+                return new JsonResult("Email is already used");
             }
         }
 

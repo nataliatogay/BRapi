@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
 using BR.Services;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace BR.Controllers
 {
@@ -20,11 +23,15 @@ namespace BR.Controllers
         private readonly IWaiterService _waiterService;
         private readonly UserManager<IdentityUser> _userManager;
 
+        private readonly ISMSConfiguration _smsConfiguration;
+
         public WaiterController(IWaiterService waiterService, 
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            ISMSConfiguration smsConfiguration)
         {
             _waiterService = waiterService;
             _userManager = userManager;
+            _smsConfiguration = smsConfiguration;
         }
         [HttpGet("")]
         public async Task<ActionResult<IEnumerable<Waiter>>> Get()
@@ -44,8 +51,6 @@ namespace BR.Controllers
             return new JsonResult(await _waiterService.GetWaiter(id));
         }
 
-
-
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewWaiterRequest newWaiter)
         {
@@ -60,10 +65,20 @@ namespace BR.Controllers
             do
             {
                 login = _waiterService.GenerateLogin(newWaiter.LastName);
-                res = await _userManager.CreateAsync(new IdentityUser() { UserName = login }, password);
+                res = await _userManager.CreateAsync(new IdentityUser() { UserName = login, PhoneNumber = newWaiter.PhoneNumber }, password);
                 
             } while (!res.Succeeded);
             var identityUserWaiter = await _userManager.FindByNameAsync(login);
+            // send code
+            /*
+            TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+            var body = $"Login: {login}. Password: {password}";
+            var msg = MessageResource.Create(body: body,
+                from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                to: new Twilio.Types.PhoneNumber(newWaiter.PhoneNumber));
+            return new JsonResult(msg.Sid);
+            */
+
             return new JsonResult(await _waiterService.AddNewWaiter(newWaiter, identityUserWaiter.Id, identityUserClient.Id));
         }
     }

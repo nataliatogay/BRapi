@@ -76,6 +76,7 @@ namespace BR.Services
             List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName), //username
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, "Admin")
              //   new Claim("id", admin.Id.ToString())
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(

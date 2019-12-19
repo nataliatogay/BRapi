@@ -17,9 +17,8 @@ namespace BR.Models
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
-        public DateTime? BirthDate { get; set; }
-        public bool? Gender { get; set; }
-        public string PhoneNumber { get; set; }
+       // public DateTime? BirthDate { get; set; }
+       // public bool? Gender { get; set; }
         public int ClientId { get; set; }
         public virtual Client Client { get; set; }
         [ForeignKey("IdentityId")]

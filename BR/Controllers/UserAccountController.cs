@@ -58,40 +58,30 @@ namespace BR.Controllers
             {
                 string code = _userAccountService.GenerateCode();
                 _cache.Set(phoneNumber, code, TimeSpan.FromMinutes(3));
-                
-                
-                
-                
 
-                //if (res is null)
-                //{
-                //    IdentityResult identRes = await _userManager.CreateAsync(new IdentityUser()
-                //    {
-                //        PhoneNumber = phoneNumber,
-                //        UserName = phoneNumber
-                //    },
-                //    code);
-                //}
-                //else
-                //{
-                //    if (await _userAccountService.UserIsBlocked(res.Id))
-                //    {
-                //        return new JsonResult("User is blocked");
-                //    }
-                //    var token = await _userManager.GeneratePasswordResetTokenAsync(res);
-                //    await _userManager.ResetPasswordAsync(res, token, code);
-                //}
 
-                // send code
-                TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                //    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                //    to: new Twilio.Types.PhoneNumber(phoneNumber));
+                try
+                {
+                    // TWILIO
 
-                return new JsonResult(code);
+                    /*
+                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                // return new JsonResult(msg.Sid);
+                    var msg = MessageResource.Create(body: code + " is your RB verification code",
+                        from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                        to: new Twilio.Types.PhoneNumber(phoneNumber));
+                        return new JsonResult(msg.Sid);
+                    */
+
+                    return new JsonResult(code);
+
+                }
+                catch
+                {
+                    _cache.Remove(phoneNumber);
+                    return new JsonResult("Sending message error");
+                }
             }
             else
             {
@@ -100,17 +90,17 @@ namespace BR.Controllers
         }
 
         [HttpPost("Confirm")]
-        public async Task<IActionResult> ConfirmPhone([FromBody]ConfirmPhoneRequest confirmModel)
+        public async Task<ActionResult<LogInUserResponse>> ConfirmPhone([FromBody]ConfirmPhoneRequest confirmModel)
         {
-            string code = null;
+            string code;
             _cache.TryGetValue(confirmModel.PhoneNumber, out code);
-            if(code != null)
+            if (code != null)
             {
                 _cache.Remove(confirmModel.PhoneNumber);
                 if (confirmModel.Code.Equals(code))
-                {                    
+                {
                     var identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
-                    if(identityUser is null)
+                    if (identityUser is null)
                     {
                         var identityResult = await _userManager.CreateAsync(new IdentityUser()
                         {
@@ -118,7 +108,7 @@ namespace BR.Controllers
                             UserName = confirmModel.PhoneNumber
                         },
                         code);
-                        if(identityResult.Succeeded)
+                        if (identityResult.Succeeded)
                         {
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
                         }
@@ -134,22 +124,6 @@ namespace BR.Controllers
             {
                 return new JsonResult("Expired");
             }
-           // var identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
-            //if(identityUser != null)
-            //{
-            //    if (await _userManager.CheckPasswordAsync(identityUser, confirmModel.Code))
-            //    {
-            //        if (!identityUser.PhoneNumberConfirmed)
-            //        {
-            //            var token = await _userManager.GenerateChangePhoneNumberTokenAsync(identityUser, identityUser.PhoneNumber);
-            //            var result = await _userManager.ChangePhoneNumberAsync(identityUser, identityUser.PhoneNumber, token);
-            //        }
-            //        // if user is null => новый пользователь. 
-            //        return new JsonResult(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id));
-            //    } 
-            //}           
-
-            //return new JsonResult("Invalid data");
         }
 
 
@@ -161,11 +135,11 @@ namespace BR.Controllers
         public async Task<IActionResult> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            
-            
+
+
             if (identityUser != null)
             {
-                if((await _userAccountService.GetInfo(identityUser.Id)) == null)
+                if ((await _userAccountService.GetInfo(identityUser.Id)) == null)
                 {
                     User user = new User()
                     {
@@ -175,14 +149,16 @@ namespace BR.Controllers
                         Gender = newUserRequest.Gender,
                         BirthDate = null
                     };
-                    if (newUserRequest.BirthDate != null)   
+                    if (newUserRequest.BirthDate != null)
                     {
                         user.BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                     }
                     await _userAccountService.Register(user);
                     if (newUserRequest.Email != null)
                     {
-                        await _userManager.SetEmailAsync(identityUser, newUserRequest.Email);
+                        _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
+
+
                         var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
                         var callbackUrl = Url.Action(
                                     "ConfirmEmail",
@@ -197,17 +173,16 @@ namespace BR.Controllers
                             await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
                             return Ok();
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            throw ex;
+                            _cache.Remove(identityUser.Id);
+                            return new JsonResult("Sending mail error");
                         }
                     }
                     return Ok();
                 }
-                               
             }
-            
-            return new JsonResult(false);
+            return new JsonResult("User not found");
         }
 
 
@@ -220,32 +195,33 @@ namespace BR.Controllers
             {
                 return new JsonResult("User not found");
             }
-
-            // add to cookie mail
-            //identityUser.Email = newEmail;
-
-            //await _userManager.UpdateAsync(identityUser);
-
-            var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-            var callbackUrl = Url.Action(
-                        "ConfirmEmail",
-                        "UserAccount",
-                        new { userId = identityUser.Id, code = emailConfirmationCode },
-                        protocol: HttpContext.Request.Scheme);
-
-            try
+            if (!_cache.TryGetValue(identityUser.Id, out _))
             {
-                string msgBody = $"<a href='{callbackUrl}'>link</a>";
+                _cache.Set(identityUser.Id, newEmail, TimeSpan.FromMinutes(3));
+                var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+                var callbackUrl = Url.Action(
+                            "ConfirmEmail",
+                            "UserAccount",
+                            new { userId = identityUser.Id, code = emailConfirmationCode },
+                            protocol: HttpContext.Request.Scheme);
+                try
+                {
+                    string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
-                await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                return Ok();
+                    await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
+                    return Ok();
+                }
+                catch
+                {
+                    _cache.Remove(identityUser.Id);
+                    return new JsonResult("Sending mail error");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                throw ex;
+                return new JsonResult("Link has already been sent");
             }
 
-            // после ConfirmEmail -> logIn?? либо перезаписать User.Identity.Name
         }
 
 
@@ -257,43 +233,50 @@ namespace BR.Controllers
             {
                 return new JsonResult("Error");
             }
-            var identityUser = await _userManager.FindByIdAsync(userId);
-            if (identityUser == null)
+
+
+            //await _userManager.SetEmailAsync(identityUser, newUserRequest.Email);
+
+            string newEmail;
+            _cache.TryGetValue(userId, out newEmail);
+            if (newEmail != null)
             {
-                return new JsonResult("Error");
-            }
-            
-            
-            var result = await _userManager.ConfirmEmailAsync(identityUser, code);
-            if (result.Succeeded)
-            {
-                // check cookie
-                //identityUser.Email = "newmail@gmail.com";
-                var res = await _userManager.UpdateAsync(identityUser);
-                if (res.Succeeded)
+                var identityUser = await _userManager.FindByIdAsync(userId);
+                if (identityUser == null)
                 {
-                    return Ok();
+                    return new JsonResult("Error");
+                }
+                var result = await _userManager.ConfirmEmailAsync(identityUser, code);
+                if (result.Succeeded)
+                {
+                    identityUser.Email = newEmail;
+                    var res = await _userManager.UpdateAsync(identityUser);
+                    if (res.Succeeded)
+                    {
+                        _cache.Remove(identityUser.Id);
+                        return Ok();
+                    }
                 }
             }
-                return new JsonResult("Error");
+            else
+            {
+                return new JsonResult("Expired");
+            }
+            return new JsonResult("Error");
         }
 
 
         [Authorize]
         [HttpGet("getinfo")]
-        public async Task<IActionResult> GetInfo()
-        { 
+        public async Task<ActionResult<UserInfoResponse>> GetInfo()
+        {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser != null)
             {
-                User userAccount = await _userAccountService.GetInfo(identityUser.Id);
-                if (userAccount != null)
-                {
-                    return new JsonResult(userAccount);
-                }
+                return new JsonResult(await _userAccountService.GetInfo(identityUser.Id));
             }
-            return new JsonResult("User not found");
-         }
+            return new JsonResult(null);
+        }
 
         [Authorize]
         [HttpPost("LogOut")]
@@ -303,5 +286,5 @@ namespace BR.Controllers
             return Ok();
         }
     }
-    
+
 }

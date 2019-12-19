@@ -37,21 +37,31 @@ namespace BR.Services
             return password.ToString();
         }
 
-        public async Task<User> GetInfo(string identityId)
+        public async Task<UserInfoResponse> GetInfo(string identityId)
         {
-            return await _repository.GetUser(identityId);
+            var user = await _repository.GetUser(identityId);
+            if (user != null)
+            {
+                return this.UserToUserInfoResponse(user);
+            }
+            return null;
         }
 
         public async Task<LogInUserResponse> LogIn(string userName, string identityId)
         {
             LogInResponse resp = await Authentication(userName, identityId);
             User user = await this._repository.GetUser(identityId);
-            return new LogInUserResponse()
+            var res = new LogInUserResponse()
             {
                 AccessToken = resp.AccessToken,
                 RefreshToken = resp.RefreshToken,
-                User = user
+                User = null
             };
+            if(user != null)
+            {
+                res.User = this.UserToUserInfoResponse(user);
+            }
+            return res;
         }
 
         public async Task LogOut(string refreshToken)
@@ -63,10 +73,15 @@ namespace BR.Services
             }
         }
 
-        public async Task<User> Register(User user)
+        public async Task<UserInfoResponse> Register(User user)
         {
             user.IsBlocked = false;
-            return await _repository.AddUser(user);
+            var userAdded = await _repository.AddUser(user);
+            if(userAdded != null)
+            {
+                return this.UserToUserInfoResponse(userAdded);
+            }
+            return null;
         }
 
         public async Task<LogInResponse> UpdateToken(string refreshToken)
@@ -92,7 +107,7 @@ namespace BR.Services
         public async Task<bool> UserIsBlocked(string identityId)
         {
             var user = await _repository.GetUser(identityId);
-            if (user != null && !user.IsBlocked)
+            if (user != null && user.IsBlocked)
             {
                 return true;
             }
@@ -104,7 +119,8 @@ namespace BR.Services
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, "User")
             };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
@@ -133,6 +149,20 @@ namespace BR.Services
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });
             return resp;
+        }
+
+        private UserInfoResponse UserToUserInfoResponse(User user)
+        {
+            return new UserInfoResponse()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                ImagePath = user.ImagePath,
+                Email = user.Identity.Email
+
+            };
         }
     }
 }

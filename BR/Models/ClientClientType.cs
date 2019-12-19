@@ -8,7 +8,7 @@ namespace BR.Models
         //[Key]
        // public int Id { get; set; }
         [Key]
-         [Column(Order = 1)]
+        [Column(Order = 1)]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int ClientId { get; set; }
 

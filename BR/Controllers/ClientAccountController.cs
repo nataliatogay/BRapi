@@ -135,26 +135,37 @@ namespace BR.Controllers
 
             if (await _userManager.FindByNameAsync(newEmail) is null)
             {
-                _cache.Set(identityUser.Id, newEmail, TimeSpan.FromMinutes(3));
-
-                var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                var callbackUrl = Url.Action(
-                            "ConfirmEmail",
-                            "ClientAccount",
-                            new { userId = identityUser.Id, code = emailConfirmationCode },
-                            protocol: HttpContext.Request.Scheme);
-
-                try
+                if (!_cache.TryGetValue(identityUser.Id, out _))
                 {
-                    string msgBody = $"<a href='{callbackUrl}'>link</a>";
+                    _cache.Set(identityUser.Id, newEmail, TimeSpan.FromMinutes(3));
 
-                    await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                    return Ok();
+                    var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+                    var callbackUrl = Url.Action(
+                                "ConfirmEmail",
+                                "ClientAccount",
+                                new { userId = identityUser.Id, code = emailConfirmationCode },
+                                protocol: HttpContext.Request.Scheme);
+
+                    try
+                    {
+                        string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+                        await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
+                        return Ok();
+                    }
+                    catch (Exception ex)
+                    {
+                        _cache.Remove(identityUser.Id);
+                        throw ex;
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return new JsonResult("Link has already been sent");
                 }
+                   
+
+                
             }
             else
             {
@@ -227,7 +238,7 @@ namespace BR.Controllers
             {
                 string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
-                await _emailService.SendAsync(email, "Paasword reset", msgBody);
+                await _emailService.SendAsync(email, "Password reset", msgBody);
                 return Ok();
             }
             catch (Exception ex)
