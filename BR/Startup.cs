@@ -51,10 +51,10 @@ namespace BR
             services.AddDbContext<BRDbContext>(
                 options =>
                 {
-                   // string connStrAzure = Configuration.GetConnectionString("AzureDbConnectionString");
-                    string connStrPostgre = Configuration.GetConnectionString("PostgreSQLConnectionString");
-                    options.UseNpgsql(connStrPostgre);
-                    //options.UseSqlServer(connStrAzure);
+                    string connStrAzure = Configuration.GetConnectionString("AzureDbConnectionString");
+                   // string connStrPostgre = Configuration.GetConnectionString("PostgreSQLConnectionString");
+                   // options.UseNpgsql(connStrPostgre);
+                    options.UseSqlServer(connStrAzure);
                     options.UseLazyLoadingProxies();
                 });
 
@@ -147,12 +147,12 @@ namespace BR
 
             // Add our job
             //services.AddSingleton<ReservationNotificationJob>();
-            services.AddScoped<ReservationReminderJob>();
-            // services.AddSingleton(new JobSchedule(
-            //     jobType: typeof(ReservationReminderJob),
-            //     cronExpression: "0/5 * * * * ?")); 
-                // run every 5 seconds
-            // "0 0 12 * * ?" => every day at noon
+            services.AddScoped<DailyReservationReminderJob>();
+            services.AddSingleton(new JobSchedule(
+                jobType: typeof(DailyReservationReminderJob),
+                cronExpression: "0/5 * * * * ?"));
+           // run every 5 seconds
+            // "0 0 20 * * ?" => every day at 20:00
 
             services.AddHostedService<QuartzHostedService>();
             

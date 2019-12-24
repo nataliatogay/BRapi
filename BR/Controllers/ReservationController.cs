@@ -25,6 +25,7 @@ namespace BR.Controllers
             _userManager = userManager;
             _reservationService = reservationService;
         }
+
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewReservationRequest newReservation)
         {

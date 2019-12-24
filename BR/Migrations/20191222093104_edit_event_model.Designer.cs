@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191222093104_edit_event_model")]
+    partial class edit_event_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,23 +148,6 @@ namespace BR.Migrations
                     b.ToTable("ClientCuisines");
                 });
 
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<string>("ImagePath");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientImages");
-                });
-
             modelBuilder.Entity("BR.Models.ClientMealType", b =>
                 {
                     b.Property<int>("ClientId");
@@ -270,8 +255,6 @@ namespace BR.Migrations
                     b.Property<string>("Description");
 
                     b.Property<string>("ImagePath");
-
-                    b.Property<string>("Title");
 
                     b.HasKey("Id");
 
@@ -801,14 +784,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Cuisine", "Cuisine")
                         .WithMany("ClientCuisines")
                         .HasForeignKey("CuisineId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientImages")
-                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

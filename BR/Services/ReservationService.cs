@@ -25,16 +25,37 @@ namespace BR.Services
                 ChildFree = newReservationRequest.IsChildFree,
                 GuestCount = newReservationRequest.GuestCount,
                 Comments = newReservationRequest.Comments,
-                ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture)
+                ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture) // change format
             };
-            // reservation.ReservationStateId = 
+           // reservation.ReservationStateId = _repository.GetReservationState("idle");
             reservation = await _repository.AddNewReservation(reservation);
 
             foreach (var tableId in newReservationRequest.TableIds)
             {
                 await _repository.AddTableReservation(reservation.Id, tableId);
             }
+        }
+
+        public async Task CancelReservation(int reservationId)
+        {
+
+
+        }
+
+        public async Task CompleteReservation(int reservationId)
+        {
+
+        }
+
+        public async Task ChangeTable(int reservationId, IEnumerable<int> tableIds)
+        {
 
         }
     }
 }
+
+//Reservation state:
+//-idle; - addNew
+//-canceled; - user
+//-completed; - waiter
+//-not coming; - timer

@@ -123,7 +123,7 @@ namespace BR.Controllers
         public async Task<IActionResult> AdminRegister([FromBody]string adminEmail)
         {
             var identityUser = await _userManager.FindByEmailAsync(adminEmail);
-            if (identityUser is null || !(await _userManager.IsEmailConfirmedAsync(identityUser)))
+            if (identityUser is null)// || !(await _userManager.IsEmailConfirmedAsync(identityUser)))
             {
                 if(identityUser == null)
                 {

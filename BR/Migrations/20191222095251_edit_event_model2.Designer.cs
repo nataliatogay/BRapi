@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191222095251_edit_event_model2")]
+    partial class edit_event_model2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,23 +146,6 @@ namespace BR.Migrations
                     b.HasIndex("CuisineId");
 
                     b.ToTable("ClientCuisines");
-                });
-
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<string>("ImagePath");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientImages");
                 });
 
             modelBuilder.Entity("BR.Models.ClientMealType", b =>
@@ -801,14 +786,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Cuisine", "Cuisine")
                         .WithMany("ClientCuisines")
                         .HasForeignKey("CuisineId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientImages")
-                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -84,6 +84,9 @@ namespace BR.Models
         public virtual ICollection<News> News { get; set; }
         public virtual ICollection<AccountToken> AccountTokens { get; set; }
         public virtual ICollection<Waiter> Waiters { get; set; }
+        public virtual ICollection<Event> Events { get; set; }
+        public virtual ICollection<ClientImage> ClientImages { get; set; }
+
 
         //public virtual ICollection<ClientMail> ClientMails { get; set; }
 
@@ -99,6 +102,8 @@ namespace BR.Models
             News = new HashSet<News>();
             AccountTokens = new HashSet<AccountToken>();
             Waiters = new HashSet<Waiter>();
+            Events = new HashSet<Event>();
+            ClientImages = new HashSet<ClientImage>();
             // ClientMails = new HashSet<ClientMail>();
         }
     }

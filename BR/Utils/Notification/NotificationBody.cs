@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace BR.Utils.Notification
 {
-    public class Notification : DeviceRegistration
+    public class NotificationBody : DeviceRegistration
     {
-        public string Content { get; set; }
+        public string Message { get; set; }
     }
 }

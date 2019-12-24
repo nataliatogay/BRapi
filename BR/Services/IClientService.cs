@@ -18,6 +18,6 @@ namespace BR.Services
         Task<Client> UpdateClient(Client client);
         Task<bool> DeleteClient(int id);        
         string GeneratePassword();
-        Task UploadImage(string identityId, string imageString);
+        
     }
 }

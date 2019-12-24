@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Azure.NotificationHubs;
+using NotificationBody = BR.Utils.Notification.NotificationBody;
+
 
 namespace BR.Controllers
 {
@@ -49,7 +51,7 @@ namespace BR.Controllers
         }
 
         [HttpPost("send")]
-        public async Task<IActionResult> SendNotification([FromBody] BR.Utils.Notification.Notification newNotification)
+        public async Task<IActionResult> SendNotification([FromBody] NotificationBody newNotification)
         {
             HubResponse<NotificationOutcome> pushDeliveryResult = await _notificationHubProxy.SendNotification(newNotification);
 

@@ -91,7 +91,7 @@ namespace BR.Utils.Notification
 
         /// <param name="newNotification"></param>
         /// <returns></returns>
-        public async Task<HubResponse<NotificationOutcome>> SendNotification(Notification newNotification)
+        public async Task<HubResponse<NotificationOutcome>> SendNotification(NotificationBody newNotification)
         {
             try
             {
@@ -101,23 +101,23 @@ namespace BR.Utils.Notification
                 {
                     case MobilePlatform.wns:
                         if (newNotification.Tags == null)
-                            outcome = await _hubClient.SendWindowsNativeNotificationAsync(newNotification.Content);
+                            outcome = await _hubClient.SendWindowsNativeNotificationAsync(newNotification.Message);
                         else
-                            outcome = await _hubClient.SendWindowsNativeNotificationAsync(newNotification.Content, newNotification.Tags);
+                            outcome = await _hubClient.SendWindowsNativeNotificationAsync(newNotification.Message, newNotification.Tags);
                         break;
                     case MobilePlatform.apns:
                         if (newNotification.Tags == null)
-                            outcome = await _hubClient.SendAppleNativeNotificationAsync(newNotification.Content);
+                            outcome = await _hubClient.SendAppleNativeNotificationAsync(newNotification.Message);
                         else
-                            outcome = await _hubClient.SendAppleNativeNotificationAsync(newNotification.Content, newNotification.Tags);
+                            outcome = await _hubClient.SendAppleNativeNotificationAsync(newNotification.Message, newNotification.Tags);
                         break;
                     case MobilePlatform.gcm:
                         if (newNotification.Tags == null)
-                            //outcome = await _hubClient.SendGcmNativeNotificationAsync(newNotification.Content);
-                            outcome = await _hubClient.SendFcmNativeNotificationAsync(newNotification.Content);
+                            //outcome = await _hubClient.SendGcmNativeNotificationAsync(newNotification.Message);
+                            outcome = await _hubClient.SendFcmNativeNotificationAsync(newNotification.Message);
                         else
                             //outcome = await _hubClient.SendGcmNativeNotificationAsync(newNotification.Content, newNotification.Tags);
-                            outcome = await _hubClient.SendFcmNativeNotificationAsync(newNotification.Content, newNotification.Tags);
+                            outcome = await _hubClient.SendFcmNativeNotificationAsync(newNotification.Message, newNotification.Tags);
                         break;
                 }
 

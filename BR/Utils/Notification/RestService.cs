@@ -49,7 +49,7 @@ namespace BR.Utils.Notification
             return false;
         }
 
-        public async Task<bool> SendNotification(Notification newNotification)
+        public async Task<bool> SendNotification(NotificationBody newNotification)
         {
             var content = new StringContent(JsonConvert.SerializeObject(newNotification), Encoding.UTF8, "application/json");
 

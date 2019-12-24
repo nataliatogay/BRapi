@@ -133,18 +133,7 @@ namespace BR.Features.Admin
         }
 
 
-        // [Authorize]
-        [HttpPost("UploadImage")]
-        public async Task<IActionResult> UploadImage([FromBody]string imageString)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult("Client not found");
-            }
-            await _clientService.UploadImage(identityUser.Id, imageString);
-            return Ok();
-        }
+        
 
     }
 }

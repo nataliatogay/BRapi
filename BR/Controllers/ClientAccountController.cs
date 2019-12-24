@@ -81,7 +81,7 @@ namespace BR.Controllers
         }
 
 
-       // [Authorize]
+        // [Authorize]
         [HttpPost("LogOut")]
         public async Task<IActionResult> LogOut([FromBody]string refreshToken)
         {
@@ -163,9 +163,9 @@ namespace BR.Controllers
                 {
                     return new JsonResult("Link has already been sent");
                 }
-                   
 
-                
+
+
             }
             else
             {
@@ -215,7 +215,7 @@ namespace BR.Controllers
 
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
-      //  [ValidateAntiForgeryToken] -> BadRequest
+        //  [ValidateAntiForgeryToken] -> BadRequest
         public async Task<IActionResult> ForgotPassword([FromBody]string email)
         {
             var user = await _userManager.FindByNameAsync(email);
@@ -251,10 +251,11 @@ namespace BR.Controllers
         [AllowAnonymous]
         public IActionResult ResetPassword(string code = null)
         {
-            if(code is null)
+            if (code is null)
             {
                 return new JsonResult("Error");
-            } else
+            }
+            else
             {
                 return new JsonResult(code);
             }
@@ -262,7 +263,7 @@ namespace BR.Controllers
 
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
-     //   [ValidateAntiForgeryToken]
+        //   [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
         {
             var user = await _userManager.FindByNameAsync(model.Email);
@@ -278,6 +279,36 @@ namespace BR.Controllers
             return new JsonResult("Error");
         }
 
+        // [Authorize]
+        [HttpPost("UploadMainImage")]
+        public async Task<ActionResult<string>> UploadMainImage([FromBody]string imageString)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult("Client not found");
+            }
+            return new JsonResult(await _clientAccountService.UploadMainImage(identityUser.Id, imageString));
+        }
+        
+        // [Authorize]
+        [HttpPost("UploadImage")]
+        public async Task<ActionResult<string>> UploadImage([FromBody]string imageString)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult("Client not found");
+            }
+            var img = await _clientAccountService.UploadImage(identityUser.Id, imageString);
+            return new JsonResult(img.ImagePath);
+        }
 
+        // [Authorize]
+        [HttpDelete("DeleteImage/{id}")]
+        public async Task<ActionResult<bool>> DeleteImage(int id)
+        {
+            return new JsonResult(await _clientAccountService.DeleteImage(id));
+        }
     }
 }

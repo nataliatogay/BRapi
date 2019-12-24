@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191222090021_add_event_model")]
+    partial class add_event_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,7 +148,7 @@ namespace BR.Migrations
                     b.ToTable("ClientCuisines");
                 });
 
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
+            modelBuilder.Entity("BR.Models.ClientEvent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,13 +156,17 @@ namespace BR.Migrations
 
                     b.Property<int>("ClientId");
 
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("Description");
+
                     b.Property<string>("ImagePath");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("ClientImages");
+                    b.ToTable("ClientEvent");
                 });
 
             modelBuilder.Entity("BR.Models.ClientMealType", b =>
@@ -255,29 +261,6 @@ namespace BR.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cuisines");
-                });
-
-            modelBuilder.Entity("BR.Models.Event", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("ImagePath");
-
-                    b.Property<string>("Title");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("BR.Models.Floor", b =>
@@ -804,10 +787,10 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
+            modelBuilder.Entity("BR.Models.ClientEvent", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientImages")
+                        .WithMany("ClientEvents")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -851,14 +834,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId");
-                });
-
-            modelBuilder.Entity("BR.Models.Event", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("Events")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.Floor", b =>

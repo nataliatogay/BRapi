@@ -22,7 +22,7 @@ namespace BR.EF
         public DbSet<MealType> MealTypes { get; set; }
         public DbSet<ClientPhone> ClientPhones { get; set; }
         public DbSet<PaymentType> PaymentTypes { get; set; }
-        public DbSet<ClientPaymentType> ClientPaymentTypes { get; set; }        
+        public DbSet<ClientPaymentType> ClientPaymentTypes { get; set; }
         public DbSet<ClientMealType> ClientMealTypes { get; set; }
         public DbSet<ClientClientType> ClientClientTypes { get; set; }
         public DbSet<ClientCuisine> ClientCuisines { get; set; }
@@ -37,6 +37,9 @@ namespace BR.EF
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
         public DbSet<AccountToken> AccountTokens { get; set; }
         public DbSet<Waiter> Waiters { get; set; }
+        public DbSet<Event> Events { get; set; }
+        public DbSet<ClientImage> ClientImages { get; set; }
+
         //public DbSet<ClientMail> ClientMails { get; set; }
         //public DbSet<UserMail> UserMails { get; set; }
 

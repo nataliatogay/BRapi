@@ -46,7 +46,14 @@ namespace BR.Services
             blobReference.Properties.ContentType = "image/jpeg";
             byte[] imgArr = Convert.FromBase64String(imageString);
             await blobReference.UploadFromByteArrayAsync(imgArr, 0, imgArr.Length);
+            
             return blobReference.Uri.AbsoluteUri;
+        }
+
+        public async Task<bool> DeleteImage(string imagePath)
+        {
+            var blobReference = _cloudBlobContainer.GetBlobReference(imagePath);
+            return await blobReference.DeleteIfExistsAsync();
         }
     }
 }

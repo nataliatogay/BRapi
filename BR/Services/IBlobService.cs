@@ -8,5 +8,6 @@ namespace BR.Services
     public interface IBlobService
     {
         Task<string> UploadImage(string imageString);
+        Task<bool> DeleteImage(string imagePath);
     }
 }

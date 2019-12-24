@@ -22,6 +22,9 @@ namespace BR.EF
             return await _db.Users.FindAsync(id);
         }
 
+
+        // Clients
+
         public async Task<Client> AddClient(Client client)
         {
             var res = await _db.Clients.AddAsync(client);
@@ -71,77 +74,35 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
-        public async Task<Admin> GetAdminByIdentityId(string identityId)
-        {
-            return await _db.Admins.FirstOrDefaultAsync(a => a.IdentityId == identityId);
-        }
-
-        public async Task<Admin> GetAdminByIdentityName(string identityName)
-        {
-            var identityUser = _db.Users.FirstOrDefault(u => u.UserName == identityName);
-            if (identityUser != null)
-            {
-                return await this.GetAdminByIdentityId(identityUser.Id);
-            }
-            return null;
-
-        }
-
         public async Task<Client> GetClient(string identityId)
         {
             return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
 
-        public async Task<IEnumerable<ClientRequest>> GetClientRequests()
+        public async Task<ClientImage> GetClientImage(int id)
         {
-            return await _db.ClientRequests.Where(c => c.ClientId == null).ToListAsync();
+            return await _db.ClientImages.FindAsync(id);
         }
 
-        public async Task<ClientRequest> GetClientRequest(int id)
+        public async Task<ClientImage> AddClientImage(ClientImage image)
         {
-            return await _db.ClientRequests
-                .FirstOrDefaultAsync(c => c.Id == id);
-        }
-
-        public async Task UpdateClientRequest(ClientRequest clientRequest)
-        {
-            _db.ClientRequests.Update(clientRequest);
+            var img = _db.ClientImages.Add(image);
             await _db.SaveChangesAsync();
+            return img.Entity;
         }
 
-        public async Task AddClientRequest(ClientRequest clientRequest)
+        public async Task<bool> DeleteClientImage(ClientImage image)
         {
-            await _db.ClientRequests.AddAsync(clientRequest);
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task<Admin> AddAdmin(Admin admin)
-        {
-            var res = await _db.Admins.AddAsync(admin);
-            await _db.SaveChangesAsync();
-            return res.Entity;
-        }
-
-
-        public async Task<IEnumerable<AccountToken>> GetTokens(string identityId)
-        {
-            return await _db.AccountTokens.Where(t => t.IdentityUserId == identityId).ToListAsync();
-        }
-        public async Task<AccountToken> GetToken(string refreshToken)
-        {
-            return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
-        }
-
-        public async Task AddToken(AccountToken refreshToken)
-        {
-            await _db.AccountTokens.AddAsync(refreshToken);
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task RemoveToken(AccountToken refreshToken)
-        {
-            _db.AccountTokens.Remove(refreshToken);
-            await _db.SaveChangesAsync();
+            try
+            {
+                _db.ClientImages.Remove(image);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task AddClientPaymentType(int clientId, int paymentTypeId)
@@ -214,7 +175,82 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
+        // Admins
 
+        public async Task<Admin> GetAdminByIdentityId(string identityId)
+        {
+            return await _db.Admins.FirstOrDefaultAsync(a => a.IdentityId == identityId);
+        }
+
+        public async Task<Admin> GetAdminByIdentityName(string identityName)
+        {
+            var identityUser = _db.Users.FirstOrDefault(u => u.UserName == identityName);
+            if (identityUser != null)
+            {
+                return await this.GetAdminByIdentityId(identityUser.Id);
+            }
+            return null;
+
+        }
+
+        public async Task<Admin> AddAdmin(Admin admin)
+        {
+            var res = await _db.Admins.AddAsync(admin);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        // Requests
+
+        public async Task<IEnumerable<ClientRequest>> GetClientRequests()
+        {
+            return await _db.ClientRequests.Where(c => c.ClientId == null).ToListAsync();
+        }
+
+        public async Task<ClientRequest> GetClientRequest(int id)
+        {
+            return await _db.ClientRequests
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task UpdateClientRequest(ClientRequest clientRequest)
+        {
+            _db.ClientRequests.Update(clientRequest);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddClientRequest(ClientRequest clientRequest)
+        {
+            await _db.ClientRequests.AddAsync(clientRequest);
+            await _db.SaveChangesAsync();
+        }
+
+
+        // Tokens
+
+        public async Task<IEnumerable<AccountToken>> GetTokens(string identityId)
+        {
+            return await _db.AccountTokens.Where(t => t.IdentityUserId == identityId).ToListAsync();
+        }
+        public async Task<AccountToken> GetToken(string refreshToken)
+        {
+            return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+        }
+
+        public async Task AddToken(AccountToken refreshToken)
+        {
+            await _db.AccountTokens.AddAsync(refreshToken);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveToken(AccountToken refreshToken)
+        {
+            _db.AccountTokens.Remove(refreshToken);
+            await _db.SaveChangesAsync();
+        }
+
+        
+        // Parameters        
 
         public async Task<IEnumerable<PaymentType>> GetAllPaymentTypes()
         {
@@ -343,15 +379,17 @@ namespace BR.EF
             }
         }
 
+        public async Task<IEnumerable<MealType>> GetAllMealTypes()
+        {
+            return await _db.MealTypes.ToListAsync();
+        }
+
+
+        // Users
 
         public async Task<User> GetUser(int id)
         {
             return await _db.ApplicationUsers.FindAsync(id);
-        }
-
-        public async Task<IEnumerable<MealType>> GetAllMealTypes()
-        {
-            return await _db.MealTypes.ToListAsync();
         }
 
         public async Task<User> GetUser(string identityId)
@@ -379,16 +417,16 @@ namespace BR.EF
         }
 
 
-
-
-
-
-
-
+        // Waiters
 
         public async Task<IEnumerable<Waiter>> GetWaitersByClientId(int clientId)
         {
             return await _db.Waiters.Where(w => w.ClientId == clientId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Waiter>> GetWaiters()
+        {
+            return await _db.Waiters.ToListAsync();
         }
 
         public async Task<Waiter> GetWaiter(int id)
@@ -419,16 +457,13 @@ namespace BR.EF
                 return false;
             }
         }
-
-
         public async Task<Waiter> GetWaiter(string identityId)
         {
             return await _db.Waiters.FirstOrDefaultAsync(w => w.IdentityId == identityId);
         }
 
 
-
-
+        //Reservations
 
         public async Task<Reservation> AddNewReservation(Reservation reservation)
         {
@@ -445,6 +480,34 @@ namespace BR.EF
                 TableId = tableId
             });
             await _db.SaveChangesAsync();
+        }
+
+
+        // Events
+
+        public async Task<IEnumerable<Event>> GetEvents()
+        {
+            return await _db.Events.ToListAsync();
+        }
+        public async Task<IEnumerable<Event>> GetEventsByClient(int clientId)
+        {
+            return await _db.Events.Where(e => e.ClientId == clientId).ToListAsync();
+        }
+        public async Task<Event> GetEvent(int id)
+        {
+            return await _db.Events.FindAsync(id);
+        }
+        public async Task<Event> AddEvent(Event clientEvent)
+        {
+            var eventAdded = await _db.Events.AddAsync(clientEvent);
+            await _db.SaveChangesAsync();
+            return eventAdded.Entity;
+        }
+        public async Task<Event> UpdateEvent(Event clientEvent)
+        {
+            var eventUpdated = _db.Events.Update(clientEvent);
+            await _db.SaveChangesAsync();
+            return eventUpdated.Entity;
         }
 
 

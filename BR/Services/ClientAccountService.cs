@@ -17,11 +17,15 @@ namespace BR.Services
     public class ClientAccountService : IClientAccountService
     {
         private readonly IAsyncRepository _repository;
+        private readonly IBlobService _blobService;
         private readonly AuthOptions _authOptions;
 
-        public ClientAccountService(IAsyncRepository repository, IOptions<AuthOptions> options)
+        public ClientAccountService(IAsyncRepository repository,
+            IBlobService blobService,
+            IOptions<AuthOptions> options)
         {
             _repository = repository;
+            _blobService = blobService;
             _authOptions = options.Value;
         }
 
@@ -109,6 +113,36 @@ namespace BR.Services
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
             });
             return resp;
+        }
+
+        public async Task<string> UploadMainImage(string identityId, string imageString)
+        {
+            var client = await _repository.GetClient(identityId);
+            client.MainImagePath = await _blobService.UploadImage(imageString);
+            await _repository.UpdateClient(client);
+            return client.MainImagePath;
+        }
+
+        public async Task<ClientImage> UploadImage(string identityId, string imageString)
+        {
+            var client = await _repository.GetClient(identityId);
+            var imgPath = await _blobService.UploadImage(imageString);
+            var clientImage = new ClientImage()
+            {
+                ClientId = client.Id,
+                ImagePath = imgPath
+            };
+            return await _repository.AddClientImage(clientImage);
+        }
+
+        public async Task<bool> DeleteImage(int id)
+        {
+            var img = await _repository.GetClientImage(id);
+            if(img is null)
+            {
+                return false;
+            }
+            return await _blobService.DeleteImage(img.ImagePath);
         }
     }
 }

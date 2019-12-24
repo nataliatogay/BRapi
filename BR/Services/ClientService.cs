@@ -21,14 +21,11 @@ namespace BR.Services
     public class ClientService : IClientService
     {
         private readonly IAsyncRepository _repository;
-        private readonly IBlobService _blobService;
         //private readonly IEmailService _emailService;
 
-        public ClientService(IAsyncRepository repository,
-            IBlobService blobService)
+        public ClientService(IAsyncRepository repository)
         {
             _repository = repository;
-            _blobService = blobService;
         }
 
         public async Task AddNewClient(NewClientRequest newClientRequest, string identityId)
@@ -302,11 +299,6 @@ namespace BR.Services
             return res;
         }
 
-        public async Task UploadImage(string identityId, string imageString)
-        {
-            var client = await _repository.GetClient(identityId);
-            client.MainImagePath = await _blobService.UploadImage(imageString);
-            await _repository.UpdateClient(client);
-        }
+        
     }
 }
