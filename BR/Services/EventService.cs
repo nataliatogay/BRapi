@@ -43,7 +43,7 @@ namespace BR.Services
 
         public async Task<Event> AddEvent(NewEventRequest newEventRequest, string clientIdentityId)
         {
-            var client = _repository.GetClient(clientIdentityId);
+            var client = await _repository.GetClient(clientIdentityId);
             if (client is null)
             {
                 return null;

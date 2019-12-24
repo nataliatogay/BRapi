@@ -52,8 +52,10 @@ namespace BR.Services
 
         public async Task<bool> DeleteImage(string imagePath)
         {
-            var blobReference = _cloudBlobContainer.GetBlobReference(imagePath);
-            return await blobReference.DeleteIfExistsAsync();
+            var name = imagePath.Substring(imagePath.LastIndexOf('/') + 1);
+            var blobReference = _cloudBlobContainer.GetBlockBlobReference(name);
+            var res = await blobReference.DeleteIfExistsAsync();
+            return res;
         }
     }
 }

@@ -71,6 +71,7 @@ namespace BR
             services.AddScoped<IParameterService, ParameterService>();
             services.AddScoped<IBlobService, BlobService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEventService, EventService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddSwaggerGen(options => {
