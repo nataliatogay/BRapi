@@ -18,17 +18,18 @@ namespace BR.Services
         }
         public async Task AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
         {
-            var user = _repository.GetUser(identityId);
+            var user = await _repository.GetUser(identityId);
+            var resState = await _repository.GetReservationState("idle");
             var reservation = new Reservation()
             {
                 UserId = user.Id,
                 ChildFree = newReservationRequest.IsChildFree,
                 GuestCount = newReservationRequest.GuestCount,
                 Comments = newReservationRequest.Comments,
-                ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy", CultureInfo.InvariantCulture) // change format
+                ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
+                ReservationStateId = resState.Id
             };
-           // reservation.ReservationStateId = _repository.GetReservationState("idle");
-            reservation = await _repository.AddNewReservation(reservation);
+            reservation = await _repository.AddReservation(reservation);
 
             foreach (var tableId in newReservationRequest.TableIds)
             {
@@ -36,26 +37,39 @@ namespace BR.Services
             }
         }
 
-        public async Task CancelReservation(int reservationId)
+        public async Task<Reservation> CancelReservation(int reservationId)
         {
-
+            var resState = await _repository.GetReservationState("cancelled");
+            var reservation = await _repository.GetReservation(reservationId);
+            reservation.ReservationStateId = resState.Id;
+            return await _repository.UpdateReservation(reservation); 
 
         }
 
-        public async Task CompleteReservation(int reservationId)
+        public async Task<Reservation> CompleteReservation(int reservationId)
         {
-
+            var resState = await _repository.GetReservationState("completed");
+            var reservation = await _repository.GetReservation(reservationId);
+            reservation.ReservationStateId = resState.Id;
+            return await _repository.UpdateReservation(reservation);
         }
 
-        public async Task ChangeTable(int reservationId, IEnumerable<int> tableIds)
+        public async Task<Reservation> ChangeTable(int reservationId, IEnumerable<int> newTableIds)
         {
+            //await _repository.DeleteTableReservations(reservationId);
 
+            //foreach (var tableId in newReservationRequest.TableIds)
+            //{
+            //    await _repository.AddTableReservation(reservation.Id, tableId);
+            //}
+
+            return null;
         }
     }
 }
 
 //Reservation state:
 //-idle; - addNew
-//-canceled; - user
+//-cancelled; - user
 //-completed; - waiter
 //-not coming; - timer

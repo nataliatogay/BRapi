@@ -100,8 +100,14 @@ namespace BR.EF
 
         // Reservations
 
-        Task<Reservation> AddNewReservation(Reservation reservation);
-        Task AddTableReservation(int reservationId, int tableId);
+        Task<Reservation> AddReservation(Reservation reservation);
+        Task<Reservation> UpdateReservation(Reservation reservation);
+        Task<Reservation> GetReservation(int id);
+        Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId);
+        Task<TableReservation> AddTableReservation(int reservationId, int tableId);
+        Task DeleteTableReservations(int reservationId);
+        Task<ReservationState> GetReservationState(string title);
+
 
 
         // Events

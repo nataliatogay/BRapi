@@ -249,7 +249,7 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
-        
+
         // Parameters        
 
         public async Task<IEnumerable<PaymentType>> GetAllPaymentTypes()
@@ -465,23 +465,57 @@ namespace BR.EF
 
         //Reservations
 
-        public async Task<Reservation> AddNewReservation(Reservation reservation)
+        public async Task<Reservation> AddReservation(Reservation reservation)
         {
             var reservationAdded = await _db.Reservations.AddAsync(reservation);
             await _db.SaveChangesAsync();
             return reservationAdded.Entity;
         }
 
-        public async Task AddTableReservation(int reservationId, int tableId)
+        public async Task<Reservation> UpdateReservation(Reservation reservation)
         {
-            await _db.TableReservations.AddAsync(new TableReservation()
+            var res = _db.Reservations.Update(reservation);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<Reservation> GetReservation(int id)
+        {
+            return await _db.Reservations.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId)
+        {
+            var reservation = await _db.Reservations.FindAsync(reservationId);
+            if (reservation is null)
+            {
+                return null;
+            }
+            return reservation.TableReservations;
+        }
+
+        public async Task<TableReservation> AddTableReservation(int reservationId, int tableId)
+        {
+            var res = await _db.TableReservations.AddAsync(new TableReservation()
             {
                 ReservationId = reservationId,
                 TableId = tableId
             });
             await _db.SaveChangesAsync();
+            return res.Entity;
         }
 
+        public async Task DeleteTableReservations(int reservationId)
+        {
+            var tableRes = await this.GetTableReservations(reservationId);
+           _db.TableReservations.RemoveRange(tableRes);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<ReservationState> GetReservationState(string title)
+        {
+            return await _db.ReservationStates.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
+        }
 
         // Events
 
