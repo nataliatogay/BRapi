@@ -11,7 +11,7 @@ namespace BR.Services
     public interface IUserAccountService
     {
         Task<UserInfoResponse> Register(User user);       
-        Task<LogInUserResponse> LogIn(string userName, string identityId);
+        Task<LogInUserResponse> LogIn(string userName, string identityId, string notificationTag);
         Task LogOut(string identityId);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<UserInfoResponse> GetInfo(string identityId);

@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,7 +71,11 @@ namespace BR
             services.AddScoped<IParameterService, ParameterService>();
             services.AddScoped<IBlobService, BlobService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IReservationService, ReservationService>();
             services.AddScoped<IEventService, EventService>();
+            services.AddScoped<ISchemaService, SchemeService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddSwaggerGen(options => {
@@ -149,10 +153,12 @@ namespace BR
             // Add our job
             //services.AddSingleton<ReservationNotificationJob>();
             services.AddScoped<DailyReservationReminderJob>();
-            services.AddSingleton(new JobSchedule(
-                jobType: typeof(DailyReservationReminderJob),
-                cronExpression: "0/5 * * * * ?"));
-           // run every 5 seconds
+            //services.AddSingleton(new JobSchedule(
+            //    jobType: typeof(DailyReservationReminderJob),
+            //    cronExpression: "0/5 * * * * ?"));
+
+
+            // run every 5 seconds
             // "0 0 20 * * ?" => every day at 20:00
 
             services.AddHostedService<QuartzHostedService>();

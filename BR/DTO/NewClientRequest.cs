@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,11 +9,14 @@ namespace BR.DTO
     public class NewClientRequest
     {
         public int ClientRequestId { get; set; }
-
+        [Required]
         public string Name { get; set; }
 
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }
 
+        [Required]
         public string Address { get; set; }
 
         public float Lat { get; set; }
@@ -23,7 +27,7 @@ namespace BR.DTO
 
         public int CloseTime { get; set; }
 
-        public bool IsPasking { get; set; }
+        public bool IsParking { get; set; }
 
         public bool IsWiFi { get; set; }
 
@@ -37,6 +41,7 @@ namespace BR.DTO
 
         public string AdditionalInfo { get; set; }
 
+        [Required]
         public string MainImage { get; set; }
 
         public int MaxReserveDays { get; set; }
@@ -57,6 +62,7 @@ namespace BR.DTO
 
     public class Phone
     {
+        [Required]
         public string Number { get; set; }
         public bool IsShow { get; set; }
 

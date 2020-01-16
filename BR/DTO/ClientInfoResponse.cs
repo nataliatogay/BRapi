@@ -14,7 +14,7 @@ namespace BR.DTO
         public float Long { get; set; }
         public int OpenTime { get; set; }
         public int CloseTime { get; set; }
-        public bool IsPasking { get; set; }
+        public bool IsParking { get; set; }
         public bool IsWiFi { get; set; }
         public bool? IsLiveMusic { get; set; }
         public bool IsOpenSpace { get; set; }

@@ -310,5 +310,18 @@ namespace BR.Controllers
         {
             return new JsonResult(await _clientAccountService.DeleteImage(id));
         }
+
+        [HttpPost("Token")] 
+        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        {
+            LogInResponse resp = await _clientAccountService.UpdateToken(refreshToken);
+            if (resp is null)
+            {
+                return StatusCode(401);
+            }
+            return new JsonResult(resp);
+        }
+
+
     }
 }

@@ -1,6 +1,7 @@
-﻿using BR.DTO;
+﻿ using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Utils.Notification;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,9 +13,12 @@ namespace BR.Services
     public class ReservationService : IReservationService
     {
         private readonly IAsyncRepository _repository;
-        public ReservationService(IAsyncRepository repository)
+        private readonly INotificationService _notificatinoService;
+
+        public ReservationService(IAsyncRepository repository, INotificationService notificationService)
         {
             _repository = repository;
+            _notificatinoService = notificationService;
         }
         public async Task AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
         {
@@ -34,6 +38,20 @@ namespace BR.Services
             foreach (var tableId in newReservationRequest.TableIds)
             {
                 await _repository.AddTableReservation(reservation.Id, tableId);
+            }
+            var client = _repository.GetClientByTableId(newReservationRequest.TableIds.First());
+            if (client != null)
+            {
+                var waiters = await _repository.GetWaitersByClientId(client.Id);
+                if(waiters != null)
+                {
+                    List<string> tags = new List<string>();
+                    foreach(var waiter in waiters)
+                    {
+                        tags.Add(waiter.NotificationTag);
+                    }
+                    _notificatinoService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());
+                }
             }
         }
 

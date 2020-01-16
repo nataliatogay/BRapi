@@ -18,7 +18,7 @@ namespace BR.Models
         public string FirstName { get; set; }
 
        // [MaxLength(50)]
-       [Required]
+        [Required]
         public string LastName { get; set; }
 
         public string ImagePath { get; set; }
@@ -26,10 +26,12 @@ namespace BR.Models
         public bool? Gender { get; set; }
 
         public bool IsBlocked { get; set; }
-
-       // public string Email { get; set; } -> хранится в Identity
         public DateTime? BirthDate { get; set; }
-        
+
+        public int NotificationTime { get; set; } // minutes
+
+        public string NotificationTag { get; set; }
+
         public string IdentityId { get; set; }
 
         [ForeignKey("IdentityId")]
@@ -37,14 +39,21 @@ namespace BR.Models
 
         public virtual ICollection<Reservation> Reservations { get; set; }
         public virtual ICollection<Invitee> Invitees { get; set; }
-        public virtual ICollection<AccountToken> AccountTokens { get; set; }
+        
+
+        //public virtual AccountToken AccountToken { get; set; }
+        //public virtual ICollection<AccountToken> AccountTokens { get; set; }
+        
+        
         //public virtual ICollection<UserMail> UserMails { get; set; }
 
         public User()
         {
             Reservations = new HashSet<Reservation>();
             Invitees = new HashSet<Invitee>();
-            AccountTokens = new HashSet<AccountToken>();
+            //AccountTokens = new HashSet<AccountToken>();
+
+
             // UserMails = new HashSet<UserMail>();
         }
 

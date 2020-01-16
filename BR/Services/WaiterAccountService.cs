@@ -24,8 +24,20 @@ namespace BR.Services
             _authOptions = options.Value;
         }
 
-        public async Task<LogInResponse> LogIn(string userName, string identityId)
+        public async Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag)
         {
+            var tokens = await _repository.GetTokens(identityId);
+
+            if (tokens.Count() > 0 && tokens.First().Expires > DateTime.Now)
+            {
+                await _repository.RemoveToken(tokens.First());
+            }
+            var waiter = await _repository.GetWaiter(identityId);
+            if (!waiter.NotificationTag.Equals(notificationTag))
+            {
+                waiter.NotificationTag = notificationTag;
+                await _repository.UpdateWaiter(waiter);
+            }
             return await Authentication(userName, identityId);
         }
 
@@ -71,7 +83,7 @@ namespace BR.Services
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName), 
+                new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
                 new Claim(ClaimsIdentity.DefaultRoleClaimType, "Waiter")
              //   new Claim("id", admin.Id.ToString())
             };

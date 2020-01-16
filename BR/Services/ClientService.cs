@@ -39,7 +39,7 @@ namespace BR.Services
                 Long = newClientRequest.Long,
                 OpenTime = newClientRequest.OpenTime,
                 CloseTime = newClientRequest.CloseTime,
-                IsPasking = newClientRequest.IsPasking,
+                IsParking = newClientRequest.IsParking,
                 IsWiFi = newClientRequest.IsWiFi,
                 IsLiveMusic = newClientRequest.IsLiveMusic,
                 IsOpenSpace = newClientRequest.IsOpenSpace,
@@ -178,7 +178,7 @@ namespace BR.Services
             clientToUpdate.AdditionalInfo = client.AdditionalInfo ?? clientToUpdate.AdditionalInfo;
             clientToUpdate.IsLiveMusic = client.IsLiveMusic;
             clientToUpdate.IsOpenSpace = client.IsOpenSpace;
-            clientToUpdate.IsPasking = client.IsPasking;
+            clientToUpdate.IsParking = client.IsParking;
             clientToUpdate.IsWiFi = client.IsWiFi;
             await _repository.UpdateClient(clientToUpdate);
             return clientToUpdate;
@@ -275,7 +275,7 @@ namespace BR.Services
                 IsWiFi = client.IsWiFi,
                 IsLiveMusic = client.IsLiveMusic,
                 IsOpenSpace = client.IsOpenSpace,
-                IsPasking = client.IsPasking,
+                IsParking = client.IsParking,
                 AdditionalInfo = client.AdditionalInfo,
                 Lat = client.Lat,
                 Long = client.Long,

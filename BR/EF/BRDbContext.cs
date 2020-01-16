@@ -26,11 +26,12 @@ namespace BR.EF
         public DbSet<ClientMealType> ClientMealTypes { get; set; }
         public DbSet<ClientClientType> ClientClientTypes { get; set; }
         public DbSet<ClientCuisine> ClientCuisines { get; set; }
-        public DbSet<Floor> Floor { get; set; }
+        public DbSet<Floor> Floors { get; set; }
         public DbSet<Hall> Halls { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Table> Tables { get; set; }
         public DbSet<ReservationState> ReservationStates { get; set; }
+        public DbSet<TableState> TableStates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<TableReservation> TableReservations { get; set; }
         public DbSet<Invitee> Invitees { get; set; }

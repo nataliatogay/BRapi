@@ -17,11 +17,11 @@ namespace BR.Models
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
-       // public DateTime? BirthDate { get; set; }
-       // public bool? Gender { get; set; }
+        public string NotificationTag { get; set; }
         public int ClientId { get; set; }
         public virtual Client Client { get; set; }
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
+       // public virtual AccountToken AccountToken { get; set; }
     }
 }

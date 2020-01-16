@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO
 {
-    public class ClientParametersRequest
+    public class ClientParametersResponse
     {
         public Dictionary<int, string> Cuisines { get; set; }
         public Dictionary<int, string> PaymentTypes { get; set; }

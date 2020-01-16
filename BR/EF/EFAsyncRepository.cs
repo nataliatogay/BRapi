@@ -79,6 +79,16 @@ namespace BR.EF
             return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
 
+        public async Task<Client> GetClientByTableId(int tableId)
+        {
+            var table = await this.GetTable(tableId);
+            if (table is null)
+            {
+                return null;
+            }
+            return await this.GetClient(table.Hall.Floor.ClientId);
+        }
+
         public async Task<ClientImage> GetClientImage(int id)
         {
             return await _db.ClientImages.FindAsync(id);
@@ -508,7 +518,7 @@ namespace BR.EF
         public async Task DeleteTableReservations(int reservationId)
         {
             var tableRes = await this.GetTableReservations(reservationId);
-           _db.TableReservations.RemoveRange(tableRes);
+            _db.TableReservations.RemoveRange(tableRes);
             await _db.SaveChangesAsync();
         }
 
@@ -516,6 +526,84 @@ namespace BR.EF
         {
             return await _db.ReservationStates.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
         }
+
+        // Tables
+
+        public async Task<Table> GetTable(int id)
+        {
+            return await _db.Tables.FindAsync(id);
+        }
+
+       
+        public async Task<Table> AddTable(Table table)
+        {
+            var newTable = _db.Tables.Add(table);
+            await _db.SaveChangesAsync();
+            return newTable.Entity;
+        }
+
+        public async Task<Table> UpdateTable(Table table)
+        {
+            var res = _db.Tables.Update(table);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<bool> DeleteTable(Table table)
+        {
+            try
+            {
+                _db.Tables.Remove(table);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<TableState> GetTableState(string title)
+        {
+            return await _db.TableStates.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+
+        // Floors
+
+        public async Task<Floor> GetFloor(int clientId, int floorNumber)
+        {
+            return await _db.Floors.FirstOrDefaultAsync(f => f.ClientId == clientId && f.Number == floorNumber);
+        }
+
+        public async Task<Floor> AddFloor(Floor floor)
+        {
+            var newFloor = _db.Floors.Add(floor);
+            await _db.SaveChangesAsync();
+            return newFloor.Entity;
+        }
+
+
+        // Halls
+
+        public async Task<Hall> AddHall(Hall hall)
+        {
+            var newHall = _db.Halls.Add(hall);
+            await _db.SaveChangesAsync();
+            return newHall.Entity;
+        }
+
+        public async Task<Hall> GetHall(int id)
+        {
+            return await _db.Halls.FindAsync(id);
+        }
+        public async Task<Hall> UpdateHall(Hall hall)
+        {
+            var res = _db.Halls.Update(hall);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
 
         // Events
 

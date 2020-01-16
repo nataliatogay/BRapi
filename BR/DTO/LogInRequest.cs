@@ -4,13 +4,11 @@ namespace BR.DTO
 {
     public class LogInRequest
     {
-        [Display(Name = "Email")]
-        [Required(ErrorMessage = "Email is required")]
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        [Display(Name = "Password")]
-        [Required(ErrorMessage = "Password is required")]
+        [Required]
         [DataType(DataType.Password)]
         [MaxLength(20)]
         //[MinLength(3)]

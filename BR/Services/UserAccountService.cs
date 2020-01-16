@@ -47,7 +47,7 @@ namespace BR.Services
             return null;
         }
 
-        public async Task<LogInUserResponse> LogIn(string userName, string identityId)
+        public async Task<LogInUserResponse> LogIn(string userName, string identityId, string notificationTag)
         {
             LogInResponse resp = await Authentication(userName, identityId);
             User user = await this._repository.GetUser(identityId);
@@ -59,8 +59,12 @@ namespace BR.Services
             };
             if(user != null)
             {
-                res.User = this.UserToUserInfoResponse(user);
-            }
+                if (!user.NotificationTag.Equals(notificationTag))
+                {
+                    user.NotificationTag = notificationTag;
+                    await _repository.UpdateUser(user);
+                }
+              }
             return res;
         }
 

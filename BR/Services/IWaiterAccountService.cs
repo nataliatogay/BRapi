@@ -9,7 +9,7 @@ namespace BR.Services
 {
     public interface IWaiterAccountService
     {
-        Task<LogInResponse> LogIn(string userName, string identityId);
+        Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag);
         Task LogOut(string identityId);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<Waiter> GetWaiter(string identityId);

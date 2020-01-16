@@ -30,7 +30,7 @@ namespace BR.Models
         public int CloseTime { get; set; } //  the number of minutes past midnight
 
         [Required]
-        public bool IsPasking { get; set; }
+        public bool IsParking { get; set; }
 
         [Required]
         public bool IsWiFi { get; set; }
@@ -82,7 +82,7 @@ namespace BR.Models
         public virtual ICollection<ClientClientType> ClientClientTypes { get; set; }
         public virtual ICollection<ClientCuisine> ClientCuisines { get; set; }
         public virtual ICollection<News> News { get; set; }
-        public virtual ICollection<AccountToken> AccountTokens { get; set; }
+       // public virtual ICollection<AccountToken> AccountTokens { get; set; }
         public virtual ICollection<Waiter> Waiters { get; set; }
         public virtual ICollection<Event> Events { get; set; }
         public virtual ICollection<ClientImage> ClientImages { get; set; }
@@ -100,7 +100,7 @@ namespace BR.Models
             ClientClientTypes = new HashSet<ClientClientType>();
             ClientCuisines = new HashSet<ClientCuisine>();
             News = new HashSet<News>();
-            AccountTokens = new HashSet<AccountToken>();
+           // AccountTokens = new HashSet<AccountToken>();
             Waiters = new HashSet<Waiter>();
             Events = new HashSet<Event>();
             ClientImages = new HashSet<ClientImage>();

@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191228151536_edit_userwaiter_model_2")]
+    partial class edit_userwaiter_model_2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,6 +27,10 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("AdminId");
+
+                    b.Property<int?>("ClientId");
+
                     b.Property<DateTime>("Expires");
 
                     b.Property<string>("IdentityUserId")
@@ -33,9 +39,17 @@ namespace BR.Migrations
                     b.Property<string>("RefreshToken")
                         .IsRequired();
 
+                    b.Property<int?>("UserId");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("ClientId");
+
                     b.HasIndex("IdentityUserId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("AccountTokens");
                 });
@@ -82,7 +96,7 @@ namespace BR.Migrations
 
                     b.Property<bool>("IsOpenSpace");
 
-                    b.Property<bool>("IsParking");
+                    b.Property<bool>("IsPasking");
 
                     b.Property<bool>("IsWiFi");
 
@@ -282,7 +296,7 @@ namespace BR.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.ToTable("Floors");
+                    b.ToTable("Floor");
                 });
 
             modelBuilder.Entity("BR.Models.Hall", b =>
@@ -509,12 +523,11 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Title")
-                        .IsRequired();
+                    b.Property<int>("Title");
 
                     b.HasKey("Id");
 
-                    b.ToTable("TableStates");
+                    b.ToTable("TableState");
                 });
 
             modelBuilder.Entity("BR.Models.User", b =>
@@ -741,10 +754,22 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.AccountToken", b =>
                 {
+                    b.HasOne("BR.Models.Admin")
+                        .WithMany("AccountTokens")
+                        .HasForeignKey("AdminId");
+
+                    b.HasOne("BR.Models.Client")
+                        .WithMany("AccountTokens")
+                        .HasForeignKey("ClientId");
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
                         .WithMany()
                         .HasForeignKey("IdentityUserId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.User")
+                        .WithMany("AccountTokens")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("BR.Models.Admin", b =>

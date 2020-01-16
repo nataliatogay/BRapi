@@ -8,11 +8,13 @@ namespace BR.DTO
 {
     public class NewRequestRequest
     {
-
+        [Required]
         public string Name { get; set; }
 
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }
-
+        [Required]
         public string Address { get; set; }
 
         public float Lat { get; set; }
@@ -23,7 +25,7 @@ namespace BR.DTO
 
         public int CloseTime { get; set; }
 
-        public bool IsPasking { get; set; }
+        public bool IsParking { get; set; }
 
         public bool IsWiFi { get; set; }
 
@@ -36,7 +38,7 @@ namespace BR.DTO
         public bool IsBusinessLunch { get; set; }
 
         public string AdditionalInfo { get; set; }
-
+        [Required]
         public string MainImage { get; set; }
 
         public int MaxReserveDays { get; set; }

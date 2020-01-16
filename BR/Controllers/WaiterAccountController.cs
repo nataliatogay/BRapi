@@ -45,7 +45,7 @@ namespace BR.Controllers
                 bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 if (checkPassword)
                 {
-                    LogInResponse resp = await _waiterAccountService.LogIn(identityUser.UserName, identityUser.Id);
+                    LogInResponse resp = await _waiterAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
                     if (resp != null)
                     {
                         return new JsonResult(resp);
@@ -183,5 +183,19 @@ namespace BR.Controllers
                 return new JsonResult("Expired");
             }
         }
+
+
+        [HttpPost("Token")] //api/account/token
+        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        {
+            LogInResponse resp = await _waiterAccountService.UpdateToken(refreshToken);
+            if (resp is null)
+            {
+                return StatusCode(401);
+            }
+            return new JsonResult(resp);
+        }
+
+        
     }
 }

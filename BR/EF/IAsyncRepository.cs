@@ -15,6 +15,7 @@ namespace BR.EF
         Task<bool> DeleteClient(Client client);
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
+        Task<Client> GetClientByTableId(int tableId);
         Task<IEnumerable<Client>> GetClients();
         Task<ClientImage> GetClientImage(int id);
         Task<ClientImage> AddClientImage(ClientImage image);
@@ -107,6 +108,28 @@ namespace BR.EF
         Task<TableReservation> AddTableReservation(int reservationId, int tableId);
         Task DeleteTableReservations(int reservationId);
         Task<ReservationState> GetReservationState(string title);
+
+
+        // Tables
+
+        Task<Table> GetTable(int id);
+        Task<Table> AddTable(Table table);
+        Task<Table> UpdateTable(Table table);
+        Task<bool> DeleteTable(Table table);
+        Task<TableState> GetTableState(string title);
+
+
+        // Floors
+        Task<Floor> AddFloor(Floor floor);
+        Task<Floor> GetFloor(int clientId, int floorNumber);
+
+
+        // Halls
+
+        Task<Hall> AddHall(Hall hall);
+        Task<Hall> GetHall(int id);
+        Task<Hall> UpdateHall (Hall hall);
+
 
 
 

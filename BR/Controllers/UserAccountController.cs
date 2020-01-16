@@ -113,7 +113,7 @@ namespace BR.Controllers
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
                         }
                     }
-                    return new JsonResult(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id));
+                    return new JsonResult(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag));
                 }
                 else
                 {
@@ -147,6 +147,7 @@ namespace BR.Controllers
                         FirstName = newUserRequest.FirstName,
                         LastName = newUserRequest.LastName,
                         Gender = newUserRequest.Gender,
+                        NotificationTag = newUserRequest.NotificationTag,
                         BirthDate = null
                     };
                     if (newUserRequest.BirthDate != null)
@@ -284,6 +285,17 @@ namespace BR.Controllers
         {
             await _userAccountService.LogOut(refreshToken);
             return Ok();
+        }
+
+        [HttpPost("Token")] //api/account/token
+        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        {
+            LogInResponse resp = await _userAccountService.UpdateToken(refreshToken);
+            if (resp is null)
+            {
+                return StatusCode(401);
+            }
+            return new JsonResult(resp);
         }
     }
 
