@@ -95,12 +95,22 @@ namespace BR.Controllers
         }
 
         [Authorize]
-        [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string refreshToken)
+        [HttpGet("LogOut")]
+
+        public async Task<IActionResult> LogOut()
         {
-            await _adminAccountService.LogOut(refreshToken);
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            
+            await _adminAccountService.LogOut(identityUser);
             return Ok();
         }
+
+        //[HttpPost("LogOut")]
+        //public async Task<IActionResult> LogOut([FromBody]string refreshToken)
+        //{
+        //    await _adminAccountService.LogOut(refreshToken);
+        //    return Ok();
+        //}
 
         [HttpPost("AddRole")]
         public async Task<IActionResult> AddRole([FromBody]string role)
@@ -297,5 +307,51 @@ namespace BR.Controllers
 
         }
 
+
+        [HttpPost("ForgotPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody]string email)
+        {
+            var user = await _userManager.FindByNameAsync(email);
+            if (user == null)
+            {
+                return new JsonResult("Admin not found");
+            }
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Action("ResetPassword",
+                "ClientAccount",
+                new { userId = user.Id, code = code },
+                protocol: HttpContext.Request.Scheme);
+            try
+            {
+                string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+                await _emailService.SendAsync(email, "Password reset", msgBody);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        [AllowAnonymous]
+        //   [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
+        {
+            var user = await _userManager.FindByNameAsync(model.Email);
+            if (user == null)
+            {
+                return new JsonResult("Error");
+            }
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            return new JsonResult("Error");
+        }
     }
 }

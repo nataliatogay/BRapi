@@ -12,6 +12,7 @@ namespace BR.Services
     {
         Task<LogInResponse> LogIn(string userName, string identityId);
         Task LogOut(string identityId);
+        Task LogOut(IdentityUser identityUser);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<Admin> GetAdmin(string identityId);
         Task<Admin> AddNewAdmin(Admin admin);

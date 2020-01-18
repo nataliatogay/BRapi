@@ -22,7 +22,7 @@ namespace BR.Services
         {
             _repository = repository;
             _authOptions = options.Value;
-        }            
+        }
 
         public async Task<LogInResponse> LogIn(string userName, string identityId)
         {
@@ -31,11 +31,24 @@ namespace BR.Services
 
 
         public async Task LogOut(string refreshToken)
-        {            
+        {
             AccountToken accountToken = await _repository.GetToken(refreshToken);
             if (!(accountToken is null))
             {
                 await _repository.RemoveToken(accountToken);
+            }
+        }
+
+        public async Task LogOut(IdentityUser identityUser)
+        {
+            if (identityUser is null)
+            {
+                return;
+            }
+            var tokens = await _repository.GetTokens(identityUser.Id);
+            if (tokens.First() != null)
+            {
+                await _repository.RemoveToken(tokens.First());
             }
         }
 
@@ -104,7 +117,7 @@ namespace BR.Services
                 IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
-            });            
+            });
             return resp;
         }
     }

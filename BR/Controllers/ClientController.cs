@@ -80,7 +80,7 @@ namespace BR.Features.Admin
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewClientRequest newClient)
         {
-            string password = _clientService.GeneratePassword();
+             string password = _clientService.GeneratePassword();
             IdentityUser identityUser = new IdentityUser()
             {
                 Email = newClient.Email,

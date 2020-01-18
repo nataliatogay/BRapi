@@ -39,7 +39,7 @@ namespace BR.Controllers
                 return new JsonResult("User not found");
             }
             await _reservationService.AddNewReservation(newReservation, identityUser.Id);
-            return Ok();
+            return Ok(); // reservation id
         }
     }
 }
