@@ -18,6 +18,9 @@ namespace BR.Models
         [Required]
         public DateTime Expires { get; set; }
 
+        [Required]
+        public string NotificationTag { get; set; }
+
         public virtual IdentityUser IdentityUser { get; set; }
     }
 }

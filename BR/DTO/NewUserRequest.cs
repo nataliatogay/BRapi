@@ -16,8 +16,5 @@ namespace BR.DTO
 
         public string BirthDate { get; set; }
         public string Email { get; set; }
-        
-        [Required]
-        public string NotificationTag { get; set; }
     }
 }

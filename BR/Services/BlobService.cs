@@ -1,4 +1,5 @@
-﻿using BR.Utils;
+﻿using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;

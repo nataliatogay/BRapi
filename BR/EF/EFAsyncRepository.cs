@@ -247,6 +247,11 @@ namespace BR.EF
             return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
         }
 
+        public async Task<AccountToken> GetTokenByTag(string notificationTag)
+        {
+            return await _db.AccountTokens.FirstOrDefaultAsync(t => t.NotificationTag == notificationTag);
+        }
+
         public async Task AddToken(AccountToken refreshToken)
         {
             await _db.AccountTokens.AddAsync(refreshToken);
@@ -494,6 +499,11 @@ namespace BR.EF
             return await _db.Reservations.FindAsync(id);
         }
 
+        public async Task<ICollection<Reservation>> GetReservations(int userId)
+        {
+            return await _db.Reservations.Where(r => r.UserId == userId).ToListAsync();
+        }
+
         public async Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId)
         {
             var reservation = await _db.Reservations.FindAsync(reservationId);
@@ -534,7 +544,7 @@ namespace BR.EF
             return await _db.Tables.FindAsync(id);
         }
 
-       
+
         public async Task<Table> AddTable(Table table)
         {
             var newTable = _db.Tables.Add(table);

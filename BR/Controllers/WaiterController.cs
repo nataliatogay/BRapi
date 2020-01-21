@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -33,8 +34,9 @@ namespace BR.Controllers
             _userManager = userManager;
             _smsConfiguration = smsConfiguration;
         }
+
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<Waiter>>> Get()
+        public async Task<ActionResult<ICollection<Waiter>>> Get()
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if(identityUser is null)
@@ -45,11 +47,11 @@ namespace BR.Controllers
             return new JsonResult((await _waiterService.GetAllWaiters(identityUser.Id)).ToList());
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
-        {
-            return new JsonResult(await _waiterService.GetWaiter(id));
-        }
+            [HttpGet("{id}")]
+            public async Task<ActionResult<Waiter>> Get(int id)
+            {
+                return new JsonResult(await _waiterService.GetWaiter(id));
+            }
 
         [HttpPost("")]
         public async Task<IActionResult> Post([FromBody]NewWaiterRequest newWaiter)

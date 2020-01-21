@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ namespace BR.Controllers
     [Route("api/[controller]")]
     [ApiController]
   //  [Authorize]
-    public class ParameterController : ControllerBase
+    public class ParameterController : ResponseController
     {
         private readonly IParameterService _parameterService;
 
@@ -26,7 +27,7 @@ namespace BR.Controllers
         [AllowAnonymous]
         
         [HttpGet]
-        public async Task<ActionResult<ClientParametersResponse>> Get()
+        public async Task<ActionResult<ServerResponse<ClientParametersResponse>>> Get()
         {
             var paymentTypes = await _parameterService.GetAllPaymentTypes();
             var cuisines = await _parameterService.GetAllCuisines();
@@ -54,13 +55,13 @@ namespace BR.Controllers
                 mealTypesDict.Add(item.Id, item.Title);
             }
 
-            return new JsonResult(new ClientParametersResponse()
+            return new JsonResult(Response(new ClientParametersResponse()
             {
                 ClientTypes = clientTypesDict,
                 PaymentTypes = paymentTypesDict,
                 Cuisines = cuisinesDict,
                 MealTypes = mealTypesDict
-            });
+            }));
         }
 
 

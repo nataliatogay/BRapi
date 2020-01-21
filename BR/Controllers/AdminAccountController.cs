@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace BR.Controllers
 {
+
+
+
+
     [Route("api/[controller]")]
     [ApiController]
     public class AdminAccountController : ControllerBase
@@ -39,6 +44,15 @@ namespace BR.Controllers
             _cache = cache;
             _roleManager = roleManager;
         }
+
+        
+
+        //[HttpPost("Login")]
+        //public async Task<ActionResult<Response<LogInResponse>>> LogInDemo([FromBody]LogInRequest model)
+        //{
+        //    return Response(new LogInResponse());
+        //}
+
 
         [HttpPost("Login")]
         public async Task<IActionResult> LogIn([FromBody]LogInRequest model)
@@ -267,6 +281,18 @@ namespace BR.Controllers
                 return new JsonResult("Email is already used");
             }
         }
+
+
+        /*
+         * class Response {
+         *    int statusCode;
+         *    string message;
+         *    string data;
+         * }
+         * 
+         * 
+         */
+
 
         [HttpGet]
         [AllowAnonymous]

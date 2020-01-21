@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -29,8 +31,27 @@ namespace BR.Controllers
             _notificationService = notificationService;
         }
 
+        [HttpGet("")]
+        public async Task<ActionResult<ICollection<Reservation>>> Get()
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return null;
+            }
+            return new JsonResult(await _reservationService.GetReservations(identityUser.Id));
+        }
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reservation>> Get(int id)
+        {
+            return new JsonResult(await _reservationService.GetReservation(id));
+        }
+
+
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody]NewReservationRequest newReservation)
+        public async Task<ActionResult<int>> Post([FromBody]NewReservationRequest newReservation)
         {
             // add notification to waiters
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -38,8 +59,35 @@ namespace BR.Controllers
             {
                 return new JsonResult("User not found");
             }
-            await _reservationService.AddNewReservation(newReservation, identityUser.Id);
-            return Ok(); // reservation id
+            var reservation = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
+            if(reservation is null)
+            {
+                return null;
+            }
+            else
+            {
+                return reservation.Id;
+            }            
+        }
+
+        [HttpPut("Complete")]
+        public async Task<ActionResult<Reservation>> CompleteReservation(int id)
+        {
+            return new JsonResult(await _reservationService.CompleteReservation(id));
+        }
+
+
+        [HttpPut("Cancel")]
+        public async Task<ActionResult<Reservation>> CancelReservation(int id)
+        {
+            return new JsonResult(await _reservationService.CancelReservation(id));
+        }
+
+        [HttpPut("ChangeTable")]
+        public async Task<ActionResult<Reservation>> ChangeTables(ChangeReservationTablesRequest changeRequest)
+        {
+            await _reservationService.ChangeTable(changeRequest);
+            return Ok();
         }
     }
 }

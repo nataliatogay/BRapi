@@ -17,7 +17,7 @@ namespace BR.Models
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
-        public string NotificationTag { get; set; }
+        //public string NotificationTag { get; set; }
         public int ClientId { get; set; }
         public virtual Client Client { get; set; }
         [ForeignKey("IdentityId")]

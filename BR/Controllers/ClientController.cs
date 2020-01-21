@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -74,6 +75,14 @@ namespace BR.Features.Admin
 
             return new JsonResult(await _clientService.GetClient(id, role));
         }
+
+
+        [HttpGet("schema/{id}")]
+        public async Task<ActionResult<ClientInfoResponse>> ClientSchema(int id)
+        {
+            return new JsonResult(await _clientService.GetClientHalls(id));
+        }
+
 
 
 

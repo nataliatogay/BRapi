@@ -10,6 +10,7 @@ using BR.Utils.Notification;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Options;
 using NotificationBody = BR.Utils.Notification.NotificationBody;
+using BR.Services.Interfaces;
 
 namespace BR.Utils
 {

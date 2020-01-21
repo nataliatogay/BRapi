@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Services.Interfaces;
 using Newtonsoft.Json;
 
 namespace BR.Services

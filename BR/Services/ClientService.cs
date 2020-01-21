@@ -14,6 +14,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Drawing;
 using System.Drawing.Imaging;
+using BR.Services.Interfaces;
 
 namespace BR.Services
 {
@@ -162,6 +163,39 @@ namespace BR.Services
             if (client != null)
                 return this.ClientToClientInfoRequest(client, role);
             return null;
+        }
+
+        public async Task<ClientHallsInfoResponse> GetClientHalls(int id)
+        {
+            var client = await _repository.GetClient(id);
+            if(client is null)
+            {
+                return null;
+            }
+            var floorsInfo = new List<FloorInfo>();
+            
+            foreach(var floor in client.Floors)
+            {
+                var hallsInfo = new List<HallInfo>();
+                foreach(var hall in floor.Halls)
+                {
+                    hallsInfo.Add(new HallInfo()
+                    {
+                        Title = hall.Title,
+                        JsonInfo = hall.JsonInfo
+                    });
+                }
+                floorsInfo.Add(new FloorInfo()
+                {
+                    Number = floor.Number,
+                    Halls = hallsInfo
+                });
+            }
+            return new ClientHallsInfoResponse()
+            {
+                ClientId = id,
+                Floors = floorsInfo
+            };
         }
 
         public async Task<Client> UpdateClient(Client client)

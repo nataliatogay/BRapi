@@ -4,8 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.EF;
 using BR.Models;
 using BR.Services;
+using BR.Services.Interfaces;
 using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,27 +23,33 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserAccountController : ControllerBase
+    public class UserAccountController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserAccountService _userAccountService;
         private readonly IEmailService _emailService;
         private readonly ISMSConfiguration _smsConfiguration;
         private readonly IMemoryCache _cache;
+        private readonly IAsyncRepository _repository;
+
 
         public UserAccountController(UserManager<IdentityUser> userManager,
             IUserAccountService userAccountService,
             IEmailService emailService,
             ISMSConfiguration smsConfiguration,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IAsyncRepository repository)
         {
             _userManager = userManager;
             _userAccountService = userAccountService;
             _emailService = emailService;
             _smsConfiguration = smsConfiguration;
             _cache = cache;
+            _repository = repository;
         }
 
+
+        // if no response type
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody]string phoneNumber)
         {
@@ -90,7 +98,7 @@ namespace BR.Controllers
         }
 
         [HttpPost("Confirm")]
-        public async Task<ActionResult<LogInUserResponse>> ConfirmPhone([FromBody]ConfirmPhoneRequest confirmModel)
+        public async Task<ActionResult<ServerResponse<LogInUserResponse>>> ConfirmPhone([FromBody]ConfirmPhoneRequest confirmModel)
         {
             string code;
             _cache.TryGetValue(confirmModel.PhoneNumber, out code);
@@ -113,7 +121,7 @@ namespace BR.Controllers
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
                         }
                     }
-                    return new JsonResult(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag));
+                    return new JsonResult(Response(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag)));
                 }
                 else
                 {
@@ -147,7 +155,6 @@ namespace BR.Controllers
                         FirstName = newUserRequest.FirstName,
                         LastName = newUserRequest.LastName,
                         Gender = newUserRequest.Gender,
-                        NotificationTag = newUserRequest.NotificationTag,
                         BirthDate = null
                     };
                     if (newUserRequest.BirthDate != null)
@@ -281,9 +288,9 @@ namespace BR.Controllers
 
         [Authorize]
         [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string refreshToken)
+        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
         {
-            await _userAccountService.LogOut(refreshToken);
+            await _userAccountService.LogOut(notificationTag);
             return Ok();
         }
 
@@ -297,6 +304,17 @@ namespace BR.Controllers
             }
             return new JsonResult(resp);
         }
+
+
+        [HttpPost("UpdateProfile")]
+        public async Task<ActionResult<UserInfoResponse>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            return new JsonResult(await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id));
+
+        }
+
+
     }
 
 }

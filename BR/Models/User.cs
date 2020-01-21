@@ -30,7 +30,7 @@ namespace BR.Models
 
         public int NotificationTime { get; set; } // minutes
 
-        public string NotificationTag { get; set; }
+        //public string NotificationTag { get; set; }
 
         public string IdentityId { get; set; }
 

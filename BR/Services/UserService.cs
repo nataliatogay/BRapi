@@ -6,19 +6,18 @@ using System.Threading.Tasks;
 using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Services.Interfaces;
 
 namespace BR.Services
 {
     public class UserService : IUserService
     {
         private readonly IAsyncRepository _repository;
-        private readonly IBlobService _blobService;
 
-        public UserService(IAsyncRepository repository,
-            IBlobService blobService)
+        public UserService(IAsyncRepository repository)
         {
             _repository = repository;
-            _blobService = blobService;
+            
         }
         public async Task<IEnumerable<UserInfoResponse>> GetUsers()
         {
@@ -34,27 +33,25 @@ namespace BR.Services
             return res;
         }
 
-        public async Task<string> UploadImage(string identityId, string imageString)
+        public async Task<UserInfoResponse> GetUser(int id)
         {
-            var user = await _repository.GetUser(identityId);
-            var path = await _blobService.UploadImage(imageString);
-            user.ImagePath = path;
-            await _repository.UpdateUser(user);
-            return path;
+            var user = await _repository.GetUser(id);
+            if (user is null)
+            {
+                return null;
+            }
+            return this.UserToUserInfoResponse(user);
         }
 
-        public async Task<UserInfoResponse> UpdateUser(UpdateUserRequest updateUserRequest, string identityId)
+        public async Task<User> BlockUser(int id)
         {
-            var userToUpdate = await _repository.GetUser(identityId);
-            userToUpdate.FirstName = updateUserRequest.FirstName;
-            userToUpdate.LastName = updateUserRequest.LastName;
-            userToUpdate.Gender = updateUserRequest.Gender;
-            if(updateUserRequest.BirthDate != null)
+            var user = await _repository.GetUser(id);
+            if(user is null)
             {
-                userToUpdate.BirthDate = DateTime.ParseExact(updateUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                return null;
             }
-            var user = await _repository.UpdateUser(userToUpdate);
-            return this.UserToUserInfoResponse(user);
+            user.IsBlocked = true;
+            return await _repository.UpdateUser(user);
         }
 
         private UserInfoResponse UserToUserInfoResponse(User user)

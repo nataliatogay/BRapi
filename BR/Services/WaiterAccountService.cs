@@ -1,6 +1,7 @@
 ﻿using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Services.Interfaces;
 using BR.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -26,19 +27,19 @@ namespace BR.Services
 
         public async Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag)
         {
-            var tokens = await _repository.GetTokens(identityId);
+           // var tokens = await _repository.GetTokens(identityId);
 
-            if (tokens.Count() > 0 && tokens.First().Expires > DateTime.Now)
-            {
-                await _repository.RemoveToken(tokens.First());
-            }
-            var waiter = await _repository.GetWaiter(identityId);
-            if (!waiter.NotificationTag.Equals(notificationTag))
-            {
-                waiter.NotificationTag = notificationTag;
-                await _repository.UpdateWaiter(waiter);
-            }
-            return await Authentication(userName, identityId);
+            //if (tokens.Count() > 0 && tokens.First().Expires > DateTime.Now)
+            //{
+            //    await _repository.RemoveToken(tokens.First());
+            //}
+            //var waiter = await _repository.GetWaiter(identityId);
+            //if (!waiter.NotificationTag.Equals(notificationTag))
+            //{
+            //    waiter.NotificationTag = notificationTag;
+            //    await _repository.UpdateWaiter(waiter);
+            //}
+            return await Authentication(userName, identityId, notificationTag);
         }
 
         public async Task LogOut(string refreshToken)
@@ -73,13 +74,13 @@ namespace BR.Services
             {
                 return null;
             }
-            return await Authentication(identityUser.UserName, identityUser.Id);
+            return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
         }
 
 
 
 
-        private async Task<LogInResponse> Authentication(string userName, string identityId)
+        private async Task<LogInResponse> Authentication(string userName, string identityId, string notificationTag)
         {
             List<Claim> claims = new List<Claim>()
             {
@@ -111,7 +112,8 @@ namespace BR.Services
             {
                 IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
+                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
+                NotificationTag  = notificationTag
             });
             return resp;
         }

@@ -8,7 +8,7 @@ namespace BR.EF
     public interface IAsyncRepository
     {
         Task<IdentityUser> GetIdentityUser(string id);
-        
+
         // Clients
 
         Task<Client> AddClient(Client client);
@@ -29,14 +29,14 @@ namespace BR.EF
         Task AddClientCuisine(int clientId, int cuisineId);
         Task AddClientSocialLink(int clientId, string link);
         Task AddClientPhone(int clientId, string phoneNumber, bool isShow);
-        
+
 
         // Admins
 
         Task<Admin> AddAdmin(Admin admin);
         Task<Admin> GetAdminByIdentityId(string identityId);
         Task<Admin> GetAdminByIdentityName(string identityName);
-        
+
 
         // Requests
 
@@ -50,6 +50,7 @@ namespace BR.EF
 
         Task<IEnumerable<AccountToken>> GetTokens(string identityId);
         Task<AccountToken> GetToken(string refreshToken);
+        Task<AccountToken> GetTokenByTag(string notificationTag);
         Task AddToken(AccountToken refreshToken);
         Task RemoveToken(AccountToken refreshToken);
 
@@ -86,7 +87,7 @@ namespace BR.EF
         Task<User> AddUser(User user);
         Task<User> UpdateUser(User user);
         Task<IEnumerable<User>> GetUsers();
-        
+
 
         // Waiters
 
@@ -104,6 +105,7 @@ namespace BR.EF
         Task<Reservation> AddReservation(Reservation reservation);
         Task<Reservation> UpdateReservation(Reservation reservation);
         Task<Reservation> GetReservation(int id);
+        Task<ICollection<Reservation>> GetReservations(int userId);
         Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId);
         Task<TableReservation> AddTableReservation(int reservationId, int tableId);
         Task DeleteTableReservations(int reservationId);
@@ -128,7 +130,7 @@ namespace BR.EF
 
         Task<Hall> AddHall(Hall hall);
         Task<Hall> GetHall(int id);
-        Task<Hall> UpdateHall (Hall hall);
+        Task<Hall> UpdateHall(Hall hall);
 
 
 
@@ -139,7 +141,7 @@ namespace BR.EF
         Task<Event> GetEvent(int id);
         Task<Event> AddEvent(Event clientEvent);
         Task<Event> UpdateEvent(Event clientEvent);
-        
+
     }
 }
 

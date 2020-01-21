@@ -1,6 +1,7 @@
-﻿ using BR.DTO;
+﻿using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Services.Interfaces;
 using BR.Utils.Notification;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,22 @@ namespace BR.Services
             _repository = repository;
             _notificatinoService = notificationService;
         }
-        public async Task AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
+
+        public async Task<ICollection<Reservation>> GetReservations(string identityUserId)
+        {
+            var user = _repository.GetUser(identityUserId);
+            if (user is null)
+            {
+                return null;
+            }
+            return await _repository.GetReservations(user.Id);
+        }
+
+        public async Task<Reservation> GetReservation(int id)
+        {
+            return await _repository.GetReservation(id);
+        }
+        public async Task<Reservation> AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
         {
             var user = await _repository.GetUser(identityId);
             var resState = await _repository.GetReservationState("idle");
@@ -43,24 +59,33 @@ namespace BR.Services
             if (client != null)
             {
                 var waiters = await _repository.GetWaitersByClientId(client.Id);
-                if(waiters != null)
+                if (waiters != null)
                 {
                     List<string> tags = new List<string>();
-                    foreach(var waiter in waiters)
+                    foreach (var waiter in waiters)
                     {
-                        tags.Add(waiter.NotificationTag);
+                        var tokens = await _repository.GetTokens(waiter.IdentityId);
+                        foreach (var t in tokens)
+                        {
+                            tags.Add(t.NotificationTag);
+                        }
                     }
                     _notificatinoService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());
                 }
             }
+            return reservation;
         }
 
         public async Task<Reservation> CancelReservation(int reservationId)
         {
             var resState = await _repository.GetReservationState("cancelled");
             var reservation = await _repository.GetReservation(reservationId);
+            if (reservation.ReservationDate > DateTime.Now)
+            {
+                return null;
+            }
             reservation.ReservationStateId = resState.Id;
-            return await _repository.UpdateReservation(reservation); 
+            return await _repository.UpdateReservation(reservation);
 
         }
 
@@ -72,16 +97,14 @@ namespace BR.Services
             return await _repository.UpdateReservation(reservation);
         }
 
-        public async Task<Reservation> ChangeTable(int reservationId, IEnumerable<int> newTableIds)
+        public async Task ChangeTable(ChangeReservationTablesRequest changeRequest)
         {
-            //await _repository.DeleteTableReservations(reservationId);
+            await _repository.DeleteTableReservations(changeRequest.ReservationId);
 
-            //foreach (var tableId in newReservationRequest.TableIds)
-            //{
-            //    await _repository.AddTableReservation(reservation.Id, tableId);
-            //}
-
-            return null;
+            foreach (var tableId in changeRequest.TableIds)
+            {
+                await _repository.AddTableReservation(changeRequest.ReservationId, tableId);
+            }
         }
     }
 }

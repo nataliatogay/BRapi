@@ -1,12 +1,14 @@
 ﻿using BR.DTO;
 using BR.EF;
 using BR.Models;
+using BR.Services.Interfaces;
 using BR.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -19,11 +21,15 @@ namespace BR.Services
     {
         private readonly IAsyncRepository _repository;
         private readonly AuthOptions _authOptions;
+        private readonly IBlobService _blobService;
 
-        public UserAccountService(IAsyncRepository repository, IOptions<AuthOptions> options)
+        public UserAccountService(IAsyncRepository repository, 
+            IOptions<AuthOptions> options,
+            IBlobService blobService)
         {
             _repository = repository;
             _authOptions = options.Value;
+            _blobService = blobService;
         }
 
         public string GenerateCode()
@@ -49,28 +55,20 @@ namespace BR.Services
 
         public async Task<LogInUserResponse> LogIn(string userName, string identityId, string notificationTag)
         {
-            LogInResponse resp = await Authentication(userName, identityId);
-            User user = await this._repository.GetUser(identityId);
+            LogInResponse resp = await Authentication(userName, identityId, notificationTag);
+            User user = await _repository.GetUser(identityId);
             var res = new LogInUserResponse()
             {
                 AccessToken = resp.AccessToken,
                 RefreshToken = resp.RefreshToken,
-                User = null
+                User = this.UserToUserInfoResponse(user)
             };
-            if(user != null)
-            {
-                if (!user.NotificationTag.Equals(notificationTag))
-                {
-                    user.NotificationTag = notificationTag;
-                    await _repository.UpdateUser(user);
-                }
-              }
             return res;
         }
 
-        public async Task LogOut(string refreshToken)
+        public async Task LogOut(string notificationTag)
         {
-            AccountToken accountToken = await _repository.GetToken(refreshToken);
+            AccountToken accountToken = await _repository.GetTokenByTag(notificationTag);
             if (!(accountToken is null))
             {
                 await _repository.RemoveToken(accountToken);
@@ -105,7 +103,7 @@ namespace BR.Services
             {
                 return null;
             }
-            return await Authentication(identityUser.UserName, identityUser.Id);
+            return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
         }
 
         public async Task<bool> UserIsBlocked(string identityId)
@@ -119,7 +117,16 @@ namespace BR.Services
         }
 
 
-        private async Task<LogInResponse> Authentication(string userName, string identityId)
+        public async Task<string> UploadImage(string identityId, string imageString)
+        {
+            var user = await _repository.GetUser(identityId);
+            var path = await _blobService.UploadImage(imageString);
+            user.ImagePath = path;
+            await _repository.UpdateUser(user);
+            return path;
+        }
+
+        private async Task<LogInResponse> Authentication(string userName, string identityId, string notificationTag)
         {
             List<Claim> claims = new List<Claim>()
             {
@@ -150,13 +157,36 @@ namespace BR.Services
             {
                 IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
+                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
+                NotificationTag = notificationTag
             });
             return resp;
         }
 
+        public async Task<UserInfoResponse> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
+        {
+            var userToUpdate = await _repository.GetUser(identityId);
+            userToUpdate.FirstName = updateUserRequest.FirstName;
+            userToUpdate.LastName = updateUserRequest.LastName;
+            userToUpdate.Gender = updateUserRequest.Gender;
+            if (updateUserRequest.BirthDate != null)
+            {
+                userToUpdate.BirthDate = DateTime.ParseExact(updateUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            }
+            var user = await _repository.UpdateUser(userToUpdate);
+            if (user is null)
+            {
+                return null;
+            }
+            return this.UserToUserInfoResponse(user);
+        }
+
         private UserInfoResponse UserToUserInfoResponse(User user)
         {
+            if (user is null)
+            {
+                return null;
+            }
             return new UserInfoResponse()
             {
                 FirstName = user.FirstName,
