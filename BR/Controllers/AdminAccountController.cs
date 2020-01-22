@@ -109,15 +109,13 @@ namespace BR.Controllers
         }
 
         [Authorize]
-        [HttpGet("LogOut")]
-
-        public async Task<IActionResult> LogOut()
+        [HttpGet("LogOut/{notificationTag}")]
+        public async Task<IActionResult> LogOut(string notificationTag)
         {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            
-            await _adminAccountService.LogOut(identityUser);
+            await _adminAccountService.LogOut(notificationTag);
             return Ok();
         }
+
 
         //[HttpPost("LogOut")]
         //public async Task<IActionResult> LogOut([FromBody]string refreshToken)

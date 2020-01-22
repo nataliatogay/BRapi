@@ -12,12 +12,15 @@ namespace BR.Controllers
     [ApiController]
     public class ResponseController : ControllerBase
     {
+        protected ServerResponse Response(StatusCode statusCode)
+        {
+            return new ServerResponse(statusCode);
+        }
+
         protected ServerResponse<T> Response<T> (T data)
         {
             return new ServerResponse<T>(Controllers.StatusCode.Ok, data);
         }
-
-
 
         protected ServerResponse<T> Response<T>(StatusCode statusCode, T  data)
         {
@@ -26,3 +29,4 @@ namespace BR.Controllers
 
     }
 }
+

@@ -57,11 +57,12 @@ namespace BR.Controllers
             return new JsonResult(null);
         }
 
-        //  [Authorize]
-        [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string refreshToken)
+
+        [Authorize]
+        [HttpGet("LogOut/{notificationTag}")]
+        public async Task<IActionResult> LogOut(string notificationTag)
         {
-            await _waiterAccountService.LogOut(refreshToken);
+            await _waiterAccountService.LogOut(notificationTag);
             return Ok();
         }
 

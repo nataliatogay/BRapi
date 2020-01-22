@@ -30,7 +30,6 @@ namespace BR.Controllers
         private readonly IEmailService _emailService;
         private readonly ISMSConfiguration _smsConfiguration;
         private readonly IMemoryCache _cache;
-        private readonly IAsyncRepository _repository;
 
 
         public UserAccountController(UserManager<IdentityUser> userManager,
@@ -45,20 +44,19 @@ namespace BR.Controllers
             _emailService = emailService;
             _smsConfiguration = smsConfiguration;
             _cache = cache;
-            _repository = repository;
         }
 
 
-        // if no response type
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody]string phoneNumber)
+        public async Task<ActionResult<ServerResponse>> Login([FromBody]string phoneNumber)
         {
             var res = await _userManager.FindByNameAsync(phoneNumber);
             if (res != null)
             {
                 if (await _userAccountService.UserIsBlocked(res.Id))
                 {
-                    return new JsonResult("User is blocked");
+                    return Response(Controllers.StatusCode.UserBlocked);
+                 //   return new JsonResult(Response(Controllers.StatusCode.UserBlocked));
                 }
             }
 
@@ -79,6 +77,7 @@ namespace BR.Controllers
                     var msg = MessageResource.Create(body: code + " is your RB verification code",
                         from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
                         to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                     return new JsonResult(msg.Sid);
 
 
@@ -88,12 +87,12 @@ namespace BR.Controllers
                 catch
                 {
                     _cache.Remove(phoneNumber);
-                    return new JsonResult("Sending message error");
+                    return new JsonResult(Response(Controllers.StatusCode.SendingMessageError));
                 }
             }
             else
             {
-                return new JsonResult("Code has already been sent");
+                return new JsonResult(Response(Controllers.StatusCode.CodeHasAlreadyBeenSent));
             }
         }
 
@@ -121,16 +120,17 @@ namespace BR.Controllers
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
                         }
                     }
-                    return new JsonResult(Response(await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag)));
+                    var resp = await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag);
+                    return new JsonResult(Response(resp));
                 }
                 else
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.IncorrectVerificationCode, new LogInUserResponse()));
+                    return new JsonResult(Response(Controllers.StatusCode.IncorrectVerificationCode));
                 }
             }
             else
             {
-                return new JsonResult("Expired");
+                return new JsonResult(Response(Controllers.StatusCode.Expired));
             }
         }
 
@@ -179,18 +179,18 @@ namespace BR.Controllers
                             string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                             await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
-                            return Ok();
+                            return new JsonResult(Response(Controllers.StatusCode.Ok));
                         }
                         catch
                         {
                             _cache.Remove(identityUser.Id);
-                            return new JsonResult("Sending mail error");
+                            return new JsonResult(Response(Controllers.StatusCode.SendingMailError));
                         }
                     }
-                    return Ok();
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                 }
             }
-            return new JsonResult("User not found");
+            return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
         }
 
 
@@ -201,7 +201,7 @@ namespace BR.Controllers
             IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult("User not found");
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
             if (!_cache.TryGetValue(identityUser.Id, out _))
             {
@@ -217,17 +217,17 @@ namespace BR.Controllers
                     string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                     await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                    return Ok();
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                 }
                 catch
                 {
                     _cache.Remove(identityUser.Id);
-                    return new JsonResult("Sending mail error");
+                    return new JsonResult(Response(Controllers.StatusCode.SendingMailError));
                 }
             }
             else
             {
-                return new JsonResult("Link has already been sent");
+                return new JsonResult(Response(Controllers.StatusCode.LinkHasAlreadyBeenSent));
             }
 
         }
@@ -239,7 +239,7 @@ namespace BR.Controllers
         {
             if (userId == null || code == null)
             {
-                return new JsonResult("Error");
+                return new JsonResult(Response(Controllers.StatusCode.Error));
             }
 
 
@@ -252,7 +252,7 @@ namespace BR.Controllers
                 var identityUser = await _userManager.FindByIdAsync(userId);
                 if (identityUser == null)
                 {
-                    return new JsonResult("Error");
+                    return new JsonResult(Response(Controllers.StatusCode.Error));
                 }
                 var result = await _userManager.ConfirmEmailAsync(identityUser, code);
                 if (result.Succeeded)
@@ -262,55 +262,60 @@ namespace BR.Controllers
                     if (res.Succeeded)
                     {
                         _cache.Remove(identityUser.Id);
-                        return Ok();
+                        return new JsonResult(Response(Controllers.StatusCode.Ok));
                     }
                 }
             }
             else
             {
-                return new JsonResult("Expired");
+                return new JsonResult(Response(Controllers.StatusCode.Expired));
             }
-            return new JsonResult("Error");
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
 
         [Authorize]
         [HttpGet("getinfo")]
-        public async Task<ActionResult<UserInfoResponse>> GetInfo()
+        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> GetInfo()
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser != null)
             {
-                return new JsonResult(await _userAccountService.GetInfo(identityUser.Id));
+                var user = await _userAccountService.GetInfo(identityUser.Id);
+                if(user != null)
+                {
+                    return new JsonResult(Response(user));
+                }
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
-            return new JsonResult(null);
+            return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
         }
 
-        [Authorize]
-        [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
+        [HttpGet("LogOut/{notificationTag}")]
+        public async Task<IActionResult> LogOut(string notificationTag)
         {
             await _userAccountService.LogOut(notificationTag);
-            return Ok();
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpPost("Token")] //api/account/token
-        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse>> UpdateToken([FromBody]string refreshToken)
         {
             LogInResponse resp = await _userAccountService.UpdateToken(refreshToken);
             if (resp is null)
             {
                 return StatusCode(401);
             }
-            return new JsonResult(resp);
+            return new JsonResult(Response(resp));
         }
 
 
         [HttpPost("UpdateProfile")]
-        public async Task<ActionResult<UserInfoResponse>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
+        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            return new JsonResult(await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id));
+            var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
+            return new JsonResult(Response(res));
 
         }
 

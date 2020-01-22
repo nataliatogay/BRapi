@@ -72,6 +72,7 @@ namespace BR.Services
 
                     var resInfo = new ReservationInfo()
                     {
+                        Id = res.Id,
                         Date = res.ReservationDate,
                         ReservationState = res.ReservationState.Title,
                         ChildFree = res.ChildFree,
@@ -79,7 +80,8 @@ namespace BR.Services
                         Floor = res.TableReservations.First().Table.Hall.Floor.Number,
                         HallTitle = res.TableReservations.First().Table.Hall.Title,
                         GuestCount = res.GuestCount,
-                        TableNumbers = tableNums
+                        TableNumbers = tableNums,
+                        Comments = res.Comments
                     };
                     reservations.Add(resInfo);
                 }

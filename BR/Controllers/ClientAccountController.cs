@@ -82,11 +82,11 @@ namespace BR.Controllers
         }
 
 
-        // [Authorize]
-        [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string refreshToken)
+        [Authorize]
+        [HttpGet("LogOut/{notificationTag}")]
+        public async Task<IActionResult> LogOut(string notificationTag)
         {
-            await _clientAccountService.LogOut(refreshToken);
+            await _clientAccountService.LogOut(notificationTag);
             return Ok();
         }
 

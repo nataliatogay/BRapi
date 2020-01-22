@@ -13,13 +13,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace BR.Features.Admin
+namespace BR.Controllers
 {
     // [Authorize]
    // [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    public class ClientController : ResponseController
     {
         private readonly IClientService _clientService;
         private readonly UserManager<IdentityUser> _userManager;
@@ -38,56 +38,54 @@ namespace BR.Features.Admin
 
         // for users and clients
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Get()
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get()
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-
-            return new JsonResult(await _clientService.GetAllClients(role));
-          
+            var res = await _clientService.GetAllClients(role);
+            return new JsonResult(Response(res));
         }
 
         [HttpGet("mealtype")]
-        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Get(string mealType)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get(string mealType)
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-
-            return new JsonResult(await _clientService.GetClientsByMeal(mealType, role));
+            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType, role)));
         }
 
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<ClientInfoResponse>>> Search(string name)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Search(string name)
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
 
-            return new JsonResult(await _clientService.GetClientsByName(name, role));
+            return new JsonResult(Response(await _clientService.GetClientsByName(name, role)));
         }
 
 
         //?
         [HttpGet("{id}")]
-        public async Task<ActionResult<ClientInfoResponse>> Get(int id)
+        public async Task<ActionResult<ServerResponse<ClientInfoResponse>>> Get(int id)
         {
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
 
-            return new JsonResult(await _clientService.GetClient(id, role));
+            return new JsonResult(Response(await _clientService.GetClient(id, role)));
         }
 
 
         [HttpGet("schema/{id}")]
-        public async Task<ActionResult<ClientInfoResponse>> ClientSchema(int id)
+        public async Task<ActionResult<ServerResponse<ClientInfoResponse>>> ClientSchema(int id)
         {
-            return new JsonResult(await _clientService.GetClientHalls(id));
+            return new JsonResult(Response(await _clientService.GetClientHalls(id)));
         }
 
 
 
 
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody]NewClientRequest newClient)
+        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
         {
              string password = _clientService.GeneratePassword();
             IdentityUser identityUser = new IdentityUser()
@@ -109,11 +107,11 @@ namespace BR.Features.Admin
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    return new JsonResult(Response(Controllers.StatusCode.Error));
                 }
             }
 
-            return new JsonResult(await _clientService.GetAllClients("Admin"));
+            return new JsonResult(Response(await _clientService.GetAllClients("Admin")));
 
 
 
@@ -125,11 +123,9 @@ namespace BR.Features.Admin
 
 
         [HttpPut("")]
-        public async Task<IActionResult> Update([FromBody]Client client)
+        public async Task<ActionResult<ServerResponse<Client>>> Update([FromBody]Client client)
         {
-            client = await _clientService.UpdateClient(client);
-            return Ok();
-            //return new JsonResult(await _clientService.GetClient(client.Id));
+             return new JsonResult(Response(await _clientService.UpdateClient(client)));
         }
 
 

@@ -15,7 +15,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : ResponseController
     {
         private readonly IUserService _userService;
 
@@ -25,21 +25,21 @@ namespace BR.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<UserInfoResponse>>> Get()
+        public async Task<ActionResult<ServerResponse<IEnumerable<UserInfoResponse>>>> Get()
         {
-            return new JsonResult(await _userService.GetUsers());
+            return new JsonResult(Response(await _userService.GetUsers()));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserInfoResponse>> Get(int id)
+        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Get(int id)
         {
-            return new JsonResult(await _userService.GetUser(id));
+            return new JsonResult(Response(await _userService.GetUser(id)));
         }
 
         [HttpPut("Block")]
-        public async Task<ActionResult<User>> BlockUser(int id)
+        public async Task<ActionResult<ServerResponse<User>>> BlockUser(int id)
         {
-            return new JsonResult(await _userService.BlockUser(id));
+            return new JsonResult(Response(await _userService.BlockUser(id)));
         }        
     }
 }

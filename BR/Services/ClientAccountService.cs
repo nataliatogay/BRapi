@@ -35,9 +35,10 @@ namespace BR.Services
             return await Authentication(identityUser);
         }
 
-        public async Task LogOut(string refreshToken)
+
+        public async Task LogOut(string notificationTag)
         {
-            AccountToken accountToken = await _repository.GetToken(refreshToken);
+            AccountToken accountToken = await _repository.GetTokenByTag(notificationTag);
             if (!(accountToken is null))
             {
                 await _repository.RemoveToken(accountToken);

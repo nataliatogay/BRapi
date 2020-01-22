@@ -31,9 +31,9 @@ namespace BR.Services
         }
 
 
-        public async Task LogOut(string refreshToken)
+        public async Task LogOut(string notificationTag)
         {
-            AccountToken accountToken = await _repository.GetToken(refreshToken);
+            AccountToken accountToken = await _repository.GetTokenByTag(notificationTag);
             if (!(accountToken is null))
             {
                 await _repository.RemoveToken(accountToken);
@@ -85,6 +85,7 @@ namespace BR.Services
         }
 
 
+        // change notificationTag
         private async Task<LogInResponse> Authentication(string userName, string identityId)
         {
             List<Claim> claims = new List<Claim>()
@@ -117,7 +118,8 @@ namespace BR.Services
             {
                 IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
+                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
+                NotificationTag = "123"
             });
             return resp;
         }

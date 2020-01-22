@@ -1,18 +1,29 @@
 ﻿namespace BR.Controllers
 {
-    public class ServerResponse<T>
+
+    public class ServerResponse
     {
-        public ServerResponse(StatusCode statusCode, T data)
+        public ServerResponse(StatusCode statusCode)
         {
             StatusCode = statusCode;
-            Data = data;
-        }
-        public ServerResponse()
-        {
-
         }
 
         public StatusCode StatusCode { get; set; }
+        //public Response(StatusCode statusCode)
+        //{
+        //    StatusCode = statusCode;
+        //}
+
+
+    }
+
+    public class ServerResponse<T> : ServerResponse
+    {
+        public ServerResponse(StatusCode statusCode, T data) : base(statusCode)
+        {
+            Data = data;
+        }
+
         public T Data { get; set; }
     }
 
@@ -20,9 +31,14 @@
     {
         Ok,
         IncorrectVerificationCode,
+        CodeHasAlreadyBeenSent,
         Expired,
+        SendingMessageError,
+        LinkHasAlreadyBeenSent,
+        SendingMailError,
         UserNotFound,
         IncorrectLoginOrPassword,
-        UserBlocked
+        UserBlocked,
+        Error
     }
 }
