@@ -125,7 +125,7 @@ namespace BR.Controllers
                 }
                 else
                 {
-                    return new JsonResult("Incorrect code");
+                    return new JsonResult(Response(Controllers.StatusCode.IncorrectVerificationCode, new LogInUserResponse()));
                 }
             }
             else

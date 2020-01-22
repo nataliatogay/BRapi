@@ -19,6 +19,10 @@
     public enum StatusCode
     {
         Ok,
-        IncorrectVerificationCode
+        IncorrectVerificationCode,
+        Expired,
+        UserNotFound,
+        IncorrectLoginOrPassword,
+        UserBlocked
     }
 }

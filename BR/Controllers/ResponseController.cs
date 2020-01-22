@@ -19,7 +19,7 @@ namespace BR.Controllers
 
 
 
-        protected ServerResponse<T> Response<T>(StatusCode statusCode, T data)
+        protected ServerResponse<T> Response<T>(StatusCode statusCode, T  data)
         {
             return new ServerResponse<T>(statusCode, data);
         }

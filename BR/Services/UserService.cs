@@ -17,7 +17,7 @@ namespace BR.Services
         public UserService(IAsyncRepository repository)
         {
             _repository = repository;
-            
+
         }
         public async Task<IEnumerable<UserInfoResponse>> GetUsers()
         {
@@ -25,7 +25,7 @@ namespace BR.Services
             if (users is null)
                 return null;
 
-            var res = new List<UserInfoResponse>();            
+            var res = new List<UserInfoResponse>();
             foreach (var user in users)
             {
                 res.Add(this.UserToUserInfoResponse(user));
@@ -46,7 +46,7 @@ namespace BR.Services
         public async Task<User> BlockUser(int id)
         {
             var user = await _repository.GetUser(id);
-            if(user is null)
+            if (user is null)
             {
                 return null;
             }
@@ -56,6 +56,34 @@ namespace BR.Services
 
         private UserInfoResponse UserToUserInfoResponse(User user)
         {
+            var reservations = new List<ReservationInfo>();
+            if (user.Reservations != null)
+            {
+                foreach (var res in user.Reservations)
+                {
+                    var tableNums = new List<int>();
+                    if (res.TableReservations != null)
+                    {
+                        foreach (var t in res.TableReservations)
+                        {
+                            tableNums.Add(t.Table.Number);
+                        }
+                    }
+
+                    var resInfo = new ReservationInfo()
+                    {
+                        Date = res.ReservationDate,
+                        ReservationState = res.ReservationState.Title,
+                        ChildFree = res.ChildFree,
+                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.Name,
+                        Floor = res.TableReservations.First().Table.Hall.Floor.Number,
+                        HallTitle = res.TableReservations.First().Table.Hall.Title,
+                        GuestCount = res.GuestCount,
+                        TableNumbers = tableNums
+                    };
+                    reservations.Add(resInfo);
+                }
+            }
             return new UserInfoResponse()
             {
                 FirstName = user.FirstName,
@@ -63,8 +91,8 @@ namespace BR.Services
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
                 ImagePath = user.ImagePath,
-                Email = user.Identity.Email
-                
+                Email = user.Identity.Email,
+                Reservations = reservations
             };
         }
     }
