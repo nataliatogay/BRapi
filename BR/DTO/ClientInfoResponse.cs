@@ -30,5 +30,15 @@ namespace BR.DTO
         public ICollection<string> MealTypes { get; set; }
         public ICollection<string> Cuisines { get; set; }
         public ICollection<string> Phones { get; set; }
+        public ICollection<EventInfo> Events { get; set; }
+    }
+
+    public class EventInfo
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string ImgPath { get; set; }
+        public string Description { get; set; }
+        public DateTime Date { get; set; }
     }
 }

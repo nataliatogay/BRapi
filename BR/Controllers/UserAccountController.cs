@@ -18,6 +18,7 @@ using Sms;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
+//upload image
 
 namespace BR.Controllers
 {
@@ -137,10 +138,11 @@ namespace BR.Controllers
 
 
 
+        // email confirm
 
         [Authorize]
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody]NewUserRequest newUserRequest)
+        public async Task<ActionResult<ServerResponse>> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
@@ -177,7 +179,6 @@ namespace BR.Controllers
                         try
                         {
                             string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
                             await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
                             return new JsonResult(Response(Controllers.StatusCode.Ok));
                         }
@@ -291,6 +292,7 @@ namespace BR.Controllers
             return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
         }
 
+        // post 
         [HttpGet("LogOut/{notificationTag}")]
         public async Task<IActionResult> LogOut(string notificationTag)
         {
@@ -310,10 +312,16 @@ namespace BR.Controllers
         }
 
 
+        // return void
+        [Authorize]
         [HttpPost("UpdateProfile")]
         public async Task<ActionResult<ServerResponse<UserInfoResponse>>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if(identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
             var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
             return new JsonResult(Response(res));
 

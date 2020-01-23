@@ -109,8 +109,8 @@ namespace BR.Controllers
         }
 
         [Authorize]
-        [HttpGet("LogOut/{notificationTag}")]
-        public async Task<IActionResult> LogOut(string notificationTag)
+        [HttpPost("LogOut")]
+        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
         {
             await _adminAccountService.LogOut(notificationTag);
             return Ok();

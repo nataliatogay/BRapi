@@ -113,4 +113,4 @@ namespace BR.Services
 //-idle; - addNew
 //-cancelled; - user
 //-completed; - waiter
-//-not coming; - timer
+//-missed; - timer; 

@@ -78,8 +78,9 @@ namespace BR.Controllers
 
 
         [HttpPut("Cancel")]
-        public async Task<ActionResult<Reservation>> CancelReservation(int id)
+        public async Task<ActionResult<ServerResponse>> CancelReservation(int id)
         {
+            // ok
             return new JsonResult(await _reservationService.CancelReservation(id));
         }
 
