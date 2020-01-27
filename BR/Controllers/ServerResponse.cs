@@ -39,6 +39,7 @@
         UserNotFound,
         IncorrectLoginOrPassword,
         UserBlocked,
-        Error
+        Error,
+        UserRegistered
     }
 }

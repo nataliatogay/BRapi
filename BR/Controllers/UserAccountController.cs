@@ -57,7 +57,7 @@ namespace BR.Controllers
                 if (await _userAccountService.UserIsBlocked(res.Id))
                 {
                     return Response(Controllers.StatusCode.UserBlocked);
-                 //   return new JsonResult(Response(Controllers.StatusCode.UserBlocked));
+                    //   return new JsonResult(Response(Controllers.StatusCode.UserBlocked));
                 }
             }
 
@@ -76,13 +76,13 @@ namespace BR.Controllers
                     TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
                     var msg = MessageResource.Create(body: code + " is your RB verification code",
-                        from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                        to: new Twilio.Types.PhoneNumber(phoneNumber));
+                       from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                       to: new Twilio.Types.PhoneNumber(phoneNumber));
                     return new JsonResult(Response(Controllers.StatusCode.Ok));
-                    return new JsonResult(msg.Sid);
+                    //return new JsonResult(msg.Sid);
 
 
-                   // return new JsonResult(code);
+                    //return new JsonResult(code);
 
                 }
                 catch
@@ -179,7 +179,7 @@ namespace BR.Controllers
                         try
                         {
                             string msgBody = $"<a href='{callbackUrl}'>link</a>";
-                            await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
+                            await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
                             return new JsonResult(Response(Controllers.StatusCode.Ok));
                         }
                         catch
@@ -189,6 +189,10 @@ namespace BR.Controllers
                         }
                     }
                     return new JsonResult(Response(Controllers.StatusCode.Ok));
+                }
+                else
+                {
+                    return new JsonResult(Response(Controllers.StatusCode.UserRegistered));
                 }
             }
             return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
@@ -283,7 +287,7 @@ namespace BR.Controllers
             if (identityUser != null)
             {
                 var user = await _userAccountService.GetInfo(identityUser.Id);
-                if(user != null)
+                if (user != null)
                 {
                     return new JsonResult(Response(user));
                 }
@@ -292,9 +296,8 @@ namespace BR.Controllers
             return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
         }
 
-        // post 
-        [HttpGet("LogOut/{notificationTag}")]
-        public async Task<IActionResult> LogOut(string notificationTag)
+        [HttpPost("LogOut")]
+        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
         {
             await _userAccountService.LogOut(notificationTag);
             return new JsonResult(Response(Controllers.StatusCode.Ok));
@@ -318,13 +321,34 @@ namespace BR.Controllers
         public async Task<ActionResult<ServerResponse<UserInfoResponse>>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if(identityUser is null)
+            if (identityUser is null)
             {
                 return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
             var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
             return new JsonResult(Response(res));
 
+        }
+
+
+        [Authorize]
+        [HttpPost("UploadImage")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadImage([FromBody]string imageString)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            try
+            {
+                var res = await _userAccountService.UploadImage(identityUser.Id, imageString);
+            return new JsonResult(Response(res));
+            }
+            catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
         }
 
 
