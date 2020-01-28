@@ -73,16 +73,16 @@ namespace BR.Controllers
                     // TWILIO
 
 
-                    //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    //  from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    //  to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    //return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    var msg = MessageResource.Create(body: code + " is your RB verification code",
+                     from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                     to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
 
 
-                    return new JsonResult(code);
+                    //return new JsonResult(code);
 
                 }
                 catch
@@ -142,7 +142,7 @@ namespace BR.Controllers
 
         [Authorize]
         [HttpPost("Register")]
-        public async Task<ActionResult<ServerResponse>> Register([FromBody]NewUserRequest newUserRequest)
+        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
@@ -163,7 +163,7 @@ namespace BR.Controllers
                     {
                         user.BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                     }
-                    await _userAccountService.Register(user);
+                    var userResponse = await _userAccountService.Register(user);
                     if (newUserRequest.Email != null)
                     {
                         _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
@@ -180,15 +180,15 @@ namespace BR.Controllers
                         {
                             string msgBody = $"<a href='{callbackUrl}'>link</a>";
                             await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
-                            return new JsonResult(Response(Controllers.StatusCode.Ok));
+                            //return new JsonResult(Response(Controllers.StatusCode.Ok));
                         }
                         catch
                         {
                             _cache.Remove(identityUser.Id);
-                            return new JsonResult(Response(Controllers.StatusCode.SendingMailError));
+                            return new JsonResult(Response(Controllers.StatusCode.SendingMailError, userResponse));
                         }
                     }
-                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    return new JsonResult(Response(userResponse));
                 }
                 else
                 {
