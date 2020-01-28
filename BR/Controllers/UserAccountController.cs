@@ -76,8 +76,8 @@ namespace BR.Controllers
                     //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
                     //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    //   from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    //   to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    //  from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    //  to: new Twilio.Types.PhoneNumber(phoneNumber));
                     //return new JsonResult(Response(Controllers.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
 
@@ -351,7 +351,32 @@ namespace BR.Controllers
             }
         }
 
-
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            try
+            {
+                var res = await _userAccountService.DeleteUser(identityUser.Id);
+                if (res)
+                {
+                    var resDel = await _userManager.DeleteAsync(identityUser);
+                    if (resDel.Succeeded)
+                    {
+                        return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    }
+                }
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+            catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+        }
     }
 
 }

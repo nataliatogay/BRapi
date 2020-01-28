@@ -181,6 +181,17 @@ namespace BR.Services
             return this.UserToUserInfoResponse(user);
         }
 
+        public async Task<bool> DeleteUser(string identityId)
+        {
+            var user = await _repository.GetUser(identityId);
+            if(user != null)
+            {
+                return await _repository.DeleteUser(user);
+                
+            }
+            return false;
+        }
+
         private UserInfoResponse UserToUserInfoResponse(User user)
         {
             if (user is null)

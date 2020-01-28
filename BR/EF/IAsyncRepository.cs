@@ -40,7 +40,7 @@ namespace BR.EF
 
         // Requests
 
-        Task<IEnumerable<ClientRequest>> GetClientRequests();
+        Task<ICollection<ClientRequest>> GetClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task UpdateClientRequest(ClientRequest clientRequest);
         Task AddClientRequest(ClientRequest clientRequest);
@@ -87,6 +87,7 @@ namespace BR.EF
         Task<User> AddUser(User user);
         Task<User> UpdateUser(User user);
         Task<IEnumerable<User>> GetUsers();
+        Task<bool> DeleteUser(User user);
 
 
         // Waiters

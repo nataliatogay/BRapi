@@ -23,15 +23,22 @@ namespace BR.DTO
         public string AdditionalInfo { get; set; }
         public string MainImage { get; set; }
         public int MaxReserveDays { get; set; }
-        public string Email { get; set; }
+        public ICollection<string> Photos { get; set; }
         public ICollection<string> SocialLinks { get; set; }
-        public ICollection<string> PaymentTypes { get; set; } 
+        public ICollection<string> PaymentTypes { get; set; }
         public ICollection<string> ClientTypes { get; set; }
         public ICollection<string> MealTypes { get; set; }
         public ICollection<string> Cuisines { get; set; }
         public ICollection<string> Phones { get; set; }
         public ICollection<EventInfo> Events { get; set; }
     }
+
+    public class ClientInfoForUsersResponse : ClientInfoResponse { }
+    public class ClientInfoForAdminResponse : ClientInfoResponse {
+        public string Email { get; set; }
+        public bool IsBlocked { get; set; }
+    }
+
 
     public class EventInfo
     {

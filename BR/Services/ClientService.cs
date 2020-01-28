@@ -119,7 +119,7 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(this.ClientToClientInfoRequest(client, role));
+                    res.Add(await this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -134,7 +134,7 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(this.ClientToClientInfoRequest(client, role));
+                    res.Add(await this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -149,7 +149,7 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(this.ClientToClientInfoRequest(client, role));
+                    res.Add(await this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -161,7 +161,7 @@ namespace BR.Services
         {
             var client = await _repository.GetClient(id);
             if (client != null)
-                return this.ClientToClientInfoRequest(client, role);
+                return await this.ClientToClientInfoRequest(client, role);
             return null;
         }
 
@@ -231,9 +231,9 @@ namespace BR.Services
         }
 
 
-        private ClientInfoResponse ClientToClientInfoRequest(Client client, string role)
+        private async Task<ClientInfoResponse> ClientToClientInfoRequest(Client client, string role)
         {
-
+            // for users and clients
             var clientTypes = new List<string>();
             if (client.ClientClientTypes != null)
             {
@@ -297,38 +297,92 @@ namespace BR.Services
                     }
                 }
             }
-            var res = new ClientInfoResponse()
+            var photos = new List<string>();
+            if(client.ClientImages != null)
             {
-                Id = client.Id,
-                Name = client.Name,
-                Address = client.Address,
-                OpenTime = client.OpenTime,
-                CloseTime = client.CloseTime,
-                IsBusinessLunch = client.IsBusinessLunch,
-                IsChildrenZone = client.IsChildrenZone,
-                IsWiFi = client.IsWiFi,
-                IsLiveMusic = client.IsLiveMusic,
-                IsOpenSpace = client.IsOpenSpace,
-                IsParking = client.IsParking,
-                AdditionalInfo = client.AdditionalInfo,
-                Lat = client.Lat,
-                Long = client.Long,
-                MaxReserveDays = client.MaxReserveDays,
-                SocialLinks = socials,
-                ClientTypes = clientTypes,
-                Cuisines = cuisins,
-                MealTypes = meals,
-                PaymentTypes = paymentTypes,
-                Phones = phones,
-                MainImage = client.MainImagePath
-            };
+                foreach (var photo in client.ClientImages)
+                {
+                    photos.Add(photo.ImagePath);
+                }
+            }
+
+            var events = new List<EventInfo>();
+            if(client.Events != null)
+            {
+                foreach (var item in client.Events)
+                {
+                    events.Add(new EventInfo()
+                    {
+                        Id = item.Id,
+                        Title = item.Title,
+                        Description = item.Description,
+                        Date = item.Date,
+                        ImgPath = item.ImagePath
+                    });
+                }
+            }
+
+            ClientInfoResponse res;
             if (role.Equals("Admin"))
             {
-                res.Email = client.Identity.Email;
-            }
-            else
+                res = new ClientInfoForAdminResponse()
+                {
+                    Id = client.Id,
+                    Name = client.Name,
+                    Address = client.Address,
+                    OpenTime = client.OpenTime,
+                    CloseTime = client.CloseTime,
+                    IsBusinessLunch = client.IsBusinessLunch,
+                    IsChildrenZone = client.IsChildrenZone,
+                    IsWiFi = client.IsWiFi,
+                    IsLiveMusic = client.IsLiveMusic,
+                    IsOpenSpace = client.IsOpenSpace,
+                    IsParking = client.IsParking,
+                    AdditionalInfo = client.AdditionalInfo,
+                    Lat = client.Lat,
+                    Long = client.Long,
+                    MaxReserveDays = client.MaxReserveDays,
+                    SocialLinks = socials,
+                    ClientTypes = clientTypes,
+                    Cuisines = cuisins,
+                    MealTypes = meals,
+                    PaymentTypes = paymentTypes,
+                    Phones = phones,
+                    MainImage = client.MainImagePath,
+                    Events = events,
+                    Photos = photos,
+                    Email = client.Identity.Email,
+                    IsBlocked = client.IsBlocked
+                };
+            } else
             {
-                res.Email = null;
+                res = new ClientInfoForUsersResponse()
+                {
+                    Id = client.Id,
+                    Name = client.Name,
+                    Address = client.Address,
+                    OpenTime = client.OpenTime,
+                    CloseTime = client.CloseTime,
+                    IsBusinessLunch = client.IsBusinessLunch,
+                    IsChildrenZone = client.IsChildrenZone,
+                    IsWiFi = client.IsWiFi,
+                    IsLiveMusic = client.IsLiveMusic,
+                    IsOpenSpace = client.IsOpenSpace,
+                    IsParking = client.IsParking,
+                    AdditionalInfo = client.AdditionalInfo,
+                    Lat = client.Lat,
+                    Long = client.Long,
+                    MaxReserveDays = client.MaxReserveDays,
+                    SocialLinks = socials,
+                    ClientTypes = clientTypes,
+                    Cuisines = cuisins,
+                    MealTypes = meals,
+                    PaymentTypes = paymentTypes,
+                    Phones = phones,
+                    MainImage = client.MainImagePath,
+                    Events = events,
+                    Photos = photos
+                };
             }
             return res;
         }

@@ -76,7 +76,7 @@ namespace BR.Controllers
 
 
         [HttpGet("schema/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientInfoResponse>>> ClientSchema(int id)
+        public async Task<ActionResult<ServerResponse<ClientHallsInfoResponse>>> ClientSchema(int id)
         {
             return new JsonResult(Response(await _clientService.GetClientHalls(id)));
         }

@@ -18,6 +18,7 @@ namespace BR.Services.Interfaces
         Task<bool> UserIsBlocked(string identityId);
         Task<string> UploadImage(string identityId, string imageString);
         Task<UserInfoResponse> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId);
+        Task<bool> DeleteUser(string identityId);
         string GenerateCode();
     }
 }

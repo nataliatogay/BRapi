@@ -212,7 +212,7 @@ namespace BR.EF
 
         // Requests
 
-        public async Task<IEnumerable<ClientRequest>> GetClientRequests()
+        public async Task<ICollection<ClientRequest>> GetClientRequests()
         {
             return await _db.ClientRequests.Where(c => c.ClientId == null).ToListAsync();
         }
@@ -422,6 +422,20 @@ namespace BR.EF
         public async Task<IEnumerable<User>> GetUsers()
         {
             return await _db.ApplicationUsers.ToListAsync();
+        }
+
+        public async Task<bool> DeleteUser(User user)
+        {
+            try
+            {
+                _db.ApplicationUsers.Remove(user);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<User> UpdateUser(User user)
