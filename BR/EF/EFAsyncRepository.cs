@@ -440,9 +440,17 @@ namespace BR.EF
 
         public async Task<User> UpdateUser(User user)
         {
+            try
+            {
+
             var res = _db.ApplicationUsers.Update(user);
             await _db.SaveChangesAsync();
             return res.Entity;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 

@@ -9,8 +9,8 @@ namespace BR.Services.Interfaces
 {
     public interface IClientRequestService
     {
-        Task<IEnumerable<ClientRequest>> GetAllClientRequests();
-        Task<ClientRequest> GetClientRequest(int id);
+        Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests();
+        Task<RequestInfoResponse> GetClientRequest(int id);
         Task AddNewClientRequest(ClientRequest clientRequest);
         Task AddNewClientRequest(NewRequestRequest newClientRequest);
         Task<int> ClientRequestCount();

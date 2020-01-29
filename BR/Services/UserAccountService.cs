@@ -23,7 +23,7 @@ namespace BR.Services
         private readonly AuthOptions _authOptions;
         private readonly IBlobService _blobService;
 
-        public UserAccountService(IAsyncRepository repository, 
+        public UserAccountService(IAsyncRepository repository,
             IOptions<AuthOptions> options,
             IBlobService blobService)
         {
@@ -79,7 +79,7 @@ namespace BR.Services
         {
             user.IsBlocked = false;
             var userAdded = await _repository.AddUser(user);
-            if(userAdded != null)
+            if (userAdded != null)
             {
                 return this.UserToUserInfoResponse(userAdded);
             }
@@ -173,21 +173,33 @@ namespace BR.Services
             {
                 userToUpdate.BirthDate = DateTime.ParseExact(updateUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             }
-            var user = await _repository.UpdateUser(userToUpdate);
-            if (user is null)
+            else
+            {
+                userToUpdate.BirthDate = null;
+            }
+            try
+            {
+                var user = await _repository.UpdateUser(userToUpdate);
+                if (user is null)
+                {
+                    return null;
+                }
+                return this.UserToUserInfoResponse(user);
+
+            }
+            catch
             {
                 return null;
             }
-            return this.UserToUserInfoResponse(user);
         }
 
         public async Task<bool> DeleteUser(string identityId)
         {
             var user = await _repository.GetUser(identityId);
-            if(user != null)
+            if (user != null)
             {
                 return await _repository.DeleteUser(user);
-                
+
             }
             return false;
         }

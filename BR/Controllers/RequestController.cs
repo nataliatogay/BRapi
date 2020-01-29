@@ -13,7 +13,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RequestController : ControllerBase
+    public class RequestController : ResponseController
     {
         private readonly IClientRequestService _clientRequestService;
 
@@ -38,15 +38,15 @@ namespace BR.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<ClientRequest>>> Get()
+        public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> Get()
         {
-            return new JsonResult((await _clientRequestService.GetAllClientRequests()).ToList());
+            return new JsonResult(Response((await _clientRequestService.GetAllClientRequests()).ToList()));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ClientRequest>> Get(int id)
+        public async Task<ActionResult<ServerResponse<ClientRequest>>> Get(int id)
         {
-            return new JsonResult(await _clientRequestService.GetClientRequest(id));
+            return new JsonResult(Response(await _clientRequestService.GetClientRequest(id)));
         }
 
         

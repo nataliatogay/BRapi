@@ -1,4 +1,5 @@
-﻿using BR.EF;
+﻿using BR.DTO;
+using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
 using System;
@@ -16,22 +17,46 @@ namespace BR.Services
         {
             _repository = repository;
         }
-        public async Task<IEnumerable<PaymentType>> GetAllPaymentTypes()
+        public async Task<ICollection<ParameterInfo>> GetAllPaymentTypes()
         {
-            return await _repository.GetAllPaymentTypes();
+            var types = await _repository.GetAllPaymentTypes();
+            var res = new List<ParameterInfo>();
+            foreach (var item in types)
+            {
+                res.Add(ToParameterInfo(item.Id, item.Title));
+            }
+            return res;
         }
-        public async Task<IEnumerable<Cuisine>> GetAllCuisines()
+        public async Task<ICollection<ParameterInfo>> GetAllCuisines()
         {
-            return await _repository.GetAllCuisines();
+            var types = await _repository.GetAllCuisines();
+            var res = new List<ParameterInfo>();
+            foreach (var item in types)
+            {
+                res.Add(ToParameterInfo(item.Id, item.Title));
+            }
+            return res;
         }
-        public async Task<IEnumerable<ClientType>> GetAllClientTypes()
+        public async Task<ICollection<ParameterInfo>> GetAllClientTypes()
         {
-            return await _repository.GetAllClientTypes();
+            var types = await _repository.GetAllClientTypes();
+            var res = new List<ParameterInfo>();
+            foreach (var item in types)
+            {
+                res.Add(ToParameterInfo(item.Id, item.Title));
+            }
+            return res;
         }
 
-        public async Task<IEnumerable<MealType>> GetAllMealType()
+        public async Task<ICollection<ParameterInfo>> GetAllMealType()
         {
-            return await _repository.GetAllMealTypes();
+            var types = await _repository.GetAllMealTypes();
+            var res = new List<ParameterInfo>();
+            foreach (var item in types)
+            {
+                res.Add(ToParameterInfo(item.Id, item.Title));
+            }
+            return res;
         }
 
         public async Task<Cuisine> AddCuisine(string cuisineTitle)
@@ -148,6 +173,15 @@ namespace BR.Services
                 return await _repository.DeletePaymentType(paymentType);
             }
             return false;
+        }
+
+        private ParameterInfo ToParameterInfo(int id, string title)
+        {
+            return new ParameterInfo()
+            {
+                Id = id,
+                Title = title
+            };
         }
     }
 }

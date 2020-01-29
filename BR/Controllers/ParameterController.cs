@@ -14,7 +14,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-  //  [Authorize]
+    //  [Authorize]
     public class ParameterController : ResponseController
     {
         private readonly IParameterService _parameterService;
@@ -25,7 +25,7 @@ namespace BR.Controllers
         }
 
         [AllowAnonymous]
-        
+
         [HttpGet]
         public async Task<ActionResult<ServerResponse<ClientParametersResponse>>> Get()
         {
@@ -61,6 +61,22 @@ namespace BR.Controllers
                 PaymentTypes = paymentTypesDict,
                 Cuisines = cuisinesDict,
                 MealTypes = mealTypesDict
+            }));
+        }
+
+        [HttpGet("info")]
+        public async Task<ActionResult<ServerResponse<ParametersInfoResponse>>> GetInfo()
+        {
+            var paymentTypes = await _parameterService.GetAllPaymentTypes();
+            var cuisines = await _parameterService.GetAllCuisines();
+            var clientTypes = await _parameterService.GetAllClientTypes();
+            var mealTypes = await _parameterService.GetAllMealType();
+            return new JsonResult(Response(new ParametersInfoResponse()
+            {
+                ClientTypes = clientTypes,
+                Cuisines = cuisines,
+                MealTypes = mealTypes,
+                PaymentTypes = paymentTypes
             }));
         }
 

@@ -38,14 +38,34 @@ namespace BR.Services
             await _repository.AddClientRequest(clientRequest);
         }
 
-        public async Task<IEnumerable<ClientRequest>> GetAllClientRequests()
+        public async Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests()
         {
-            return await _repository.GetClientRequests();
+            var requests = await _repository.GetClientRequests();
+            var requestsInfo = new List<RequestInfoResponse>();
+            foreach (var item in requests)
+            {
+                requestsInfo.Add(new RequestInfoResponse()
+                {
+                    Id = item.Id,
+                    RegisteredDate = item.RegisteredDate,
+                    JsonInfo = item.JsonInfo
+                });
+            }
+            {
+
+            }
+            return requestsInfo;
         }
 
-        public async Task<ClientRequest> GetClientRequest(int id)
+        public async Task<RequestInfoResponse> GetClientRequest(int id)
         {
-            return await _repository.GetClientRequest(id);
+            var req = await _repository.GetClientRequest(id);
+            return new RequestInfoResponse()
+            {
+                Id = req.Id,
+                RegisteredDate = req.RegisteredDate,
+                JsonInfo = req.JsonInfo
+            };
         }
 
         
