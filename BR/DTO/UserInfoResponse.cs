@@ -11,8 +11,17 @@ namespace BR.DTO
         public string ImagePath { get; set; }
         public DateTime? BirthDate { get; set; }
         public string Email { get; set; }
-        public ICollection<ReservationInfo> Reservations { get; set; } 
+    }
 
+    public class UserInfoForUsersResponse : UserInfoResponse
+    {
+        public ICollection<ReservationInfo> Reservations { get; set; } 
+    }
+    
+    public class UserInfoForAdminResponse:UserInfoResponse
+    {
+        public string PhoneNumber { get; set; }
+        public bool IsBlocked { get; set; }
     }
 
     public class ReservationInfo

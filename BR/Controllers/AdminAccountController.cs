@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -24,7 +25,7 @@ namespace BR.Controllers
 
     [Route("api/[controller]")]
     [ApiController]
-    public class AdminAccountController : ControllerBase
+    public class AdminAccountController : ResponseController
     {
         private readonly IAdminAccountService _adminAccountService;
         private readonly UserManager<IdentityUser> _userManager;
@@ -334,12 +335,19 @@ namespace BR.Controllers
 
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword([FromBody]string email)
+        public async Task<ActionResult<ServerResponse>> ForgotPassword([FromBody]string email)
         {
+            var body = new StreamReader(Request.Body);
+            //The modelbinder has already read the stream and need to reset the stream index
+            body.BaseStream.Seek(0, SeekOrigin.Begin);
+            var requestBody = body.ReadToEnd();
+
+            //string email = "ui";
             var user = await _userManager.FindByNameAsync(email);
+
             if (user == null)
             {
-                return new JsonResult("Admin not found");
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -352,11 +360,12 @@ namespace BR.Controllers
                 string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                 await _emailService.SendAsync(email, "Password reset", msgBody);
-                return Ok();
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
             }
             catch (Exception ex)
             {
-                throw ex;
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+
             }
         }
 

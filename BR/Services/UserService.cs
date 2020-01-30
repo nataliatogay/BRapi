@@ -19,7 +19,7 @@ namespace BR.Services
             _repository = repository;
 
         }
-        public async Task<IEnumerable<UserInfoResponse>> GetUsers()
+        public async Task<IEnumerable<UserInfoResponse>> GetUsers(string role)
         {
             var users = await _repository.GetUsers();
             if (users is null)
@@ -28,19 +28,19 @@ namespace BR.Services
             var res = new List<UserInfoResponse>();
             foreach (var user in users)
             {
-                res.Add(this.UserToUserInfoResponse(user));
+                res.Add(this.UserToUserInfoResponse(user, role));
             }
             return res;
         }
 
-        public async Task<UserInfoResponse> GetUser(int id)
+        public async Task<UserInfoResponse> GetUser(int id, string role)
         {
             var user = await _repository.GetUser(id);
             if (user is null)
             {
                 return null;
             }
-            return this.UserToUserInfoResponse(user);
+            return this.UserToUserInfoResponse(user, role);
         }
 
         public async Task<User> BlockUser(int id)
@@ -54,7 +54,7 @@ namespace BR.Services
             return await _repository.UpdateUser(user);
         }
 
-        private UserInfoResponse UserToUserInfoResponse(User user)
+        private UserInfoResponse UserToUserInfoResponse(User user, string role)
         {
             var reservations = new List<ReservationInfo>();
             if (user.Reservations != null)
@@ -86,16 +86,35 @@ namespace BR.Services
                     reservations.Add(resInfo);
                 }
             }
-            return new UserInfoResponse()
+            UserInfoResponse userInfo;
+            if (role.Equals("Admin"))
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                BirthDate = user.BirthDate,
-                Gender = user.Gender,
-                ImagePath = user.ImagePath,
-                Email = user.Identity.Email,
-                Reservations = reservations
-            };
+                userInfo = new UserInfoForAdminResponse()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    BirthDate = user.BirthDate,
+                    Email = user.Identity.Email,
+                    Gender = user.Gender,
+                    ImagePath = user.ImagePath,
+                    IsBlocked = user.IsBlocked,
+                    PhoneNumber = user.Identity.PhoneNumber
+                };
+            } else 
+            {
+                userInfo = new UserInfoForUsersResponse()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    BirthDate = user.BirthDate,
+                    Email = user.Identity.Email,
+                    Gender = user.Gender,
+                    ImagePath = user.ImagePath,
+                    Reservations = reservations
+
+                };
+            }
+            return userInfo;
         }
     }
 }
