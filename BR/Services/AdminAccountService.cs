@@ -25,9 +25,9 @@ namespace BR.Services
             _authOptions = options.Value;
         }
 
-        public async Task<LogInResponse> LogIn(string userName, string identityId)
+        public async Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag)
         {
-            return await Authentication(userName, identityId);
+            return await Authentication(userName, identityId, notificationTag);
         }
 
 
@@ -71,7 +71,7 @@ namespace BR.Services
             {
                 return null;
             }
-            return await Authentication(identityUser.UserName, identityUser.Id);
+            return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
         }
 
         public async Task<Admin> GetAdmin(string identityId)
@@ -86,7 +86,7 @@ namespace BR.Services
 
 
         // change notificationTag
-        private async Task<LogInResponse> Authentication(string userName, string identityId)
+        private async Task<LogInResponse> Authentication(string userName, string identityId, string notificationTag)
         {
             List<Claim> claims = new List<Claim>()
             {
@@ -119,7 +119,7 @@ namespace BR.Services
                 IdentityUserId = identityId,
                 RefreshToken = resp.RefreshToken,
                 Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
-                NotificationTag = "123"
+                NotificationTag = notificationTag
             });
             return resp;
         }

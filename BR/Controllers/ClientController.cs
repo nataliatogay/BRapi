@@ -140,7 +140,25 @@ namespace BR.Controllers
         }
 
 
-        
+        [HttpPut("Block")]
+        public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]BlockUserRequest blockRequest)
+        {
+            try
+            {
+                var res = await _clientService.BlockClient(blockRequest);
+                if (res is null)
+                {
+                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                }
+            }
+            catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
+        }
+
+
 
     }
 }

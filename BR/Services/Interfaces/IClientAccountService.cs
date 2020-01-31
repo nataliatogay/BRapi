@@ -10,7 +10,7 @@ namespace BR.Services.Interfaces
 {
     public interface IClientAccountService
     {
-        Task<LogInResponse> LogIn(IdentityUser identityUser); 
+        Task<LogInResponse> LogIn(IdentityUser identityUser, string notificationTag); 
         Task LogOut(string refreshToken);
         Task<LogInResponse> UpdateToken(string refreshToken);
         Task<Client> GetInfo(string identityId);

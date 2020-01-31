@@ -13,5 +13,8 @@ namespace BR.DTO
         [MaxLength(20)]
         //[MinLength(3)]
         public string Password { get; set; }
+
+        [Required]
+        public string NotificationTag { get; set; }
     }
 }

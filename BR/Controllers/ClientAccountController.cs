@@ -46,7 +46,7 @@ namespace BR.Controllers
                     {
                         // надо ли - ??
                         //if(!(await _userManager.IsEmailConfirmedAsync(identityUser))) { }
-                        LogInResponse resp = await _clientAccountService.LogIn(identityUser);
+                        LogInResponse resp = await _clientAccountService.LogIn(identityUser, model.NotificationTag);
                         if (resp != null)
                         {
                             return new JsonResult(resp);

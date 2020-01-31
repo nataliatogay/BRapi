@@ -30,9 +30,9 @@ namespace BR.Services
             _authOptions = options.Value;
         }
 
-        public async Task<LogInResponse> LogIn(IdentityUser identityUser)
+        public async Task<LogInResponse> LogIn(IdentityUser identityUser, string notificationTag)
         {
-            return await Authentication(identityUser);
+            return await Authentication(identityUser, notificationTag);
         }
 
 
@@ -68,7 +68,7 @@ namespace BR.Services
             {
                 return null;
             }
-            return await Authentication(identityUser);
+            return await Authentication(identityUser, token.NotificationTag);
         }
 
         public async Task<bool> ClientIsBlocked(string identityId)
@@ -81,7 +81,7 @@ namespace BR.Services
             return false;
         }
 
-        private async Task<LogInResponse> Authentication(IdentityUser identityUser)
+        private async Task<LogInResponse> Authentication(IdentityUser identityUser, string notificationTag)
         {
             List<Claim> claims = new List<Claim>()
             {

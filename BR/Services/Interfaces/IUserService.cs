@@ -11,6 +11,6 @@ namespace BR.Services.Interfaces
     {
         Task<IEnumerable<UserInfoResponse>> GetUsers(string role);
         Task<UserInfoResponse> GetUser(int id, string role);
-        Task<User> BlockUser(int id);
+        Task<User> BlockUser(BlockUserRequest blockRequest);
     }
 }

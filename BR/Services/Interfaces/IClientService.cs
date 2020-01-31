@@ -19,6 +19,7 @@ namespace BR.Services.Interfaces
         Task<Client> UpdateClient(Client client);
         Task<bool> DeleteClient(int id);        
         string GeneratePassword();
-        
+        Task<Client> BlockClient(BlockUserRequest blockRequest);
+
     }
 }

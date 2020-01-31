@@ -8,7 +8,7 @@ namespace BR.DTO
 {
     public class NewClientRequest
     {
-        public int ClientRequestId { get; set; }
+        public int? ClientRequestId { get; set; }
         [Required]
         public string Name { get; set; }
 

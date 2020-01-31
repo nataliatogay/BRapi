@@ -68,10 +68,11 @@ namespace BR.EF
 
         }
 
-        public async Task UpdateClient(Client client)
+        public async Task<Client> UpdateClient(Client client)
         {
-            _db.Clients.Update(client);
+            var res = _db.Clients.Update(client);
             await _db.SaveChangesAsync();
+            return res.Entity;
         }
 
         public async Task<Client> GetClient(string identityId)

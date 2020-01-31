@@ -31,7 +31,6 @@ namespace BR.Services
 
         public async Task AddNewClient(NewClientRequest newClientRequest, string identityId)
         {
-            ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ClientRequestId);
             Client client = new Client()
             {
                 Name = newClientRequest.Name,
@@ -91,10 +90,15 @@ namespace BR.Services
                     );
             }
 
-
-            clientRequest.ClientId = addedClient.Id;
-            await _repository.UpdateClientRequest(clientRequest);
-
+            if (newClientRequest.ClientRequestId != null)
+            {
+                ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ClientRequestId ?? default(int));
+                if (clientRequest != null)
+                {
+                    clientRequest.ClientId = addedClient.Id;
+                }
+                await _repository.UpdateClientRequest(clientRequest);
+            }
         }
 
 
@@ -114,12 +118,12 @@ namespace BR.Services
         public async Task<IEnumerable<ClientInfoResponse>> GetAllClients(string role)
         {
             var clients = await _repository.GetClients();
-            if(clients != null)
+            if (clients != null)
             {
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(await this.ClientToClientInfoRequest(client, role));
+                    res.Add(this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -134,7 +138,7 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(await this.ClientToClientInfoRequest(client, role));
+                    res.Add(this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -149,7 +153,7 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(await this.ClientToClientInfoRequest(client, role));
+                    res.Add(this.ClientToClientInfoRequest(client, role));
                 }
                 return res;
             }
@@ -161,23 +165,23 @@ namespace BR.Services
         {
             var client = await _repository.GetClient(id);
             if (client != null)
-                return await this.ClientToClientInfoRequest(client, role);
+                return this.ClientToClientInfoRequest(client, role);
             return null;
         }
 
         public async Task<ClientHallsInfoResponse> GetClientHalls(int id)
         {
             var client = await _repository.GetClient(id);
-            if(client is null)
+            if (client is null)
             {
                 return null;
             }
             var floorsInfo = new List<FloorInfo>();
-            
-            foreach(var floor in client.Floors)
+
+            foreach (var floor in client.Floors)
             {
                 var hallsInfo = new List<HallInfo>();
-                foreach(var hall in floor.Halls)
+                foreach (var hall in floor.Halls)
                 {
                     hallsInfo.Add(new HallInfo()
                     {
@@ -231,7 +235,7 @@ namespace BR.Services
         }
 
 
-        private async Task<ClientInfoResponse> ClientToClientInfoRequest(Client client, string role)
+        private ClientInfoResponse ClientToClientInfoRequest(Client client, string role)
         {
             // for users and clients
             var clientTypes = new List<string>();
@@ -298,7 +302,7 @@ namespace BR.Services
                 }
             }
             var photos = new List<string>();
-            if(client.ClientImages != null)
+            if (client.ClientImages != null)
             {
                 foreach (var photo in client.ClientImages)
                 {
@@ -307,7 +311,7 @@ namespace BR.Services
             }
 
             var events = new List<EventInfo>();
-            if(client.Events != null)
+            if (client.Events != null)
             {
                 foreach (var item in client.Events)
                 {
@@ -354,7 +358,8 @@ namespace BR.Services
                     Email = client.Identity.Email,
                     IsBlocked = client.IsBlocked
                 };
-            } else
+            }
+            else
             {
                 res = new ClientInfoForUsersResponse()
                 {
@@ -387,6 +392,17 @@ namespace BR.Services
             return res;
         }
 
-        
+        public async Task<Client> BlockClient(BlockUserRequest blockRequest)
+        {
+            var client = await _repository.GetClient(blockRequest.UserId);
+            if (client is null)
+            {
+                return null;
+            }
+            client.IsBlocked = blockRequest.ToBlock;
+            return await _repository.UpdateClient(client);
+        }
+
+
     }
 }

@@ -43,14 +43,14 @@ namespace BR.Services
             return this.UserToUserInfoResponse(user, role);
         }
 
-        public async Task<User> BlockUser(int id)
+        public async Task<User> BlockUser(BlockUserRequest blockRequest)
         {
-            var user = await _repository.GetUser(id);
+            var user = await _repository.GetUser(blockRequest.UserId);
             if (user is null)
             {
                 return null;
             }
-            user.IsBlocked = true;
+            user.IsBlocked = blockRequest.ToBlock;
             return await _repository.UpdateUser(user);
         }
 
@@ -91,6 +91,7 @@ namespace BR.Services
             {
                 userInfo = new UserInfoForAdminResponse()
                 {
+                    Id = user.Id,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     BirthDate = user.BirthDate,

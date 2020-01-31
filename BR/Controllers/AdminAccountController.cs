@@ -69,7 +69,7 @@ namespace BR.Controllers
                 }
                 if (checkPassword)
                 {
-                    LogInResponse resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id);
+                    LogInResponse resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
                     if (resp != null)
                     {
                         return new JsonResult(resp);

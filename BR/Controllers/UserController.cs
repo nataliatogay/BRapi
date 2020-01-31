@@ -26,7 +26,7 @@ namespace BR.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<UserInfoResponse>>>> Get()
+        public async Task<ActionResult<ServerResponse<ICollection<UserInfoResponse>>>> Get()
         {
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
             if (String.IsNullOrEmpty(role))
@@ -49,9 +49,21 @@ namespace BR.Controllers
         }
 
         [HttpPut("Block")]
-        public async Task<ActionResult<ServerResponse<User>>> BlockUser(int id)
+        public async Task<ActionResult<ServerResponse>> BlockUser([FromBody]BlockUserRequest blockRequest)
         {
-            return new JsonResult(Response(await _userService.BlockUser(id)));
+            try
+            {
+               var res = await _userService.BlockUser(blockRequest);
+                if(res is null)
+                {
+                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                }
+            }
+            catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }        
     }
 }

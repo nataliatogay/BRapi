@@ -22,7 +22,7 @@ namespace BR.EF
         Task<bool> DeleteClientImage(ClientImage image);
         Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
         Task<IEnumerable<Client>> GetClientsByName(string title);
-        Task UpdateClient(Client client);
+        Task<Client> UpdateClient(Client client);
         Task AddClientPaymentType(int clientId, int paymentTypeId);
         Task AddClientClientType(int clientId, int clientTypeId);
         Task AddClientMealType(int clientId, int mealtTypeId);
