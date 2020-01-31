@@ -27,7 +27,7 @@ namespace BR.Controllers
         [AllowAnonymous]
 
         [HttpGet]
-        public async Task<ActionResult<ServerResponse<ClientParametersResponse>>> Get()
+        public async Task<ActionResult<ClientParametersResponse>> Get()
         {
             var paymentTypes = await _parameterService.GetAllPaymentTypes();
             var cuisines = await _parameterService.GetAllCuisines();
@@ -55,13 +55,13 @@ namespace BR.Controllers
                 mealTypesDict.Add(item.Id, item.Title);
             }
 
-            return new JsonResult(Response(new ClientParametersResponse()
+            return new JsonResult(new ClientParametersResponse()
             {
                 ClientTypes = clientTypesDict,
                 PaymentTypes = paymentTypesDict,
                 Cuisines = cuisinesDict,
                 MealTypes = mealTypesDict
-            }));
+            });
         }
 
         [HttpGet("info")]

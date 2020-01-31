@@ -9,8 +9,8 @@ namespace BR.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserInfoResponse>> GetUsers();
-        Task<UserInfoResponse> GetUser(int id);
+        Task<IEnumerable<UserInfoResponse>> GetUsers(string role);
+        Task<UserInfoResponse> GetUser(int id, string role);
         Task<User> BlockUser(int id);
     }
 }

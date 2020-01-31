@@ -40,10 +40,12 @@ namespace BR.Controllers
         [HttpGet("")]
         public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get()
         {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            var res = await _clientService.GetAllClients(role);
-            return new JsonResult(Response(res));
+            if (String.IsNullOrEmpty(role))
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            return new JsonResult(Response(await _clientService.GetAllClients(role)));
         }
 
         [HttpGet("mealtype")]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BR.DTO;
 using BR.Models;
@@ -27,13 +28,24 @@ namespace BR.Controllers
         [HttpGet("")]
         public async Task<ActionResult<ServerResponse<IEnumerable<UserInfoResponse>>>> Get()
         {
-            return new JsonResult(Response(await _userService.GetUsers()));
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+            if (String.IsNullOrEmpty(role))
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(Response(await _userService.GetUsers(role)));
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Get(int id)
         {
-            return new JsonResult(Response(await _userService.GetUser(id)));
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+            if (String.IsNullOrEmpty(role))
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            return new JsonResult(Response(await _userService.GetUser(id, role)));
         }
 
         [HttpPut("Block")]
