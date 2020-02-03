@@ -48,6 +48,20 @@ namespace BR.Controllers
             return new JsonResult(Response(await _clientService.GetAllClients(role)));
         }
 
+        [HttpGet("Favourite")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Favourite(ICollection<int> clientIds)
+        {
+            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
+            if (String.IsNullOrEmpty(role))
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            return new JsonResult(Response(await _clientService.GetFavourites(clientIds, role)));
+        }
+
+
+
+
         [HttpGet("mealtype")]
         public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get(string mealType)
         {
@@ -87,7 +101,7 @@ namespace BR.Controllers
 
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
+        public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Post([FromBody]NewClientRequest newClient)
         {
              string password = _clientService.GeneratePassword();
             IdentityUser identityUser = new IdentityUser()
@@ -113,7 +127,7 @@ namespace BR.Controllers
                 }
             }
 
-            return new JsonResult(Response(await _clientService.GetAllClients("Admin")));
+            return new JsonResult(Response(Controllers.StatusCode.Ok, await _clientService.GetAllClients("Admin")));
 
 
 

@@ -37,6 +37,7 @@ namespace BR.DTO
     public class ClientInfoForAdminResponse : ClientInfoResponse {
         public string Email { get; set; }
         public bool IsBlocked { get; set; }
+        public DateTime RegistrationDate { get; set; }
     }
 
 

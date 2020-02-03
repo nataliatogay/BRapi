@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -67,8 +68,7 @@ namespace BR.Models
 
         public bool IsBlocked { get; set; }
 
-        //public int ClientRequestId { get; set; }
-
+        public DateTime RegistrationDate { get; set; }
         public string IdentityId { get; set; }
 
         [ForeignKey("IdentityId")]

@@ -12,6 +12,7 @@ namespace BR.Services.Interfaces
     {
         Task<IEnumerable<ClientInfoResponse>> GetAllClients(string role);
         Task<IEnumerable<ClientInfoResponse>> GetClientsByMeal(string mealType, string role);
+        Task<ICollection<ClientInfoResponse>> GetFavourites(ICollection<int> clientIds, string role);
         Task<IEnumerable<ClientInfoResponse>> GetClientsByName(string title, string role);
         Task<ClientInfoResponse> GetClient(int id, string role);
         Task<ClientHallsInfoResponse> GetClientHalls(int id);

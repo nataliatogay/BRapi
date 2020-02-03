@@ -78,6 +78,10 @@ namespace BR.Services
         public async Task<UserInfoResponse> Register(User user)
         {
             user.IsBlocked = false;
+            if(user.ImagePath is null)
+            {
+                user.ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png";
+            }
             var userAdded = await _repository.AddUser(user);
             if (userAdded != null)
             {
@@ -105,6 +109,7 @@ namespace BR.Services
             }
             return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
         }
+
 
         public async Task<bool> UserIsBlocked(string identityId)
         {

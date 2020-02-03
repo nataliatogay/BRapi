@@ -49,8 +49,13 @@ namespace BR.Services
                 MaxReserveDays = newClientRequest.MaxReserveDays,
                 MainImagePath = newClientRequest.MainImage,
                 IsBlocked = false,
-                IdentityId = identityId
+                IdentityId = identityId,
+                RegistrationDate = DateTime.Now
             };
+            if(client.MainImagePath is null)
+            {
+                client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+            }
 
             //client.MainImagePath = await _blobService.UploadImage(newClientRequest.MainImage);
 
@@ -128,6 +133,17 @@ namespace BR.Services
                 return res;
             }
             return null;
+        }
+
+        public async Task<ICollection<ClientInfoResponse>> GetFavourites(ICollection<int> clientIds, string role)
+        {
+            var res = new List<ClientInfoResponse>();
+            foreach (var id in clientIds) 
+            {
+                var client = await _repository.GetClient(id);
+                res.Add(this.ClientToClientInfoRequest(client, role));
+            }
+            return res;
         }
 
         public async Task<IEnumerable<ClientInfoResponse>> GetClientsByMeal(string mealType, string role)
@@ -238,6 +254,10 @@ namespace BR.Services
         private ClientInfoResponse ClientToClientInfoRequest(Client client, string role)
         {
             // for users and clients
+            if(client is null)
+            {
+                return null;
+            }
             var clientTypes = new List<string>();
             if (client.ClientClientTypes != null)
             {
@@ -356,7 +376,8 @@ namespace BR.Services
                     Events = events,
                     Photos = photos,
                     Email = client.Identity.Email,
-                    IsBlocked = client.IsBlocked
+                    IsBlocked = client.IsBlocked,
+                    RegistrationDate = client.RegistrationDate
                 };
             }
             else
