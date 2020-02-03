@@ -52,7 +52,7 @@ namespace BR.Services
                 IdentityId = identityId,
                 RegistrationDate = DateTime.Now
             };
-            if(client.MainImagePath is null)
+            if (client.MainImagePath is null)
             {
                 client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
             }
@@ -61,38 +61,56 @@ namespace BR.Services
 
             Client addedClient = await _repository.AddClient(client);
 
-            foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
+            if (newClientRequest.PaymentTypeIds != null)
             {
-                await _repository.AddClientPaymentType(addedClient.Id, paymentTypeId);
+                foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
+                {
+                    await _repository.AddClientPaymentType(addedClient.Id, paymentTypeId);
+                }
             }
 
-            foreach (var mealTypeId in newClientRequest.MealTypeIds)
+            if (newClientRequest.MealTypeIds != null)
             {
-                await _repository.AddClientMealType(addedClient.Id, mealTypeId);
+                foreach (var mealTypeId in newClientRequest.MealTypeIds)
+                {
+                    await _repository.AddClientMealType(addedClient.Id, mealTypeId);
+                }
             }
 
-            foreach (var clientTypeId in newClientRequest.ClientTypeIds)
+            if (newClientRequest.ClientTypeIds != null)
             {
-                await _repository.AddClientClientType(addedClient.Id, clientTypeId);
+                foreach (var clientTypeId in newClientRequest.ClientTypeIds)
+                {
+                    await _repository.AddClientClientType(addedClient.Id, clientTypeId);
+                }
             }
 
-            foreach (var cuisineId in newClientRequest.CuisineIds)
+            if (newClientRequest.CuisineIds != null)
             {
-                await _repository.AddClientCuisine(addedClient.Id, cuisineId);
+                foreach (var cuisineId in newClientRequest.CuisineIds)
+                {
+                    await _repository.AddClientCuisine(addedClient.Id, cuisineId);
+                }
             }
 
-            foreach (var link in newClientRequest.SocialLinks)
+            if (newClientRequest.SocialLinks != null)
             {
-                await _repository.AddClientSocialLink(addedClient.Id, link);
+                foreach (var link in newClientRequest.SocialLinks)
+                {
+                    await _repository.AddClientSocialLink(addedClient.Id, link);
+                }
             }
 
-            foreach (var phone in newClientRequest.Phones)
+            if (newClientRequest.Phones != null)
             {
-                await _repository.AddClientPhone(
-                    addedClient.Id,
-                    phone.Number,
-                    phone.IsShow
-                    );
+                foreach (var phone in newClientRequest.Phones)
+                {
+                    await _repository.AddClientPhone(
+                        addedClient.Id,
+                        phone.Number,
+                        phone.IsShow
+                        );
+                }
             }
 
             if (newClientRequest.ClientRequestId != null)
@@ -128,7 +146,23 @@ namespace BR.Services
                 var res = new List<ClientInfoResponse>();
                 foreach (var client in clients)
                 {
-                    res.Add(this.ClientToClientInfoRequest(client, role));
+                    if (role.Equals("Admin"))
+                    {
+                        res.Add(new ClientShortInfoResponse()
+                        {
+                            Id = client.Id,
+                            Name = client.Name,
+                            Address = client.Address,
+                            MainImage = client.MainImagePath,
+                            Email = client.Identity.Email,
+                            RegistrationDate = client.RegistrationDate,
+                            IsBlocked = client.IsBlocked
+                        });
+                    }
+                    else
+                    {
+                        res.Add(this.ClientToClientInfoRequest(client, role));
+                    }
                 }
                 return res;
             }
@@ -138,7 +172,7 @@ namespace BR.Services
         public async Task<ICollection<ClientInfoResponse>> GetFavourites(ICollection<int> clientIds, string role)
         {
             var res = new List<ClientInfoResponse>();
-            foreach (var id in clientIds) 
+            foreach (var id in clientIds)
             {
                 var client = await _repository.GetClient(id);
                 res.Add(this.ClientToClientInfoRequest(client, role));
@@ -254,7 +288,7 @@ namespace BR.Services
         private ClientInfoResponse ClientToClientInfoRequest(Client client, string role)
         {
             // for users and clients
-            if(client is null)
+            if (client is null)
             {
                 return null;
             }

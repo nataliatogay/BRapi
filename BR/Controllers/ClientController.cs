@@ -15,8 +15,8 @@ using Newtonsoft.Json;
 
 namespace BR.Controllers
 {
-    // [Authorize]
-   // [Authorize(Roles = "Admin, User")]
+    [Authorize]
+    // [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ResponseController
@@ -67,7 +67,7 @@ namespace BR.Controllers
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType, role)));
+            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType, "User")));
         }
 
 
@@ -103,7 +103,7 @@ namespace BR.Controllers
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Post([FromBody]NewClientRequest newClient)
         {
-             string password = _clientService.GeneratePassword();
+            string password = _clientService.GeneratePassword();
             IdentityUser identityUser = new IdentityUser()
             {
                 Email = newClient.Email,
@@ -134,14 +134,14 @@ namespace BR.Controllers
 
 
 
-           // return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
+            // return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
 
 
         [HttpPut("")]
         public async Task<ActionResult<ServerResponse<Client>>> Update([FromBody]Client client)
         {
-             return new JsonResult(Response(await _clientService.UpdateClient(client)));
+            return new JsonResult(Response(await _clientService.UpdateClient(client)));
         }
 
 
@@ -150,7 +150,7 @@ namespace BR.Controllers
         {
             await _clientService.DeleteClient(id);
             return Ok();
-          //  return new JsonResult((await _clientService.GetAllClients()).ToList());
+            //  return new JsonResult((await _clientService.GetAllClients()).ToList());
         }
 
 

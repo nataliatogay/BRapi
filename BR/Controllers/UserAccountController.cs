@@ -74,15 +74,14 @@ namespace BR.Controllers
 
 
                     TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
- 
-                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    // from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    // to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    //return new JsonResult(Response(Controllers.StatusCode.Ok));
+
+                    var msg = MessageResource.Create(body: code + " is your RB verification code",
+                    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    string sid = msg.Sid;
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
-
-
-                    return new JsonResult(code);
+                    // return new JsonResult(code);
 
                 }
                 catch

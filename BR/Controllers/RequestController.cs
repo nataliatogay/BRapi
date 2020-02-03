@@ -43,6 +43,12 @@ namespace BR.Controllers
             return new JsonResult(Response((await _clientRequestService.GetAllClientRequests()).ToList()));
         }
 
+        [HttpGet("count")]
+        public async Task<ActionResult<ServerResponse<int>>> GetCount()
+        {
+            return new JsonResult(Response(await _clientRequestService.ClientRequestCount()));
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<ClientRequest>>> Get(int id)
         {
