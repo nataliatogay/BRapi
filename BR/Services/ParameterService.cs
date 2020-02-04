@@ -59,16 +59,22 @@ namespace BR.Services
             return res;
         }
 
-        public async Task<Cuisine> AddCuisine(string cuisineTitle)
+        public async Task AddCuisine(ICollection<string> cuisineTitles)
         {
-            if (!String.IsNullOrEmpty(cuisineTitle) && !String.IsNullOrWhiteSpace(cuisineTitle))
+            foreach (var title in cuisineTitles)
             {
-                if (await _repository.GetCuisine(cuisineTitle) == null)
+                if (!String.IsNullOrEmpty(title) && !String.IsNullOrWhiteSpace(title))
                 {
-                    return await _repository.AddCuisine(new Cuisine() { Title = cuisineTitle });
+                    if (await _repository.GetCuisine(title) == null)
+                    {
+                        try
+                        {
+                            await _repository.AddCuisine(new Cuisine() { Title = title });
+                        }
+                        catch { }
+                    }
                 }
             }
-            return null;
         }
 
         public async Task<Cuisine> UpdateCuisine(Cuisine cuisine)
@@ -95,16 +101,23 @@ namespace BR.Services
             return false;
         }
 
-        public async Task<ClientType> AddClientType(string clientTypeTitle)
+        public async Task AddClientType(ICollection<string> clientTypeTitles)
         {
-            if (!String.IsNullOrEmpty(clientTypeTitle) && !String.IsNullOrWhiteSpace(clientTypeTitle))
+            foreach (var title in clientTypeTitles)
             {
-                if (await _repository.GetClientType(clientTypeTitle) == null)
+                if (!String.IsNullOrEmpty(title) && !String.IsNullOrWhiteSpace(title))
                 {
-                    return await _repository.AddClientType(new ClientType() { Title = clientTypeTitle });
+                    if (await _repository.GetClientType(title) == null)
+                    {
+                        try
+                        {
+                            await _repository.AddClientType(new ClientType() { Title = title });
+                        }
+                        catch { }
+                    }
                 }
             }
-            return null;
+
         }
 
         public async Task<ClientType> UpdateClientType(ClientType clientType)

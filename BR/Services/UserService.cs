@@ -99,7 +99,8 @@ namespace BR.Services
                     Gender = user.Gender,
                     ImagePath = user.ImagePath,
                     IsBlocked = user.IsBlocked,
-                    PhoneNumber = user.Identity.PhoneNumber
+                    PhoneNumber = user.Identity.PhoneNumber,
+                    RegistrationDate = user.RegistrationDate
                 };
             } else 
             {

@@ -16,7 +16,7 @@ namespace BR.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "User")]
-    public class ReservationController : ControllerBase
+    public class ReservationController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IReservationService _reservationService;
@@ -51,22 +51,22 @@ namespace BR.Controllers
 
 
         [HttpPost("")]
-        public async Task<ActionResult<int>> Post([FromBody]NewReservationRequest newReservation)
+        public async Task<ActionResult<ServerResponse<int>>> Post([FromBody]NewReservationRequest newReservation)
         {
             // add notification to waiters
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult("User not found");
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
             var reservation = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
             if(reservation is null)
             {
-                return null;
+                return new JsonResult(Response(Controllers.StatusCode.Error));
             }
             else
             {
-                return reservation.Id;
+                return new JsonResult(Response(reservation.Id));
             }            
         }
 

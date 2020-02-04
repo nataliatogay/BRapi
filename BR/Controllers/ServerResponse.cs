@@ -40,6 +40,7 @@
         IncorrectLoginOrPassword,
         UserBlocked,
         Error,
-        UserRegistered
+        UserRegistered,
+        EmailUsed
     }
 }

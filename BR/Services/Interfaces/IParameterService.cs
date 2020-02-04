@@ -11,11 +11,11 @@ namespace BR.Services.Interfaces
     {
         Task<ICollection<ParameterInfo>> GetAllMealType();
         Task<ICollection<ParameterInfo>> GetAllCuisines();
-        Task<Cuisine> AddCuisine(string cuisineTitle);
+        Task AddCuisine(ICollection<string> cuisineTitles);
         Task<Cuisine> UpdateCuisine(Cuisine cuisine);
         Task<bool> DeleteCuisine(int id);
         Task<ICollection<ParameterInfo>> GetAllClientTypes();
-        Task<ClientType> AddClientType(string clientTypeTitle);
+        Task AddClientType(ICollection<string> clientTypeTitles);
         Task<ClientType> UpdateClientType(ClientType clientType);
         Task<bool> DeleteClientType(int id);
         Task<ICollection<ParameterInfo>> GetAllPaymentTypes();

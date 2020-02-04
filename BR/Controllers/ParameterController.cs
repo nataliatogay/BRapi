@@ -88,9 +88,10 @@ namespace BR.Controllers
         }
 
         [HttpPost("cuisine")]
-        public async Task<ActionResult<Cuisine>> AddCuisine([FromBody]string cuisineTitle)
+        public async Task<ActionResult<Cuisine>> AddCuisine([FromBody]ICollection<string> cuisineTitle)
         {
-            return new JsonResult(await _parameterService.AddCuisine(cuisineTitle));
+            await _parameterService.AddCuisine(cuisineTitle);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpPut("cuisine")]
@@ -104,9 +105,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeleteCuisine(id))
             {
-                return new JsonResult((await _parameterService.GetAllCuisines()).ToList());
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
             }
-            return new JsonResult("Cannot delete");
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
         [HttpGet("clientType")]
@@ -116,9 +117,10 @@ namespace BR.Controllers
         }
 
         [HttpPost("clientType")]
-        public async Task<ActionResult<Cuisine>> AddClientType([FromBody]string clientTypeTitle)
+        public async Task<ActionResult<Cuisine>> AddClientType([FromBody]ICollection<string> clientTypeTitles)
         {
-            return new JsonResult(await _parameterService.AddClientType(clientTypeTitle));
+            await _parameterService.AddClientType(clientTypeTitles);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpPut("clientType")]
@@ -132,9 +134,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeleteClientType(id))
             {
-                return new JsonResult((await _parameterService.GetAllClientTypes()).ToList());
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
             }
-            return new JsonResult("Cannot delete");
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
 
@@ -161,9 +163,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeletePaymentType(id))
             {
-                return new JsonResult((await _parameterService.GetAllPaymentTypes()).ToList());
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
             }
-            return new JsonResult("Cannot delete");
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
     }

@@ -33,6 +33,7 @@ namespace BR.Models
         //public string NotificationTag { get; set; }
 
         public string IdentityId { get; set; }
+        public DateTime RegistrationDate { get; set; }
 
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }

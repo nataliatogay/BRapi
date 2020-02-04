@@ -15,14 +15,15 @@ namespace BR.DTO
 
     public class UserInfoForUsersResponse : UserInfoResponse
     {
-        public ICollection<ReservationInfo> Reservations { get; set; } 
+        public ICollection<ReservationInfo> Reservations { get; set; }
     }
-    
-    public class UserInfoForAdminResponse:UserInfoResponse
+
+    public class UserInfoForAdminResponse : UserInfoResponse
     {
         public int Id { get; set; }
         public string PhoneNumber { get; set; }
         public bool IsBlocked { get; set; }
+        public DateTime RegistrationDate { get; set; }
     }
 
     public class ReservationInfo

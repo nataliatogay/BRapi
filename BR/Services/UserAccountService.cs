@@ -78,6 +78,7 @@ namespace BR.Services
         public async Task<UserInfoResponse> Register(User user)
         {
             user.IsBlocked = false;
+            user.RegistrationDate = DateTime.Now;
             if(user.ImagePath is null)
             {
                 user.ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png";
@@ -215,15 +216,46 @@ namespace BR.Services
             {
                 return null;
             }
-            return new UserInfoResponse()
+            var reservations = new List<ReservationInfo>();
+            if (user.Reservations != null)
+            {
+                foreach (var res in user.Reservations)
+                {
+                    var tableNums = new List<int>();
+                    if (res.TableReservations != null)
+                    {
+                        foreach (var t in res.TableReservations)
+                        {
+                            tableNums.Add(t.Table.Number);
+                        }
+                    }
+
+                    var resInfo = new ReservationInfo()
+                    {
+                        Id = res.Id,
+                        Date = res.ReservationDate,
+                        ReservationState = res.ReservationState.Title,
+                        ChildFree = res.ChildFree,
+                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.Name,
+                        Floor = res.TableReservations.First().Table.Hall.Floor.Number,
+                        HallTitle = res.TableReservations.First().Table.Hall.Title,
+                        GuestCount = res.GuestCount,
+                        TableNumbers = tableNums,
+                        Comments = res.Comments
+                    };
+                    reservations.Add(resInfo);
+                }
+            }
+            return new UserInfoForUsersResponse()
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
                 ImagePath = user.ImagePath,
-                Email = user.Identity.Email
-
+                Email = user.Identity.Email,
+                Reservations = reservations
+              
             };
         }
     }

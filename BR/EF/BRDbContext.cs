@@ -65,7 +65,10 @@ namespace BR.EF
             modelBuilder.Entity<Invitee>().HasKey(i => new { i.UserId, i.ReservationId });
 
             modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
-
+            modelBuilder.Entity<ClientCuisine>().HasOne(c => c.Cuisine).WithMany(c => c.ClientCuisines).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClientPaymentType>().HasOne(c => c.PaymentType).WithMany(c => c.ClientPaymentTypes).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClientClientType>().HasOne(c => c.ClientType).WithMany(c => c.ClientClientTypes).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClientMealType>().HasOne(c => c.MealType).WithMany(c => c.ClientMealTypes).OnDelete(DeleteBehavior.Restrict);
             base.OnModelCreating(modelBuilder);
         }
 

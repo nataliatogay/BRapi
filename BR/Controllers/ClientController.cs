@@ -104,30 +104,43 @@ namespace BR.Controllers
         public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Post([FromBody]NewClientRequest newClient)
         {
             string password = _clientService.GeneratePassword();
-            IdentityUser identityUser = new IdentityUser()
+            if (await _userManager.FindByNameAsync(newClient.Email) is null)
             {
-                Email = newClient.Email,
-                UserName = newClient.Email
-            };
-
-            IdentityResult res = await _userManager.CreateAsync(identityUser, password);
-            if (res.Succeeded)
-            {
-                identityUser = await _userManager.FindByNameAsync(newClient.Email);
-                await _clientService.AddNewClient(newClient, identityUser.Id);
-                try
+                IdentityUser identityUser = new IdentityUser()
                 {
-                    string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
+                    Email = newClient.Email,
+                    UserName = newClient.Email
+                };
 
-                    await _emailService.SendAsync(identityUser.Email, "Registration info", msgBody);
+                IdentityResult res = await _userManager.CreateAsync(identityUser, password);
+                if (res.Succeeded)
+                {
+                    identityUser = await _userManager.FindByNameAsync(newClient.Email);
+                    await _clientService.AddNewClient(newClient, identityUser.Id);
+                    try
+                    {
+                        string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
+
+                        await _emailService.SendAsync(identityUser.Email, "Registration info ", msgBody);
+                        return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    }
+                    catch (Exception ex)
+                    {
+                        return new JsonResult(Response(Controllers.StatusCode.Error));
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
                     return new JsonResult(Response(Controllers.StatusCode.Error));
                 }
+            } 
+            else
+            {
+                return new JsonResult(Response(Controllers.StatusCode.EmailUsed));
             }
+                
 
-            return new JsonResult(Response(Controllers.StatusCode.Ok, await _clientService.GetAllClients("Admin")));
+            //return new JsonResult(Response(Controllers.StatusCode.Ok, await _clientService.GetAllClients("Admin")));
 
 
 
