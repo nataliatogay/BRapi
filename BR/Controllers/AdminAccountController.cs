@@ -46,7 +46,7 @@ namespace BR.Controllers
             _roleManager = roleManager;
         }
 
-        
+
 
         //[HttpPost("Login")]
         //public async Task<ActionResult<Response<LogInResponse>>> LogInDemo([FromBody]LogInRequest model)
@@ -109,13 +109,7 @@ namespace BR.Controllers
             return new JsonResult(adminAccount);
         }
 
-        [Authorize]
-        [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
-        {
-            await _adminAccountService.LogOut(notificationTag);
-            return Ok();
-        }
+        
 
 
         //[HttpPost("LogOut")]
@@ -148,7 +142,7 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByEmailAsync(adminEmail);
             if (identityUser is null)// || !(await _userManager.IsEmailConfirmedAsync(identityUser)))
             {
-                if(identityUser == null)
+                if (identityUser == null)
                 {
                     identityUser = new IdentityUser()
                     {
@@ -171,7 +165,7 @@ namespace BR.Controllers
                 {
                     string emailCache = null;
                     _cache.TryGetValue(identityUser.Id, out emailCache);
-                    if(emailCache != null)
+                    if (emailCache != null)
                     {
                         return new JsonResult("Link has already been sent");
                     }
@@ -330,6 +324,20 @@ namespace BR.Controllers
             }
             return new JsonResult("Error");
 
+        }
+
+
+        [Authorize]
+        [HttpPost("LogOut")]
+        //[AllowAnonymous]
+        public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
+        {
+            try
+            {
+                await _adminAccountService.LogOut(notificationTag);
+            }
+            catch { }
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
 
