@@ -1,1 +1,4 @@
 BR/appsettings.json
+.vs
+BR/obj
+BR/bin

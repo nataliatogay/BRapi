@@ -95,9 +95,11 @@ namespace BR.Controllers
         }
 
         [HttpPut("cuisine")]
-        public async Task<ActionResult<Cuisine>> UpdateCuisine([FromBody]Cuisine cuisine)
+        public async Task<ActionResult<Cuisine>> UpdateCuisine([FromBody]ICollection<Cuisine> cuisines)
         {
-            return new JsonResult(await _parameterService.UpdateCuisine(cuisine));
+           
+            await _parameterService.UpdateCuisine(cuisines);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpDelete("cuisine/{id}")]
@@ -124,9 +126,10 @@ namespace BR.Controllers
         }
 
         [HttpPut("clientType")]
-        public async Task<ActionResult<ClientType>> UpdateClientType([FromBody]ClientType clientType)
+        public async Task<ActionResult<ClientType>> UpdateClientType([FromBody]ICollection<ClientType> clientTypes)
         {
-            return new JsonResult(await _parameterService.UpdateClientType(clientType));
+            await _parameterService.UpdateClientType(clientTypes);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpDelete("clientType/{id}")]
@@ -147,15 +150,17 @@ namespace BR.Controllers
         }
 
         [HttpPost("paymentType")]
-        public async Task<ActionResult<Cuisine>> AddPaymentType([FromBody]string paymentTypeTitle)
+        public async Task<ActionResult<Cuisine>> AddPaymentType([FromBody]ICollection<string> paymentTypeTitle)
         {
-            return new JsonResult(await _parameterService.AddPaymentType(paymentTypeTitle));
+            await _parameterService.AddPaymentType(paymentTypeTitle);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpPut("paymentType")]
-        public async Task<ActionResult<Cuisine>> UpdatePaymentType([FromBody]PaymentType paymentType)
+        public async Task<ActionResult<Cuisine>> UpdatePaymentType([FromBody]ICollection<PaymentType> paymentTypes)
         {
-            return new JsonResult(await _parameterService.UpdatePaymentType(paymentType));
+            await _parameterService.UpdatePaymentType(paymentTypes);
+            return new JsonResult(Response(Controllers.StatusCode.Ok));
         }
 
         [HttpDelete("paymentType/{id}")]

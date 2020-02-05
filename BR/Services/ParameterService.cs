@@ -77,18 +77,28 @@ namespace BR.Services
             }
         }
 
-        public async Task<Cuisine> UpdateCuisine(Cuisine cuisine)
+        public async Task UpdateCuisine(ICollection<Cuisine> cuisines)
         {
-            var cuisineToUpdate = await _repository.GetCuisine(cuisine.Id);
-            if (cuisineToUpdate != null)
+            if(cuisines is null)
             {
-                if (await _repository.GetCuisine(cuisine.Title) == null)
+                return;
+            }
+            foreach (var item in cuisines)
+            {
+                var cuisineToUpdate = await _repository.GetCuisine(item.Id);
+                if (cuisineToUpdate != null)
                 {
-                    cuisineToUpdate.Title = cuisine.Title;
-                    return await _repository.UpdateCuisine(cuisineToUpdate);
+                    if (await _repository.GetCuisine(item.Title) == null)
+                    {
+                        cuisineToUpdate.Title = item.Title;
+                        try
+                        {
+                            await _repository.UpdateCuisine(cuisineToUpdate);
+                        }
+                        catch { }
+                    }
                 }
             }
-            return null;
         }
 
         public async Task<bool> DeleteCuisine(int id)
@@ -120,22 +130,31 @@ namespace BR.Services
 
         }
 
-        public async Task<ClientType> UpdateClientType(ClientType clientType)
+        public async Task UpdateClientType(ICollection<ClientType> clientTypes)
         {
-            var typeToUpdate = await _repository.GetClientType(clientType.Id);
-            if (typeToUpdate != null)
+            if (clientTypes is null)
             {
-                if (!String.IsNullOrEmpty(clientType.Title) && !String.IsNullOrWhiteSpace(clientType.Title))
+                return;
+            }
+            foreach (var item in clientTypes)
+            {
+                var typeToUpdate = await _repository.GetClientType(item.Id);
+                if (typeToUpdate != null)
                 {
-                    if (await _repository.GetClientType(clientType.Title) == null)
+                    if (!String.IsNullOrEmpty(item.Title) && !String.IsNullOrWhiteSpace(item.Title))
                     {
-                        typeToUpdate.Title = clientType.Title;
-                        return await _repository.UpdateClientType(typeToUpdate);
+                        if (await _repository.GetClientType(item.Title) == null)
+                        {
+                            typeToUpdate.Title = item.Title;
+                            try
+                            {
+                                await _repository.UpdateClientType(typeToUpdate);
+                            }
+                            catch { }
+                        }
                     }
                 }
-
             }
-            return null;
         }
 
         public async Task<bool> DeleteClientType(int id)
@@ -148,34 +167,45 @@ namespace BR.Services
             return false;
         }
 
-        public async Task<PaymentType> AddPaymentType(string paymentTypeTitle)
+        public async Task AddPaymentType(ICollection<string> paymentTypeTitles)
         {
-            if (!String.IsNullOrEmpty(paymentTypeTitle) && !String.IsNullOrWhiteSpace(paymentTypeTitle))
+            if(paymentTypeTitles is null)
             {
-                if (await _repository.GetPaymentType(paymentTypeTitle) == null)
-                {
-                    return await _repository.AddPaymentType(new PaymentType() { Title = paymentTypeTitle });
-                }
+                return;
             }
-            return null;
-        }
-
-        public async Task<PaymentType> UpdatePaymentType(PaymentType paymentType)
-        {
-            var paymentTypeToUpdate = await _repository.GetPaymentType(paymentType.Id);
-            if (paymentTypeToUpdate != null)
+            foreach (var item in paymentTypeTitles)
             {
-                if (!String.IsNullOrEmpty(paymentType.Title) && !String.IsNullOrWhiteSpace(paymentType.Title))
+                if (!String.IsNullOrEmpty(item) && !String.IsNullOrWhiteSpace(item))
                 {
-                    if (await _repository.GetPaymentType(paymentType.Title) == null)
+                    if (await _repository.GetPaymentType(item) == null)
                     {
-                        paymentTypeToUpdate.Title = paymentType.Title;
-                        return await _repository.UpdatePaymentType(paymentTypeToUpdate);
+                        await _repository.AddPaymentType(new PaymentType() { Title = item});
                     }
                 }
-
             }
-            return null;
+        }
+
+        public async Task UpdatePaymentType(ICollection<PaymentType> paymentTypes)
+        {
+            if(paymentTypes is null)
+            {
+                return;
+            }
+            foreach (var item in paymentTypes)
+            {
+                var paymentTypeToUpdate = await _repository.GetPaymentType(item.Id);
+                if (paymentTypeToUpdate != null)
+                {
+                    if (!String.IsNullOrEmpty(item.Title) && !String.IsNullOrWhiteSpace(item.Title))
+                    {
+                        if (await _repository.GetPaymentType(item.Title) == null)
+                        {
+                            paymentTypeToUpdate.Title = item.Title;
+                            await _repository.UpdatePaymentType(paymentTypeToUpdate);
+                        }
+                    }
+                }
+            }
         }
 
         public async Task<bool> DeletePaymentType(int id)
