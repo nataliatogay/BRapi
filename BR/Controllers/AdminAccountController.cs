@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 
 namespace BR.Controllers
 {
@@ -332,6 +333,8 @@ namespace BR.Controllers
         //[AllowAnonymous]
         public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
         {
+            //var data = new StreamReader(Request.Body);
+            //var res = data.ReadToEnd();
             try
             {
                 await _adminAccountService.LogOut(notificationTag);

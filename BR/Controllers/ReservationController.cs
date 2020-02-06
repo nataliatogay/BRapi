@@ -73,22 +73,47 @@ namespace BR.Controllers
         [HttpPut("Complete")]
         public async Task<ActionResult<Reservation>> CompleteReservation(int id)
         {
-            return new JsonResult(await _reservationService.CompleteReservation(id));
+            try
+            {
+                var res = await _reservationService.CompleteReservation(id);
+                if(res != null)
+                {
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                }
+            }
+            catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
 
         [HttpPut("Cancel")]
         public async Task<ActionResult<ServerResponse>> CancelReservation(int id)
         {
-            // ok
-            return new JsonResult(await _reservationService.CancelReservation(id));
+            try
+            {
+                var res = await _reservationService.CancelReservation(id);
+                    if(res != null)
+                {
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                }
+            } catch { return new JsonResult(Response(Controllers.StatusCode.Error)); }
+            return new JsonResult(Response(Controllers.StatusCode.Error));
         }
 
         [HttpPut("ChangeTable")]
         public async Task<ActionResult<Reservation>> ChangeTables(ChangeReservationTablesRequest changeRequest)
         {
+            try
+            {
             await _reservationService.ChangeTable(changeRequest);
-            return Ok();
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
+            } catch
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
         }
     }
 }

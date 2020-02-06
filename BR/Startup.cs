@@ -1,5 +1,6 @@
 ﻿ using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
@@ -172,7 +173,13 @@ namespace BR
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            //app.Use(async (context, next) =>
+            //{
+            //   // var shalom = context.Request;
+            //   // var reader = new StreamReader(shalom.Body);
+            //   // var data = reader.ReadLine();
+            //   // await next();
+            //});
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
