@@ -73,15 +73,15 @@ namespace BR.Controllers
                     // TWILIO
 
 
-                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+                    //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                    var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    string sid = msg.Sid;
-                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
+                    //from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    //to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    //string sid = msg.Sid;
+                    //return new JsonResult(Response(Controllers.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
-                    //return new JsonResult(code);
+                    return new JsonResult(code);
 
                 }
                 catch
@@ -144,7 +144,6 @@ namespace BR.Controllers
         public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-
 
             if (identityUser != null)
             {
@@ -256,17 +255,20 @@ namespace BR.Controllers
                 var identityUser = await _userManager.FindByIdAsync(userId);
                 if (identityUser == null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.Error));
+                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
                 }
-                var result = await _userManager.ConfirmEmailAsync(identityUser, code);
-                if (result.Succeeded)
+                else
                 {
-                    identityUser.Email = newEmail;
-                    var res = await _userManager.UpdateAsync(identityUser);
-                    if (res.Succeeded)
+                    var result = await _userManager.ConfirmEmailAsync(identityUser, code);
+                    if (result.Succeeded)
                     {
-                        _cache.Remove(identityUser.Id);
-                        return new JsonResult(Response(Controllers.StatusCode.Ok));
+                        identityUser.Email = newEmail;
+                        var res = await _userManager.UpdateAsync(identityUser);
+                        if (res.Succeeded)
+                        {
+                            _cache.Remove(identityUser.Id);
+                            return new JsonResult(Response(Controllers.StatusCode.Ok));
+                        }
                     }
                 }
             }
@@ -342,7 +344,7 @@ namespace BR.Controllers
             try
             {
                 var res = await _userAccountService.UploadImage(identityUser.Id, imageString);
-            return new JsonResult(Response(res));
+                return new JsonResult(Response(res));
             }
             catch
             {

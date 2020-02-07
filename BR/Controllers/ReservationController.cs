@@ -15,7 +15,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "User")]
+   // [Authorize(Roles = "User")]
     public class ReservationController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
