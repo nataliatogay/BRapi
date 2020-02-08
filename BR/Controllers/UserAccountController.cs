@@ -73,15 +73,15 @@ namespace BR.Controllers
                     // TWILIO
 
 
-                    //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    //from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    //to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    //string sid = msg.Sid;
-                    //return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    var msg = MessageResource.Create(body: code + " is your RB verification code",
+                    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    string sid = msg.Sid;
+                    return new JsonResult(Response(Controllers.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
-                    return new JsonResult(code);
+                    //return new JsonResult(code);
 
                 }
                 catch
@@ -305,12 +305,12 @@ namespace BR.Controllers
         }
 
         [HttpPost("Token")] //api/account/token
-        public async Task<ActionResult<ServerResponse>> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
             LogInResponse resp = await _userAccountService.UpdateToken(refreshToken);
             if (resp is null)
             {
-                return StatusCode(401);
+                return new JsonResult(Response(Controllers.StatusCode.TokenError));
             }
             return new JsonResult(Response(resp));
         }
@@ -319,7 +319,7 @@ namespace BR.Controllers
         // return void
         [Authorize]
         [HttpPost("UpdateProfile")]
-        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
+        public async Task<ActionResult<ServerResponse>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -327,7 +327,14 @@ namespace BR.Controllers
                 return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
             }
             var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
-            return new JsonResult(Response(res));
+            if (res is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+            else
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
+            }
 
         }
 

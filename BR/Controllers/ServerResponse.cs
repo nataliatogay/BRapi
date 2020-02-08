@@ -41,6 +41,7 @@
         UserBlocked,
         Error,
         UserRegistered,
-        EmailUsed
+        EmailUsed,
+        TokenError
     }
 }
