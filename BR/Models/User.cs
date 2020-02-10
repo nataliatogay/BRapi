@@ -40,18 +40,22 @@ namespace BR.Models
 
         public virtual ICollection<Reservation> Reservations { get; set; }
         public virtual ICollection<Invitee> Invitees { get; set; }
-        
+        public virtual ICollection<UserUserPhone> UserUserPhones { get; set; }
+        public virtual ICollection<ClientFavourite> ClientFavourites { get; set; }
+
 
         //public virtual AccountToken AccountToken { get; set; }
         //public virtual ICollection<AccountToken> AccountTokens { get; set; }
-        
-        
+
+
         //public virtual ICollection<UserMail> UserMails { get; set; }
 
         public User()
         {
             Reservations = new HashSet<Reservation>();
             Invitees = new HashSet<Invitee>();
+            UserUserPhones = new HashSet<UserUserPhone>();
+            ClientFavourites = new HashSet<ClientFavourite>();
             //AccountTokens = new HashSet<AccountToken>();
 
 

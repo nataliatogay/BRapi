@@ -15,7 +15,7 @@ namespace BR.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.14-servicing-32113")
+                .HasAnnotation("ProductVersion", "2.1.11-servicing-32099")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -137,6 +137,19 @@ namespace BR.Migrations
                     b.HasIndex("CuisineId");
 
                     b.ToTable("ClientCuisines");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientFavourite", b =>
+                {
+                    b.Property<int>("UserId");
+
+                    b.Property<int>("ClientId");
+
+                    b.HasKey("UserId", "ClientId");
+
+                    b.HasAlternateKey("ClientId", "UserId");
+
+                    b.ToTable("Favourites");
                 });
 
             modelBuilder.Entity("BR.Models.ClientImage", b =>
@@ -262,6 +275,8 @@ namespace BR.Migrations
 
                     b.Property<string>("Description");
 
+                    b.Property<int>("EventTypeId");
+
                     b.Property<string>("ImagePath");
 
                     b.Property<string>("Title");
@@ -270,7 +285,22 @@ namespace BR.Migrations
 
                     b.HasIndex("ClientId");
 
+                    b.HasIndex("EventTypeId");
+
                     b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("BR.Models.EventType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventTypes");
                 });
 
             modelBuilder.Entity("BR.Models.Floor", b =>
@@ -555,6 +585,32 @@ namespace BR.Migrations
                     b.ToTable("ApplicationUsers");
                 });
 
+            modelBuilder.Entity("BR.Models.UserPhone", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Number");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserPhones");
+                });
+
+            modelBuilder.Entity("BR.Models.UserUserPhone", b =>
+                {
+                    b.Property<int>("UserId");
+
+                    b.Property<int>("UserPhoneId");
+
+                    b.HasKey("UserId", "UserPhoneId");
+
+                    b.HasIndex("UserPhoneId");
+
+                    b.ToTable("UserUserPhones");
+                });
+
             modelBuilder.Entity("BR.Models.Waiter", b =>
                 {
                     b.Property<int>("Id")
@@ -774,7 +830,7 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.ClientType", "ClientType")
                         .WithMany("ClientClientTypes")
                         .HasForeignKey("ClientTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BR.Models.ClientCuisine", b =>
@@ -788,6 +844,19 @@ namespace BR.Migrations
                         .WithMany("ClientCuisines")
                         .HasForeignKey("CuisineId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("BR.Models.ClientFavourite", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientFavourites")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.User", "User")
+                        .WithMany("ClientFavourites")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.ClientImage", b =>
@@ -808,7 +877,7 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.MealType", "MealType")
                         .WithMany("ClientMealTypes")
                         .HasForeignKey("MealTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BR.Models.ClientPaymentType", b =>
@@ -821,7 +890,7 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.PaymentType", "PaymentType")
                         .WithMany("ClientPaymentTypes")
                         .HasForeignKey("PaymentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BR.Models.ClientPhone", b =>
@@ -844,6 +913,11 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Client", "Client")
                         .WithMany("Events")
                         .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.EventType", "EventType")
+                        .WithMany("Events")
+                        .HasForeignKey("EventTypeId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -944,6 +1018,19 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+                });
+
+            modelBuilder.Entity("BR.Models.UserUserPhone", b =>
+                {
+                    b.HasOne("BR.Models.User", "User")
+                        .WithMany("UserUserPhones")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.UserPhone", "UserPhone")
+                        .WithMany("UserUserPhones")
+                        .HasForeignKey("UserPhoneId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.Waiter", b =>

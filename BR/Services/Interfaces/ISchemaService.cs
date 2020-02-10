@@ -1,4 +1,5 @@
 ﻿using BR.DTO;
+using BR.DTO.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;

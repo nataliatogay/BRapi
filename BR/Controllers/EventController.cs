@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Events;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
@@ -14,7 +15,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EventController : ControllerBase
+    public class EventController : ResponseController
     {
         private readonly IEventService _eventService;
         private readonly UserManager<IdentityUser> _userManager;
@@ -43,8 +44,18 @@ namespace BR.Controllers
             return new JsonResult(await _eventService.GetEventsByClient(identityUser.Id));
         }
 
+        [HttpGet("Upcoming")]
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfo>>>> GetUpcoming()
+        {
+            return new JsonResult(Response(await _eventService.GetUpcomingEventsShortInfo()));
+        }
+
+
+
+
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> Get(int id)
+        public async Task<ActionResult<EventInfo>> Get(int id)
         {
             return new JsonResult(await _eventService.GetEvent(id));
         }
@@ -52,12 +63,13 @@ namespace BR.Controllers
         [HttpPost("")]
         public async Task<ActionResult<Event>> Post([FromBody]NewEventRequest newEventRequest)
         {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult("Client not found");
-            }
-            var clientEvent = await _eventService.AddEvent(newEventRequest, identityUser.Id);
+            //var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            //if (identityUser is null)
+            //{
+            //    return new JsonResult("Client not found");
+            //}
+            //var clientEvent = await _eventService.AddEvent(newEventRequest, identityUser.Id);
+            var clientEvent = await _eventService.AddEvent(newEventRequest, "123");
             return new JsonResult(clientEvent);
         }
 

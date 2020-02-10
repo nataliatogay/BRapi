@@ -444,9 +444,9 @@ namespace BR.EF
             try
             {
 
-            var res = _db.ApplicationUsers.Update(user);
-            await _db.SaveChangesAsync();
-            return res.Entity;
+                var res = _db.ApplicationUsers.Update(user);
+                await _db.SaveChangesAsync();
+                return res.Entity;
             }
             catch
             {
@@ -640,14 +640,26 @@ namespace BR.EF
 
         // Events
 
-        public async Task<IEnumerable<Event>> GetEvents()
+        public async Task<ICollection<Event>> GetEvents()
         {
             return await _db.Events.ToListAsync();
         }
-        public async Task<IEnumerable<Event>> GetEventsByClient(int clientId)
+
+        public async Task<ICollection<Event>> GetUpcomingEvents()
+        {
+            return await _db.Events.Where(e => e.Date > DateTime.Now).ToListAsync();
+        }
+
+        public async Task<ICollection<Event>> GetEventsByClient(int clientId)
         {
             return await _db.Events.Where(e => e.ClientId == clientId).ToListAsync();
         }
+
+        public async Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId)
+        {
+            return await _db.Events.Where(e => e.ClientId == clientId && e.Date > DateTime.Now).ToListAsync();
+        }
+
         public async Task<Event> GetEvent(int id)
         {
             return await _db.Events.FindAsync(id);

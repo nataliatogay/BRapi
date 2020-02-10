@@ -1,4 +1,7 @@
 ﻿using BR.DTO;
+using BR.DTO.Clients;
+using BR.DTO.Schema;
+using BR.DTO.Users;
 using BR.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -10,17 +13,20 @@ namespace BR.Services.Interfaces
 {
     public interface IClientService
     {
-        Task<IEnumerable<ClientInfoResponse>> GetAllClients(string role);
-        Task<IEnumerable<ClientInfoResponse>> GetClientsByMeal(string mealType, string role);
-        Task<ICollection<ClientInfoResponse>> GetFavourites(ICollection<int> clientIds, string role);
-        Task<IEnumerable<ClientInfoResponse>> GetClientsByName(string title, string role);
-        Task<ClientInfoResponse> GetClient(int id, string role);
-        Task<ClientHallsInfoResponse> GetClientHalls(int id);
         Task AddNewClient(NewClientRequest newClientRequest, string identityId);
+        Task<bool> DeleteClient(int id);
+        Task<ICollection<ClientShortInfoForUsersResponse>> GetShortClientInfoForUsers();
+        Task<ICollection<ClientShortInfoForAdminResponse>> GetShortClientInfoForAdmin();
+        Task<ClientFullInfoForAdminResponse> GetFullClientInfoForAdmin(int id);
+        Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id);
+        Task<ICollection<ClientFullInfoForUsersResponse>> GetFullClientInfoForUsers();
+        Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(ICollection<int> clientIds);
+        Task<ICollection<ClientFullInfoForUsersResponse>> GetClientsByMeal(string mealType);
+        Task<IEnumerable<ClientFullInfoForUsersResponse>> GetClientsByName(string title);
+        Task<ClientFullInfoForAdminResponse> GetClientForAdmin(int id);
+        Task<ClientHallsInfoResponse> GetClientHalls(int id);
         Task<Client> UpdateClient(Client client);
-        Task<bool> DeleteClient(int id);        
-        string GeneratePassword();
         Task<Client> BlockClient(BlockUserRequest blockRequest);
-
+        string GeneratePassword();
     }
 }

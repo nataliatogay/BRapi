@@ -4,6 +4,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Clients;
+using BR.DTO.Schema;
+using BR.DTO.Users;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
@@ -36,60 +39,54 @@ namespace BR.Controllers
 
         }
 
-        // for users and clients
-        [HttpGet("")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get()
+        [HttpGet("ShortForUsers")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> ShortForUsers()
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            if (String.IsNullOrEmpty(role))
-            {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
-            }
-            return new JsonResult(Response(await _clientService.GetAllClients(role)));
+            return new JsonResult(Response(await _clientService.GetShortClientInfoForUsers()));
         }
 
-        [HttpGet("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Favourite(ICollection<int> clientIds)
+        [HttpGet("ShortForAdmin")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>>> ShortForAdmin()
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            if (String.IsNullOrEmpty(role))
-            {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
-            }
-            return new JsonResult(Response(await _clientService.GetFavourites(clientIds, role)));
+            return new JsonResult(Response(await _clientService.GetShortClientInfoForAdmin()));
+        }
+
+
+        [HttpGet("Favourite")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> Favourite(ICollection<int> clientIds)
+        {
+            return new JsonResult(Response(await _clientService.GetFavourites(clientIds)));
         }
 
 
 
 
         [HttpGet("mealtype")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Get(string mealType)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsersResponse>>>> Get(string mealType)
         {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType, "User")));
+            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType)));
         }
 
 
         [HttpGet("search")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientInfoResponse>>>> Search(string name)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsersResponse>>>> Search(string name)
         {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-
-            return new JsonResult(Response(await _clientService.GetClientsByName(name, role)));
+            return new JsonResult(Response(await _clientService.GetClientsByName(name)));
         }
 
 
-        //?
+        [HttpGet("ForAdmin/{id}")]
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdminResponse>>> FullInfoForAdmin(int id)
+        {
+            return new JsonResult(Response(await _clientService.GetFullClientInfoForAdmin(id)));
+        }
+
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServerResponse<ClientInfoResponse>>> Get(int id)
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdminResponse>>> FullInfoForUser(int id)
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-
-            return new JsonResult(Response(await _clientService.GetClient(id, role)));
+            return new JsonResult(Response(await _clientService.GetFullClientInfoForUsers(id)));
         }
-
 
         [HttpGet("schema/{id}")]
         public async Task<ActionResult<ServerResponse<ClientHallsInfoResponse>>> ClientSchema(int id)
@@ -101,7 +98,7 @@ namespace BR.Controllers
 
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientInfoResponse>>>> Post([FromBody]NewClientRequest newClient)
+        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
         {
             string password = _clientService.GeneratePassword();
             if (await _userManager.FindByNameAsync(newClient.Email) is null)
@@ -116,7 +113,14 @@ namespace BR.Controllers
                 if (res.Succeeded)
                 {
                     identityUser = await _userManager.FindByNameAsync(newClient.Email);
+                    try
+                    {
                     await _clientService.AddNewClient(newClient, identityUser.Id);
+                    }
+                    catch
+                    {
+                        return new JsonResult(Response(Controllers.StatusCode.Error));
+                    }
                     try
                     {
                         string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
@@ -140,14 +144,6 @@ namespace BR.Controllers
             }
                 
 
-            //return new JsonResult(Response(Controllers.StatusCode.Ok, await _clientService.GetAllClients("Admin")));
-
-
-
-
-
-
-            // return new JsonResult((await _clientService.GetAllClients()).ToList()) { StatusCode = 201 };
         }
 
 

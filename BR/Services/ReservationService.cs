@@ -1,4 +1,5 @@
 ﻿using BR.DTO;
+using BR.DTO.Reservations;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
@@ -80,7 +81,7 @@ namespace BR.Services
         {
             var resState = await _repository.GetReservationState("cancelled");
             var reservation = await _repository.GetReservation(reservationId);
-            if (reservation.ReservationDate > DateTime.Now)
+            if (reservation.ReservationDate < DateTime.Now)
             {
                 return null;
             }

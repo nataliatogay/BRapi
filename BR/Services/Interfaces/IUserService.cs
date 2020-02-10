@@ -1,4 +1,5 @@
 ﻿using BR.DTO;
+using BR.DTO.Users;
 using BR.Models;
 using System;
 using System.Collections.Generic;

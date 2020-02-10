@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Account;
 using BR.Services;
 using BR.Services.Interfaces;
 using BR.Utils;

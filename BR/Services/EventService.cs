@@ -1,4 +1,5 @@
 ﻿using BR.DTO;
+using BR.DTO.Events;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
@@ -27,6 +28,22 @@ namespace BR.Services
             return await _repository.GetEvents();
         }
 
+        public async Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo()
+        {
+            var events = await _repository.GetUpcomingEvents();
+            if (events is null)
+            {
+                return null;
+            }
+            var res = new List<EventInfoShort>();
+            foreach (var item in events)
+            {
+                res.Add(this.ToShortEventInfo(item));
+            }
+            return res;
+
+        }
+
         public async Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId)
         {
             var client = await _repository.GetClient(clientIdentityId);
@@ -37,26 +54,37 @@ namespace BR.Services
             return await _repository.GetEventsByClient(client.Id);
         }
 
-        public async Task<Event> GetEvent(int id)
+        public async Task<EventInfo> GetEvent(int id)
         {
-            return await _repository.GetEvent(id);
+            var clientEvent = await _repository.GetEvent(id);
+            return this.ToEventInfo(clientEvent);
         }
 
         public async Task<Event> AddEvent(NewEventRequest newEventRequest, string clientIdentityId)
         {
-            var client = await _repository.GetClient(clientIdentityId);
-            if (client is null)
-            {
-                return null;
-            }
+            //var client = await _repository.GetClient(clientIdentityId);
+            //if (client is null)
+            //{
+            //    return null;
+            //}
             Event clientEvent = new Event()
             {
                 Title = newEventRequest.Title,
                 Description = newEventRequest.Description,
                 Date = DateTime.ParseExact(newEventRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
-                ClientId = client.Id
+                //ClientId = client.Id,
+                ClientId=31,
+                EventTypeId = newEventRequest.EventTypeId
             };
-            var imagePath = await _blobService.UploadImage(newEventRequest.Image);
+            string imagePath;
+            if (!String.IsNullOrEmpty(newEventRequest.Image))
+            {
+                imagePath = await _blobService.UploadImage(newEventRequest.Image);
+            }
+            else
+            {
+                imagePath = "https://rb2020storage.blob.core.windows.net/photos/default-event.png";
+            }
             clientEvent.ImagePath = imagePath;
             return await _repository.AddEvent(clientEvent);
         }
@@ -74,11 +102,11 @@ namespace BR.Services
             await _repository.UpdateEvent(clientEvent);
             return path;
         }
-        
+
         public async Task<Event> UpdateEvent(UpdateEventRequest updateRequest)
         {
             var clientEvent = await _repository.GetEvent(updateRequest.EventId);
-            if(clientEvent is null)
+            if (clientEvent is null)
             {
                 return null;
             }
@@ -86,6 +114,38 @@ namespace BR.Services
             clientEvent.Description = updateRequest.Description;
             clientEvent.Title = updateRequest.Title;
             return await _repository.UpdateEvent(clientEvent);
+        }
+
+        private EventInfoShort ToShortEventInfo(Event clientEvent)
+        {
+            if (clientEvent is null)
+            {
+                return null;
+            }
+            return new EventInfoShort()
+            {
+                Id = clientEvent.Id,
+                Date = clientEvent.Date,
+                ImagePath = clientEvent.ImagePath,
+                Title = clientEvent.Title
+            };
+        }
+
+        private EventInfo ToEventInfo(Event clientEvent)
+        {
+            if (clientEvent is null)
+            {
+                return null;
+            }
+            return new EventInfo()
+            {
+                Id = clientEvent.Id,
+                Date = clientEvent.Date,
+                Description = clientEvent.Description,
+                ImgPath = clientEvent.ImagePath,
+                Title = clientEvent.Title,
+                Type = clientEvent.EventType.Title
+            };
         }
     }
 }

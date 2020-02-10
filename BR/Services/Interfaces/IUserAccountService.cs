@@ -1,4 +1,6 @@
 ﻿using BR.DTO;
+using BR.DTO.Account;
+using BR.DTO.Users;
 using BR.Models;
 using Microsoft.AspNetCore.Identity;
 using System;

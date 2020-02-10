@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Schema;
 using BR.Services;
 using BR.Services.Interfaces;
 using Microsoft.AspNetCore.Http;

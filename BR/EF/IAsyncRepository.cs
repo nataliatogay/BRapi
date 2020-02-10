@@ -137,8 +137,10 @@ namespace BR.EF
 
 
         // Events
-        Task<IEnumerable<Event>> GetEvents();
-        Task<IEnumerable<Event>> GetEventsByClient(int clientId);
+        Task<ICollection<Event>> GetEvents();
+        Task<ICollection<Event>> GetUpcomingEvents();
+        Task<ICollection<Event>> GetEventsByClient(int clientId);
+        Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId);
         Task<Event> GetEvent(int id);
         Task<Event> AddEvent(Event clientEvent);
         Task<Event> UpdateEvent(Event clientEvent);

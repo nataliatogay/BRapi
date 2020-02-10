@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Users;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;

@@ -40,7 +40,10 @@ namespace BR.EF
         public DbSet<Waiter> Waiters { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<ClientImage> ClientImages { get; set; }
-
+        public DbSet<EventType> EventTypes { get; set; }
+        public DbSet<ClientFavourite> Favourites { get; set; }
+        public DbSet<UserPhone> UserPhones { get; set; }
+        public DbSet<UserUserPhone> UserUserPhones { get; set; }
         //public DbSet<ClientMail> ClientMails { get; set; }
         //public DbSet<UserMail> UserMails { get; set; }
 
@@ -63,6 +66,8 @@ namespace BR.EF
             modelBuilder.Entity<ClientCuisine>().HasKey(c => new { c.ClientId, c.CuisineId });
             modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });
             modelBuilder.Entity<Invitee>().HasKey(i => new { i.UserId, i.ReservationId });
+            modelBuilder.Entity<UserUserPhone>().HasKey(u => new { u.UserId, u.UserPhoneId });
+            modelBuilder.Entity<ClientFavourite>().HasKey(c => new { c.UserId, c.ClientId });
 
             modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<ClientCuisine>().HasOne(c => c.Cuisine).WithMany(c => c.ClientCuisines).OnDelete(DeleteBehavior.Restrict);

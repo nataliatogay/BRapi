@@ -13,6 +13,8 @@ namespace BR.Models
         public string Description { get; set; }
         public string ImagePath { get; set; }
         public int ClientId { get; set; }
+        public int EventTypeId { get; set; }
         public virtual Client Client { get; set; }
+        public virtual EventType EventType { get; set; }
     }
 }

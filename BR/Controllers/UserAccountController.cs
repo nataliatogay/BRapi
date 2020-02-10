@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Account;
+using BR.DTO.Users;
 using BR.EF;
 using BR.Models;
 using BR.Services;

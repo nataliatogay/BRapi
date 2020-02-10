@@ -86,6 +86,8 @@ namespace BR.Models
         public virtual ICollection<Waiter> Waiters { get; set; }
         public virtual ICollection<Event> Events { get; set; }
         public virtual ICollection<ClientImage> ClientImages { get; set; }
+        public virtual ICollection<ClientFavourite> ClientFavourites{ get; set; }
+
 
 
         //public virtual ICollection<ClientMail> ClientMails { get; set; }
