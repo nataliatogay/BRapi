@@ -10,7 +10,7 @@ namespace BR.Services.Interfaces
 {
     public interface IEventService
     {
-        Task<IEnumerable<Event>> GetAllEvents();
+        Task<ICollection<EventInfoShort>> GetAllEventsShortInfo();
         Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo();
         Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId);
         Task<EventInfo> GetEvent(int id);

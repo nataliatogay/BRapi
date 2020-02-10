@@ -28,21 +28,21 @@ namespace BR.Controllers
         }
 
         [HttpGet("/all")]
-        public async Task<ActionResult<Event>> GetAll()
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> GetAll()
         {
-            return new JsonResult(await _eventService.GetAllEvents());
+            return new JsonResult(Response(await _eventService.GetAllEventsShortInfo()));
         }
 
-        [HttpGet("")]
-        public async Task<ActionResult<Event>> Get()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult("Client not found");
-            }
-            return new JsonResult(await _eventService.GetEventsByClient(identityUser.Id));
-        }
+        //[HttpGet("")]
+        //public async Task<ActionResult<ServerResponse<EventInfo>>> Get()
+        //{
+        //    var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (identityUser is null)
+        //    {
+        //        return new JsonResult("Client not found");
+        //    }
+        //    return new JsonResult(await _eventService.GetEventsByClient(identityUser.Id));
+        //}
 
         [HttpGet("Upcoming")]
         public async Task<ActionResult<ServerResponse<ICollection<EventInfo>>>> GetUpcoming()
@@ -55,7 +55,7 @@ namespace BR.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<EventInfo>> Get(int id)
+        public async Task<ActionResult<ServerResponse<EventInfo>>> Get(int id)
         {
             return new JsonResult(await _eventService.GetEvent(id));
         }

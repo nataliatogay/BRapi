@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BR.Services
 {
-    public class ClientRequestService :IClientRequestService
+    public class ClientRequestService : IClientRequestService
     {
         private readonly IAsyncRepository _repository;
         private readonly IBlobService _blobService;
@@ -29,8 +29,17 @@ namespace BR.Services
 
         public async Task AddNewClientRequest(NewRequestRequest newClientRequest)
         {
-            var imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
-            newClientRequest.MainImage = imagePath;
+            string imagePath;
+            if (!String.IsNullOrEmpty(newClientRequest.MainImage))
+            {
+
+                imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
+            }
+            else
+            {
+                newClientRequest.MainImage = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+
+            }
             ClientRequest clientRequest = new ClientRequest()
             {
                 RegisteredDate = DateTime.Now,
@@ -69,7 +78,7 @@ namespace BR.Services
             };
         }
 
-        
+
 
         public async Task<int> ClientRequestCount()
         {

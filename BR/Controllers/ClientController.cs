@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace BR.Controllers
 {
-    [Authorize]
+   // [Authorize]
     // [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     [ApiController]

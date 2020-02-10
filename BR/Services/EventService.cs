@@ -23,10 +23,21 @@ namespace BR.Services
             _blobService = blobService;
         }
 
-        public async Task<IEnumerable<Event>> GetAllEvents()
+        public async Task<ICollection<EventInfoShort>> GetAllEventsShortInfo()
         {
-            return await _repository.GetEvents();
+            var events = await _repository.GetEvents();
+            if(events is null)
+            {
+                return null;
+            }
+            var res = new List<EventInfoShort>();
+            foreach(var item in events)
+            {
+                res.Add(this.ToShortEventInfo(item));
+            }
+            return res;
         }
+
 
         public async Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo()
         {
@@ -73,7 +84,7 @@ namespace BR.Services
                 Description = newEventRequest.Description,
                 Date = DateTime.ParseExact(newEventRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
                 //ClientId = client.Id,
-                ClientId=31,
+                ClientId=3,
                 EventTypeId = newEventRequest.EventTypeId
             };
             string imagePath;
@@ -144,7 +155,9 @@ namespace BR.Services
                 Description = clientEvent.Description,
                 ImgPath = clientEvent.ImagePath,
                 Title = clientEvent.Title,
-                Type = clientEvent.EventType.Title
+                Type = clientEvent.EventType.Title,
+                ClientId = clientEvent.Client.Id,
+                ClientName = clientEvent.Client.Name
             };
         }
     }

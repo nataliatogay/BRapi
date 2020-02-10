@@ -13,5 +13,7 @@ namespace BR.DTO.Events
         public string Description { get; set; }
         public DateTime Date { get; set; }
         public string Type { get; set; }
+        public string ClientName { get; set; }
+        public int ClientId { get; set; }
     }
 }

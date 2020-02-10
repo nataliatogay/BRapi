@@ -39,7 +39,6 @@ namespace BR.DTO.Requests
         public bool IsBusinessLunch { get; set; }
 
         public string AdditionalInfo { get; set; }
-        [Required]
         public string MainImage { get; set; }
 
         public int MaxReserveDays { get; set; }

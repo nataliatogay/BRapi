@@ -37,12 +37,12 @@ namespace BR.Services
             //    });
             //}
 
-            var floor = await _repository.GetFloor(17, newScheme.FloorNumber);
+            var floor = await _repository.GetFloor(3, newScheme.FloorNumber);
             if (floor is null)
             {
                 floor = await _repository.AddFloor(new Floor()
                 {
-                    ClientId = 17,
+                    ClientId = 3,
                     Number = newScheme.FloorNumber
                 });
             }
@@ -54,7 +54,7 @@ namespace BR.Services
                 JsonInfo = "new"
             });
             
-            var tableState = await _repository.GetTableState("idle");
+            var tableState = await _repository.GetTableState("Idle");
             foreach(var node in newScheme.TableArray)
             {
                 var table = new Table()

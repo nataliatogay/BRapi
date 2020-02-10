@@ -56,10 +56,10 @@ namespace BR.Services
                 IdentityId = identityId,
                 RegistrationDate = DateTime.Now
             };
-            if (client.MainImagePath is null)
-            {
-                client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
-            }
+            //if (client.MainImagePath is null)
+            //{
+            //    client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+            //}
 
             //client.MainImagePath = await _blobService.UploadImage(newClientRequest.MainImage);
 
