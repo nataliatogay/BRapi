@@ -53,10 +53,19 @@ namespace BR.Controllers
 
 
         [HttpGet("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> Favourite(ICollection<int> clientIds)
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> Favourite()
         {
-            return new JsonResult(Response(await _clientService.GetFavourites(clientIds)));
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
         }
+
+
+        
 
 
 

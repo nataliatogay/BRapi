@@ -252,18 +252,27 @@ namespace BR.Services
             return res;
         }
 
-        public async Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(ICollection<int> clientIds)
+        public async Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(string identityUserId)
         {
-            var res = new List<ClientShortInfoForUsersResponse>();
-            foreach (var id in clientIds)
+            var user = await _repository.GetUser(identityUserId);
+            if(user is null)
             {
-                var client = await _repository.GetClient(id);
+                return null;
+            }
+            var favourites = await _repository.GetFavourites(user.Id);
+            if (favourites is null)
+            {
+                return null;
+            }
+            var res = new List<ClientShortInfoForUsersResponse>();
+            foreach (var fav in favourites)
+            {
                 res.Add(new ClientShortInfoForUsersResponse()
                 {
-                    Id = client.Id,
-                    MainImage = client.MainImagePath,
-                    Name = client.Name,
-                    RegistrationDate = client.RegistrationDate
+                    Id = fav.Client.Id,
+                    MainImage = fav.Client.MainImagePath,
+                    Name = fav.Client.Name,
+                    RegistrationDate = fav.Client.RegistrationDate
                 });
             }
             return res;

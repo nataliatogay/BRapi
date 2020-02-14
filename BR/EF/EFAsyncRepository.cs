@@ -57,6 +57,11 @@ namespace BR.EF
             return await _db.Clients.ToListAsync();
         }
 
+        public async Task<IEnumerable<ClientFavourite>> GetFavourites(int userId)
+        {
+            return await _db.Favourites.Where(f => f.UserId == userId).ToListAsync();
+        }
+
         public async Task<IEnumerable<Client>> GetClientsByMeal(string mealType)
         {
             return await _db.ClientMealTypes.Where(t => t.MealType.Title.ToUpper().Equals(mealType.ToUpper())).Select(c => c.Client).ToListAsync();

@@ -20,7 +20,7 @@ namespace BR.Services.Interfaces
         Task<ClientFullInfoForAdminResponse> GetFullClientInfoForAdmin(int id);
         Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id);
         Task<ICollection<ClientFullInfoForUsersResponse>> GetFullClientInfoForUsers();
-        Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(ICollection<int> clientIds);
+        Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(string identityUserId);
         Task<ICollection<ClientFullInfoForUsersResponse>> GetClientsByMeal(string mealType);
         Task<IEnumerable<ClientFullInfoForUsersResponse>> GetClientsByName(string title);
         Task<ClientFullInfoForAdminResponse> GetClientForAdmin(int id);
