@@ -19,6 +19,7 @@ using BR.DTO.Clients;
 using BR.DTO.Users;
 using BR.DTO.Events;
 using BR.DTO.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace BR.Services
 {
@@ -191,7 +192,7 @@ namespace BR.Services
         public async Task<ClientFullInfoForAdminResponse> GetFullClientInfoForAdmin(int id)
         {
             var client = await _repository.GetClient(id);
-            if(client is null)
+            if (client is null)
             {
                 return null;
             }
@@ -255,7 +256,7 @@ namespace BR.Services
         public async Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(string identityUserId)
         {
             var user = await _repository.GetUser(identityUserId);
-            if(user is null)
+            if (user is null)
             {
                 return null;
             }
@@ -276,6 +277,63 @@ namespace BR.Services
                 });
             }
             return res;
+        }
+
+        public async Task<bool> AddFavourite(int clientId, string identityUserId)
+        {
+            var user = await _repository.GetUser(identityUserId);
+            if (user is null)
+            {
+                return false;
+            }
+
+            var favourites = await _repository.GetFavourites(user.Id);
+            var clientFav = new ClientFavourite()
+            {
+                ClientId = clientId,
+                UserId = user.Id
+            };
+            if (favourites.Contains(clientFav))
+            {
+                return false;
+            }
+            try
+            {
+                var res = await _repository.AddFavourite(clientFav);
+                if(res is null)
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                // return concurrencyError;
+                return false;
+            }
+            catch (DbUpdateException ex)
+            {
+                // return UpdateError
+                return false;
+            }
+            
+        }
+
+        public async Task<bool> DeleteFavourite(int clientId, string identityUserId)
+        {
+            var user = await _repository.GetUser(identityUserId);
+            if (user is null)
+            {
+                return false;
+            }
+
+            var favourite = await _repository.GetFavourite(clientId, user.Id);
+            if(favourite is null)
+            {
+                return false;
+            }
+
+            return await _repository.DeleteFavourite(favourite);
         }
 
         public async Task<ICollection<ClientFullInfoForUsersResponse>> GetClientsByMeal(string mealType)

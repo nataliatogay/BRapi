@@ -62,6 +62,32 @@ namespace BR.EF
             return await _db.Favourites.Where(f => f.UserId == userId).ToListAsync();
         }
 
+        public async Task<ClientFavourite> GetFavourite(int clientId, int userId)
+        {
+            return await _db.Favourites.FirstOrDefaultAsync(f => f.ClientId == clientId && f.UserId == userId);
+        }
+
+        public async Task<ClientFavourite> AddFavourite(ClientFavourite clientFav)
+        {
+            var res = _db.Favourites.Add(clientFav);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<bool> DeleteFavourite(ClientFavourite clientFav)
+        {
+            try
+            {
+                _db.Favourites.Remove(clientFav);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task<IEnumerable<Client>> GetClientsByMeal(string mealType)
         {
             return await _db.ClientMealTypes.Where(t => t.MealType.Title.ToUpper().Equals(mealType.ToUpper())).Select(c => c.Client).ToListAsync();

@@ -17,7 +17,10 @@ namespace BR.EF
         Task<Client> GetClient(string identityId);
         Task<Client> GetClientByTableId(int tableId);
         Task<IEnumerable<Client>> GetClients();
+        Task<ClientFavourite> GetFavourite(int clientId, int userId);
         Task<IEnumerable<ClientFavourite>> GetFavourites(int userId);
+        Task<ClientFavourite> AddFavourite(ClientFavourite clientFav);
+        Task<bool> DeleteFavourite(ClientFavourite clientFav);
         Task<ClientImage> GetClientImage(int id);
         Task<ClientImage> AddClientImage(ClientImage image);
         Task<bool> DeleteClientImage(ClientImage image);

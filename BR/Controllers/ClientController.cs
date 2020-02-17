@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace BR.Controllers
 {
-   // [Authorize]
+    // [Authorize]
     // [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     [ApiController]
@@ -64,8 +64,43 @@ namespace BR.Controllers
             return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
         }
 
+        [HttpPost("Favourite")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> AddFavourite(int clientId)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            var res = await _clientService.AddFavourite(clientId, identityUser.Id);
+            if (res)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
+            }
+            else
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+        }
 
-        
+        [HttpDelete("Favourite")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> DeleteFavourite(int clientId)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            }
+            var res = await _clientService.DeleteFavourite(clientId, identityUser.Id);
+            if (res)
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Ok));
+            }
+            else
+            {
+                return new JsonResult(Response(Controllers.StatusCode.Error));
+            }
+        }
 
 
 
@@ -124,7 +159,7 @@ namespace BR.Controllers
                     identityUser = await _userManager.FindByNameAsync(newClient.Email);
                     try
                     {
-                    await _clientService.AddNewClient(newClient, identityUser.Id);
+                        await _clientService.AddNewClient(newClient, identityUser.Id);
                     }
                     catch
                     {
@@ -146,12 +181,12 @@ namespace BR.Controllers
                 {
                     return new JsonResult(Response(Controllers.StatusCode.Error));
                 }
-            } 
+            }
             else
             {
                 return new JsonResult(Response(Controllers.StatusCode.EmailUsed));
             }
-                
+
 
         }
 
