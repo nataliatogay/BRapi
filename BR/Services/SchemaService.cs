@@ -37,12 +37,12 @@ namespace BR.Services
             //    });
             //}
 
-            var floor = await _repository.GetFloor(3, newScheme.FloorNumber);
+            var floor = await _repository.GetFloor(4, newScheme.FloorNumber);
             if (floor is null)
             {
                 floor = await _repository.AddFloor(new Floor()
                 {
-                    ClientId = 3,
+                    ClientId = 4,
                     Number = newScheme.FloorNumber
                 });
             }

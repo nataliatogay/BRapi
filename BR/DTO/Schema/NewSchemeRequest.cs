@@ -16,26 +16,7 @@ namespace BR.DTO.Schema
         public IEnumerable<GroupObject> GroupArray { get; set; }
     }
 
-    public class UpdateSchemaRequest
-    {
-        public int HallId { get; set; }
-        [Required]
-        public string HallTitle { get; set; }
-        public IEnumerable<TableObject> TableArray { get; set; }
-        public IEnumerable<HallObject> NodeArray { get; set; }
-        public IEnumerable<GroupObject> GroupArray { get; set; }
-    }
-
-
-    public class ViewSchemaResponse
-    {
-        public int HallTitle { get; set; }
-        public int FloorNumber { get; set; }
-        public IEnumerable<TableObject> TableArray { get; set; }
-        public IEnumerable<HallObject> NodeArray { get; set; }
-        public IEnumerable<GroupObject> GroupArray { get; set; }
-    }
-
+    
 
     public class GroupObject
     {
@@ -46,6 +27,7 @@ namespace BR.DTO.Schema
         public string Pos { get; set; }
         [Required]
         public string Size { get; set; }
+        public string Fig { get; set; }
     }
 
     public class HallObject
@@ -58,6 +40,8 @@ namespace BR.DTO.Schema
         [Required]
         public string Pos { get; set; }
         public string Group { get; set; }
+        public string Fig { get; set; }
+        public string Size { get; set; }
     }
 
     public class TableObject
@@ -74,5 +58,7 @@ namespace BR.DTO.Schema
         public int MaxGuests { get; set; }
         public int MinGuests { get; set; }
         public int Number { get; set; }
+        public string Fig { get; set; }
+        public string Size { get; set; }
     }
 }
