@@ -19,12 +19,12 @@ namespace BR.Models
         [Required]
         public int MinGuests { get; set; }
 
-        [Required]
-        public int TableStateId { get; set; }
+     //   [Required]
+      //  public int TableStateId { get; set; }
 
         public virtual Hall Hall { get; set; }
 
-        public virtual TableState TableState { get; set; }
+      //  public virtual TableState TableState { get; set; }
 
         public virtual ICollection<TableReservation> TableReservations { get; set; }
 

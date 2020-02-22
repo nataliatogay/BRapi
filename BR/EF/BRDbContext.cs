@@ -31,7 +31,7 @@ namespace BR.EF
         public DbSet<News> News { get; set; }
         public DbSet<Table> Tables { get; set; }
         public DbSet<ReservationState> ReservationStates { get; set; }
-        public DbSet<TableState> TableStates { get; set; }
+       // public DbSet<TableState> TableStates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<TableReservation> TableReservations { get; set; }
         public DbSet<Invitee> Invitees { get; set; }

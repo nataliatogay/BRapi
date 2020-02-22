@@ -54,13 +54,13 @@ namespace BR.Services
                 JsonInfo = "new"
             });
             
-            var tableState = await _repository.GetTableState("Idle");
+           // var tableState = await _repository.GetTableState("Idle");
             foreach(var node in newScheme.TableArray)
             {
                 var table = new Table()
                 {
                     HallId = hall.Id,
-                    TableStateId = tableState.Id,
+                    //TableStateId = tableState.Id,
                     MaxGuests = node.MaxGuests,
                     MinGuests = node.MinGuests,
                     Number = node.Number
@@ -80,11 +80,11 @@ namespace BR.Services
             {
                 return;
             }
-            var tableState = await _repository.GetTableState("idle");
-            if(tableState is null)
-            {
-                return;
-            }
+           // var tableState = await _repository.GetTableState("idle");
+            //if(tableState is null)
+            //{
+            //    return;
+            //}
             foreach(var node in updateSchemeRequest.TableArray)
             {
                 if(node.Id is null)
@@ -96,7 +96,7 @@ namespace BR.Services
                             MaxGuests = node.MaxGuests,
                             MinGuests = node.MinGuests,
                             Number = node.Number,
-                            TableStateId = tableState.Id
+                          //  TableStateId = tableState.Id
                         });
                     node.Id = table.Id;
                 }

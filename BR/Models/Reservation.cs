@@ -23,8 +23,8 @@ namespace BR.Models
 
         public string Comments { get; set; }
 
-        [Required]
-        public int ReservationStateId { get; set; }
+       // [Required]
+        public int? ReservationStateId { get; set; }
 
         public virtual User User { get; set; }
 

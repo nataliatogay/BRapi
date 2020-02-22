@@ -40,7 +40,7 @@ namespace BR.Services
         public async Task<Reservation> AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
         {
             var user = await _repository.GetUser(identityId);
-            var resState = await _repository.GetReservationState("idle");
+            //var resState = await _repository.GetReservationState("idle");
             var reservation = new Reservation()
             {
                 UserId = user.Id,
@@ -48,7 +48,7 @@ namespace BR.Services
                 GuestCount = newReservationRequest.GuestCount,
                 Comments = newReservationRequest.Comments,
                 ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
-                ReservationStateId = resState.Id
+                ReservationStateId = null
             };
             reservation = await _repository.AddReservation(reservation);
 

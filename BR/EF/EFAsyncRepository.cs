@@ -627,10 +627,10 @@ namespace BR.EF
             }
         }
 
-        public async Task<TableState> GetTableState(string title)
-        {
-            return await _db.TableStates.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
-        }
+        //public async Task<TableState> GetTableState(string title)
+        //{
+        //    return await _db.TableStates.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
+        //}
 
 
         // Floors

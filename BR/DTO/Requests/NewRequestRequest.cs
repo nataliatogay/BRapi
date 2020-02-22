@@ -42,6 +42,7 @@ namespace BR.DTO.Requests
         public string MainImage { get; set; }
 
         public int MaxReserveDays { get; set; }
+        public int ReserveDurationAvg { get; set; }
 
         public ICollection<string> SocialLinks { get; set; }
 

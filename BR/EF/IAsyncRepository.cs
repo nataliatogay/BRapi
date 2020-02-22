@@ -123,7 +123,7 @@ namespace BR.EF
         Task<Table> AddTable(Table table);
         Task<Table> UpdateTable(Table table);
         Task<bool> DeleteTable(Table table);
-        Task<TableState> GetTableState(string title);
+    //    Task<TableState> GetTableState(string title);
 
 
         // Floors
