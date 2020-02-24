@@ -4,6 +4,7 @@ using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
 using BR.Utils.Notification;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,11 +17,15 @@ namespace BR.Services
     {
         private readonly IAsyncRepository _repository;
         private readonly INotificationService _notificatinoService;
+        private readonly IDistributedCache _cache;
 
-        public ReservationService(IAsyncRepository repository, INotificationService notificationService)
+        public ReservationService(IAsyncRepository repository, 
+            INotificationService notificationService,
+            IDistributedCache cache)
         {
             _repository = repository;
             _notificatinoService = notificationService;
+            _cache = cache;
         }
 
         public async Task<ICollection<Reservation>> GetReservations(string identityUserId)
@@ -68,7 +73,7 @@ namespace BR.Services
                         var tokens = await _repository.GetTokens(waiter.IdentityId);
                         foreach (var t in tokens)
                         {
-                            tags.Add(t.NotificationTag);
+                            tags.Add(t.NotificationTag); 
                         }
                     }
                     _notificatinoService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());

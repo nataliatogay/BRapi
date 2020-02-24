@@ -23,6 +23,9 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.Extensions.Caching.Redis;
+using Microsoft.Extensions.Options;
+//using Microsoft.AspNetCore.SignalR.Redis;
 
 namespace BR
 {
@@ -37,6 +40,19 @@ namespace BR
         }
 
         public IConfiguration Configuration { get; }
+
+        private RedisOptions GetRedisOptions()
+        {
+            var options = new RedisOptions();
+            var section = Configuration.GetSection("Redis");
+            var secretUrl = section["ConnectionStringSecret"];
+            var secret = _keyVaultClient.GetSecretAsync(secretUrl).Result;
+
+
+            options.ConnectionString = secret.Value;
+            options.InstanceName = section["InstanceName"];
+            return options;
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
