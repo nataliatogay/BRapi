@@ -45,11 +45,11 @@ namespace BR
         {
             var options = new RedisOptions();
             var section = Configuration.GetSection("Redis");
-            var secretUrl = section["ConnectionStringSecret"];
-            var secret = _keyVaultClient.GetSecretAsync(secretUrl).Result;
+            //var secretUrl = section["ConnectionStringSecret"];
+           // var secret = _keyVaultClient.GetSecretAsync(secretUrl).Result;
 
 
-            options.ConnectionString = secret.Value;
+            options.ConnectionString = section["ConnectionString"];
             options.InstanceName = section["InstanceName"];
             return options;
         }
@@ -180,6 +180,12 @@ namespace BR
             services.AddHostedService<QuartzHostedService>();
             
             services.Configure<NotificationHubConfiguration>(Configuration.GetSection("NotificationHubConfiguration"));
+
+            services.AddDistributedRedisCache(opt => {
+                var options = GetRedisOptions();
+                opt.Configuration = options.ConnectionString;
+                opt.InstanceName = options.InstanceName;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -52,7 +52,7 @@ namespace BR.Services
                 ChildFree = newReservationRequest.IsChildFree,
                 GuestCount = newReservationRequest.GuestCount,
                 Comments = newReservationRequest.Comments,
-                ReservationDate = DateTime.ParseExact(newReservationRequest.ReservationDate, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
+                ReservationDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
                 ReservationStateId = null
             };
             reservation = await _repository.AddReservation(reservation);

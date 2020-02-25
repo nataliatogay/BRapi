@@ -9,7 +9,7 @@ namespace BR.DTO.Reservations
     public class NewReservationRequest
     {
         [Required]
-        public string ReservationDate { get; set; } // dd/MM/yyyy HH:mm
+        public string StartDateTime { get; set; } // dd/MM/yyyy HH:mm
         [Required]
         public bool IsChildFree { get; set; }
         public int GuestCount { get; set; }
