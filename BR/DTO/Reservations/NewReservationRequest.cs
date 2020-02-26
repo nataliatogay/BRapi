@@ -10,6 +10,7 @@ namespace BR.DTO.Reservations
     {
         [Required]
         public string StartDateTime { get; set; } // dd/MM/yyyy HH:mm
+        public int Duration { get; set; } // in min
         [Required]
         public bool IsChildFree { get; set; }
         public int GuestCount { get; set; }

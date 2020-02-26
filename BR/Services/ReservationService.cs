@@ -1,10 +1,12 @@
 ﻿using BR.DTO;
+using BR.DTO.Redis;
 using BR.DTO.Reservations;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
 using BR.Utils.Notification;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +21,7 @@ namespace BR.Services
         private readonly INotificationService _notificatinoService;
         private readonly IDistributedCache _cache;
 
-        public ReservationService(IAsyncRepository repository, 
+        public ReservationService(IAsyncRepository repository,
             INotificationService notificationService,
             IDistributedCache cache)
         {
@@ -46,13 +48,14 @@ namespace BR.Services
         {
             var user = await _repository.GetUser(identityId);
             //var resState = await _repository.GetReservationState("idle");
+            var resDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
             var reservation = new Reservation()
             {
                 UserId = user.Id,
                 ChildFree = newReservationRequest.IsChildFree,
                 GuestCount = newReservationRequest.GuestCount,
                 Comments = newReservationRequest.Comments,
-                ReservationDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
+                ReservationDate = resDate,
                 ReservationStateId = null
             };
             reservation = await _repository.AddReservation(reservation);
@@ -61,7 +64,44 @@ namespace BR.Services
             {
                 await _repository.AddTableReservation(reservation.Id, tableId);
             }
-            var client = _repository.GetClientByTableId(newReservationRequest.TableIds.First());
+            var client = await _repository.GetClientByTableId(newReservationRequest.TableIds.First());
+
+            // add data to redis
+            var interval = 15; 
+            ICollection<TableCurrentStateCacheData> tableStates = null;
+            var json = await _cache.GetStringAsync("tableStates");
+            if (json != null)
+            {
+                tableStates = JsonConvert.DeserializeObject<ICollection<TableCurrentStateCacheData>>(json);
+            }
+            else
+            {
+                tableStates = new List<TableCurrentStateCacheData>();
+
+            }
+            foreach (var tableId in newReservationRequest.TableIds)
+            {
+
+                for (int i = 0; i < newReservationRequest.Duration; i += interval)
+                {
+                    tableStates.Add(new TableCurrentStateCacheData()
+                    {
+                        TableId = tableId,
+                        IsBusy = true,
+                        DateTime = resDate.AddMinutes(i)
+                    });
+                }
+            }
+
+            json = JsonConvert.SerializeObject(tableStates);
+
+            await _cache.SetStringAsync("tableStates", json);
+
+            //await _cache.SetStringAsync("tableStates", json, new DistributedCacheEntryOptions
+            //{
+            //    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
+            //});
+
             if (client != null)
             {
                 var waiters = await _repository.GetWaitersByClientId(client.Id);
@@ -73,7 +113,7 @@ namespace BR.Services
                         var tokens = await _repository.GetTokens(waiter.IdentityId);
                         foreach (var t in tokens)
                         {
-                            tags.Add(t.NotificationTag); 
+                            tags.Add(t.NotificationTag);
                         }
                     }
                     _notificatinoService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());
@@ -111,6 +151,9 @@ namespace BR.Services
             {
                 await _repository.AddTableReservation(changeRequest.ReservationId, tableId);
             }
+
+            // change redis data
+
         }
     }
 }
