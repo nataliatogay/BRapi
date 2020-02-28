@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.Models;
+using BR.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,7 @@ namespace BR.Controllers
 
         protected ServerResponse<T> Response<T> (T data)
         {
-            return new ServerResponse<T>(Controllers.StatusCode.Ok, data);
+            return new ServerResponse<T>(Utils.StatusCode.Ok, data);
         }
 
         protected ServerResponse<T> Response<T>(StatusCode statusCode, T  data)

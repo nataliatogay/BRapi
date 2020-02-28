@@ -1,4 +1,4 @@
-﻿namespace BR.Controllers
+﻿namespace BR.Utils
 {
 
     public class ServerResponse
@@ -42,6 +42,7 @@
         Error,
         UserRegistered,
         EmailUsed,
-        TokenError
+        TokenError,
+        SendOnConfirmation
     }
 }

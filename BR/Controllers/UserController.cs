@@ -8,6 +8,7 @@ using BR.DTO.Users;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +33,7 @@ namespace BR.Controllers
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
             if (String.IsNullOrEmpty(role))
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
             return new JsonResult(Response(await _userService.GetUsers(role)));
@@ -44,7 +45,7 @@ namespace BR.Controllers
             string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
             if (String.IsNullOrEmpty(role))
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(Response(await _userService.GetUser(id, role)));
         }
@@ -57,14 +58,14 @@ namespace BR.Controllers
                var res = await _userService.BlockUser(blockRequest);
                 if(res is null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
             }
             catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }        
     }
 }

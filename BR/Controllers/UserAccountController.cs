@@ -58,8 +58,8 @@ namespace BR.Controllers
             {
                 if (await _userAccountService.UserIsBlocked(res.Id))
                 {
-                    return Response(Controllers.StatusCode.UserBlocked);
-                    //   return new JsonResult(Response(Controllers.StatusCode.UserBlocked));
+                    return Response(Utils.StatusCode.UserBlocked);
+                    //   return new JsonResult(Response(Utils.StatusCode.UserBlocked));
                 }
             }
 
@@ -75,26 +75,26 @@ namespace BR.Controllers
                     // TWILIO
 
 
-                    //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    //from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    //to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    //string sid = msg.Sid;
-                    //return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    var msg = MessageResource.Create(body: code + " is your RB verification code",
+                    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    string sid = msg.Sid;
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
-                    return new JsonResult(code);
+                    //return new JsonResult(code);
 
                 }
                 catch
                 {
                     _cache.Remove(phoneNumber);
-                    return new JsonResult(Response(Controllers.StatusCode.SendingMessageError));
+                    return new JsonResult(Response(Utils.StatusCode.SendingMessageError));
                 }
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.CodeHasAlreadyBeenSent));
+                return new JsonResult(Response(Utils.StatusCode.CodeHasAlreadyBeenSent));
             }
         }
 
@@ -127,12 +127,12 @@ namespace BR.Controllers
                 }
                 else
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.IncorrectVerificationCode));
+                    return new JsonResult(Response(Utils.StatusCode.IncorrectVerificationCode));
                 }
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.Expired));
+                return new JsonResult(Response(Utils.StatusCode.Expired));
             }
         }
 
@@ -180,22 +180,22 @@ namespace BR.Controllers
                         {
                             string msgBody = $"<a href='{callbackUrl}'>link</a>";
                             await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
-                            //return new JsonResult(Response(Controllers.StatusCode.Ok));
+                            //return new JsonResult(Response(Utils.StatusCode.Ok));
                         }
                         catch
                         {
                             _cache.Remove(identityUser.Id);
-                            return new JsonResult(Response(Controllers.StatusCode.SendingMailError, userResponse));
+                            return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
                         }
                     }
                     return new JsonResult(Response(userResponse));
                 }
                 else
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.UserRegistered));
+                    return new JsonResult(Response(Utils.StatusCode.UserRegistered));
                 }
             }
-            return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
         }
 
 
@@ -206,7 +206,7 @@ namespace BR.Controllers
             IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             if (!_cache.TryGetValue(identityUser.Id, out _))
             {
@@ -222,17 +222,17 @@ namespace BR.Controllers
                     string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                     await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
                 catch
                 {
                     _cache.Remove(identityUser.Id);
-                    return new JsonResult(Response(Controllers.StatusCode.SendingMailError));
+                    return new JsonResult(Response(Utils.StatusCode.SendingMailError));
                 }
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.LinkHasAlreadyBeenSent));
+                return new JsonResult(Response(Utils.StatusCode.LinkHasAlreadyBeenSent));
             }
 
         }
@@ -244,7 +244,7 @@ namespace BR.Controllers
         {
             if (userId == null || code == null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
 
 
@@ -257,7 +257,7 @@ namespace BR.Controllers
                 var identityUser = await _userManager.FindByIdAsync(userId);
                 if (identityUser == null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
                 else
                 {
@@ -269,16 +269,16 @@ namespace BR.Controllers
                         if (res.Succeeded)
                         {
                             _cache.Remove(identityUser.Id);
-                            return new JsonResult(Response(Controllers.StatusCode.Ok));
+                            return new JsonResult(Response(Utils.StatusCode.Ok));
                         }
                     }
                 }
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.Expired));
+                return new JsonResult(Response(Utils.StatusCode.Expired));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
 
@@ -294,16 +294,16 @@ namespace BR.Controllers
                 {
                     return new JsonResult(Response(user));
                 }
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
         }
 
         [HttpPost("LogOut")]
         public async Task<IActionResult> LogOut([FromBody]string notificationTag)
         {
             await _userAccountService.LogOut(notificationTag);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpPost("Token")] //api/account/token
@@ -312,7 +312,7 @@ namespace BR.Controllers
             LogInResponse resp = await _userAccountService.UpdateToken(refreshToken);
             if (resp is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.TokenError));
+                return new JsonResult(Response(Utils.StatusCode.TokenError));
             }
             return new JsonResult(Response(resp));
         }
@@ -326,16 +326,16 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
             if (res is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
 
         }
@@ -348,7 +348,7 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             try
             {
@@ -357,7 +357,7 @@ namespace BR.Controllers
             }
             catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
         }
 
@@ -367,7 +367,7 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             try
             {
@@ -377,14 +377,14 @@ namespace BR.Controllers
                     var resDel = await _userManager.DeleteAsync(identityUser);
                     if (resDel.Succeeded)
                     {
-                        return new JsonResult(Response(Controllers.StatusCode.Ok));
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
                     }
                 }
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
             catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
         }
     }

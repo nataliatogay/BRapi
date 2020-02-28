@@ -232,11 +232,15 @@ namespace BR.Services
                         }
                     }
 
+                    var title = res.TableReservations.First().Table.Hall.Floor.Client.Name;
+                    var floor = res.TableReservations.First().Table.Hall.Floor.Number;
+                    var hallTitle = res.TableReservations.First().Table.Hall.Title;
+
                     var resInfo = new ReservationInfo()
                     {
                         Id = res.Id,
                         Date = res.ReservationDate,
-                        ReservationState = res.ReservationState.Title,
+                        ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
                         ChildFree = res.ChildFree,
                         ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.Name,
                         Floor = res.TableReservations.First().Table.Hall.Floor.Number,

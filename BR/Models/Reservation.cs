@@ -23,7 +23,9 @@ namespace BR.Models
 
         public string Comments { get; set; }
 
-       // [Required]
+        public int Duration { get; set; } // in min
+
+        // [Required]
         public int? ReservationStateId { get; set; }
 
         public virtual User User { get; set; }

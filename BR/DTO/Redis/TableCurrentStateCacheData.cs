@@ -8,7 +8,6 @@ namespace BR.DTO.Redis
     public class TableCurrentStateCacheData
     {
         public int TableId { get; set; }
-        public bool IsBusy { get; set; }
         public  DateTime DateTime { get; set; }
     }
 }

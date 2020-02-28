@@ -7,6 +7,7 @@ using BR.DTO.Parameters;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -92,7 +93,7 @@ namespace BR.Controllers
         public async Task<ActionResult<Cuisine>> AddCuisine([FromBody]ICollection<string> cuisineTitle)
         {
             await _parameterService.AddCuisine(cuisineTitle);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpPut("cuisine")]
@@ -100,7 +101,7 @@ namespace BR.Controllers
         {
            
             await _parameterService.UpdateCuisine(cuisines);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpDelete("cuisine/{id}")]
@@ -108,9 +109,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeleteCuisine(id))
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
         [HttpGet("clientType")]
@@ -123,14 +124,14 @@ namespace BR.Controllers
         public async Task<ActionResult<Cuisine>> AddClientType([FromBody]ICollection<string> clientTypeTitles)
         {
             await _parameterService.AddClientType(clientTypeTitles);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpPut("clientType")]
         public async Task<ActionResult<ClientType>> UpdateClientType([FromBody]ICollection<ClientType> clientTypes)
         {
             await _parameterService.UpdateClientType(clientTypes);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpDelete("clientType/{id}")]
@@ -138,9 +139,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeleteClientType(id))
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
 
@@ -154,14 +155,14 @@ namespace BR.Controllers
         public async Task<ActionResult<Cuisine>> AddPaymentType([FromBody]ICollection<string> paymentTypeTitle)
         {
             await _parameterService.AddPaymentType(paymentTypeTitle);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpPut("paymentType")]
         public async Task<ActionResult<Cuisine>> UpdatePaymentType([FromBody]ICollection<PaymentType> paymentTypes)
         {
             await _parameterService.UpdatePaymentType(paymentTypes);
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
         [HttpDelete("paymentType/{id}")]
@@ -169,9 +170,9 @@ namespace BR.Controllers
         {
             if (await _parameterService.DeletePaymentType(id))
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
     }

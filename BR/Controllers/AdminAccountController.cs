@@ -11,6 +11,7 @@ using BR.DTO.Account;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -341,7 +342,7 @@ namespace BR.Controllers
                 await _adminAccountService.LogOut(notificationTag);
             }
             catch { }
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
 
@@ -359,7 +360,7 @@ namespace BR.Controllers
 
             if (user == null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -372,11 +373,11 @@ namespace BR.Controllers
                 string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                 await _emailService.SendAsync(email, "Password reset", msgBody);
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
             catch (Exception ex)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
 
             }
         }

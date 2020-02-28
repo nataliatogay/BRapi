@@ -10,6 +10,7 @@ using BR.DTO.Users;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -58,7 +59,7 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
             return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
@@ -70,16 +71,16 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             var res = await _clientService.AddFavourite(clientId, identityUser.Id);
             if (res)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
         }
 
@@ -89,16 +90,16 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             var res = await _clientService.DeleteFavourite(clientId, identityUser.Id);
             if (res)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
         }
 
@@ -163,28 +164,28 @@ namespace BR.Controllers
                     }
                     catch
                     {
-                        return new JsonResult(Response(Controllers.StatusCode.Error));
+                        return new JsonResult(Response(Utils.StatusCode.Error));
                     }
                     try
                     {
                         string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
 
                         await _emailService.SendAsync(identityUser.Email, "Registration info ", msgBody);
-                        return new JsonResult(Response(Controllers.StatusCode.Ok));
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
                     }
                     catch (Exception ex)
                     {
-                        return new JsonResult(Response(Controllers.StatusCode.Error));
+                        return new JsonResult(Response(Utils.StatusCode.Error));
                     }
                 }
                 else
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.Error));
+                    return new JsonResult(Response(Utils.StatusCode.Error));
                 }
             }
             else
             {
-                return new JsonResult(Response(Controllers.StatusCode.EmailUsed));
+                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
             }
 
 
@@ -215,14 +216,14 @@ namespace BR.Controllers
                 var res = await _clientService.BlockClient(blockRequest);
                 if (res is null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
             }
             catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Ok));
+            return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
 

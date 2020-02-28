@@ -7,6 +7,7 @@ using BR.DTO.Reservations;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -58,17 +59,23 @@ namespace BR.Controllers
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             var reservation = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
             if(reservation is null)
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
             else
             {
                 return new JsonResult(Response(reservation.Id));
             }            
+        }
+
+        [HttpPost("Confirm")]
+        public async Task<ActionResult<ServerResponse>> ConfirmReservation(ConfirmReservationRequest confirmRequest)
+        {
+
         }
 
         [HttpPut("Complete")]
@@ -79,14 +86,14 @@ namespace BR.Controllers
                 var res = await _reservationService.CompleteReservation(id);
                 if(res != null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
             }
             catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
 
@@ -98,10 +105,10 @@ namespace BR.Controllers
                 var res = await _reservationService.CancelReservation(id);
                     if(res != null)
                 {
-                    return new JsonResult(Response(Controllers.StatusCode.Ok));
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
-            } catch { return new JsonResult(Response(Controllers.StatusCode.Error)); }
-            return new JsonResult(Response(Controllers.StatusCode.Error));
+            } catch { return new JsonResult(Response(Utils.StatusCode.Error)); }
+            return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
         [HttpPut("ChangeTable")]
@@ -110,10 +117,10 @@ namespace BR.Controllers
             try
             {
             await _reservationService.ChangeTable(changeRequest);
-                return new JsonResult(Response(Controllers.StatusCode.Ok));
+                return new JsonResult(Response(Utils.StatusCode.Ok));
             } catch
             {
-                return new JsonResult(Response(Controllers.StatusCode.Error));
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
         }
     }
