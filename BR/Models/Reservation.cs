@@ -12,8 +12,7 @@ namespace BR.Models
         [Required]
         public DateTime ReservationDate { get; set; }
 
-        [Required]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         [Required]
         public bool ChildFree { get; set; }
@@ -27,6 +26,7 @@ namespace BR.Models
 
         // [Required]
         public int? ReservationStateId { get; set; }
+        public string AdditionalInfo { get; set; }
 
         public virtual User User { get; set; }
 

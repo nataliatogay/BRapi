@@ -35,6 +35,7 @@ namespace BR.Utils
         Ok,
         SendOnConfirmation,
         SendingNotificationError,
+        NotAvailable,
         Error,
 
 

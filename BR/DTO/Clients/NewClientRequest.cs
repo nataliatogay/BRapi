@@ -46,6 +46,7 @@ namespace BR.DTO.Clients
 
         public int MaxReserveDays { get; set; }
         public int ReserveDurationAvg { get; set; }
+        public int ConfirmationDuration { get; set; }
 
         public ICollection<string> SocialLinks { get; set; }
 

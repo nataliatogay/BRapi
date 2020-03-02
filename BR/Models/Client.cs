@@ -66,6 +66,7 @@ namespace BR.Models
         [Required]
         public int MaxReserveDays { get; set; }
         public int ReserveDurationAvg { get; set; } // in mins
+        public int ConfirmationDuration { get; set; } // in min
 
         public bool IsBlocked { get; set; }
 

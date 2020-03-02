@@ -12,12 +12,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using BR.DTO.Redis;
 
 namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   // [Authorize(Roles = "User")]
+    // [Authorize(Roles = "User")]
     public class ReservationController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -61,22 +62,44 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            var reservation = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
-            if(reservation is null)
+
+            var result = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
+            if (result.Data is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.Error));
+                return new JsonResult(Response(result.StatusCode));
             }
             else
             {
-                return new JsonResult(Response(reservation.Id));
-            }            
+                return new JsonResult(Response(result.StatusCode, result.Data));
+            }
         }
+
+
 
         [HttpPost("Confirm")]
-        public async Task<ActionResult<ServerResponse>> ConfirmReservation(ConfirmReservationRequest confirmRequest)
+        public async Task<ActionResult<ServerResponse>> ConfirmReservation([FromBody]ConfirmReservationRequest confirmRequest)
         {
-
+            return new JsonResult(await _reservationService.AddConfirmedReservation(confirmRequest));
         }
+
+        [HttpGet("TableStates")]
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(GetTableStatesRequests tableStatesRequests)
+        {
+            return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
+        }
+
+        [HttpPost("ByPhone")]
+        public async Task<ActionResult<ServerResponse>> NewReservationByPhone(NewReservationByPhoneRequest reservationRequest)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _reservationService.AddReservationByPhone(reservationRequest, identityUser.Id));
+        }
+
 
         [HttpPut("Complete")]
         public async Task<ActionResult<Reservation>> CompleteReservation(int id)
@@ -84,7 +107,7 @@ namespace BR.Controllers
             try
             {
                 var res = await _reservationService.CompleteReservation(id);
-                if(res != null)
+                if (res != null)
                 {
                     return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
@@ -103,22 +126,24 @@ namespace BR.Controllers
             try
             {
                 var res = await _reservationService.CancelReservation(id);
-                    if(res != null)
+                if (res != null)
                 {
                     return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
-            } catch { return new JsonResult(Response(Utils.StatusCode.Error)); }
+            }
+            catch { return new JsonResult(Response(Utils.StatusCode.Error)); }
             return new JsonResult(Response(Utils.StatusCode.Error));
         }
 
         [HttpPut("ChangeTable")]
-        public async Task<ActionResult<Reservation>> ChangeTables(ChangeReservationTablesRequest changeRequest)
+        public async Task<ActionResult<Reservation>> ChangeTables([FromBody]ChangeReservationTablesRequest changeRequest)
         {
             try
             {
-            await _reservationService.ChangeTable(changeRequest);
+                await _reservationService.ChangeTable(changeRequest);
                 return new JsonResult(Response(Utils.StatusCode.Ok));
-            } catch
+            }
+            catch
             {
                 return new JsonResult(Response(Utils.StatusCode.Error));
             }

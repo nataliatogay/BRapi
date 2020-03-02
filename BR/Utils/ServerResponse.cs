@@ -23,6 +23,10 @@
         {
             Data = data;
         }
+        public ServerResponse(T data) : base(StatusCode.Ok)
+        {
+            Data = data;
+        }
 
         public T Data { get; set; }
     }
@@ -43,6 +47,8 @@
         UserRegistered,
         EmailUsed,
         TokenError,
-        SendOnConfirmation
+        SendOnConfirmation,
+        NotAvailable,
+        SendingNotificationError
     }
 }

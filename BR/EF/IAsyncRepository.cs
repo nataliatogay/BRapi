@@ -53,6 +53,7 @@ namespace BR.EF
         // Tokens
 
         Task<IEnumerable<AccountToken>> GetTokens(string identityId);
+        Task<IEnumerable<AccountToken>> GetTokens(int id);
         Task<AccountToken> GetToken(string refreshToken);
         Task<AccountToken> GetTokenByTag(string notificationTag);
         Task AddToken(AccountToken refreshToken);
@@ -99,10 +100,10 @@ namespace BR.EF
         Task<IEnumerable<Waiter>> GetWaitersByClientId(int clientId);
         Task<IEnumerable<Waiter>> GetWaiters();
         Task<Waiter> GetWaiter(int id);
+        Task<Waiter> GetWaiter(string identityId);
         Task<Waiter> AddWaiter(Waiter waiter);
         Task UpdateWaiter(Waiter waiter);
         Task<bool> DeleteWaiter(Waiter waiter);
-        Task<Waiter> GetWaiter(string identityId);
 
 
         // Reservations

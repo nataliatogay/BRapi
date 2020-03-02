@@ -15,13 +15,14 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace BR.Services
 {
     public class ReservationService : IReservationService
     {
         private readonly IAsyncRepository _repository;
-        private readonly INotificationService _notificatinoService;
+        private readonly INotificationService _notificationService;
         private readonly IDistributedCache _cacheDistributed;
         private readonly IMemoryCache _cacheMemory;
 
@@ -32,7 +33,7 @@ namespace BR.Services
             IMemoryCache cacheMemory)
         {
             _repository = repository;
-            _notificatinoService = notificationService;
+            _notificationService = notificationService;
             _cacheDistributed = cacheDistributed;
             _cacheMemory = cacheMemory;
         }
@@ -53,11 +54,21 @@ namespace BR.Services
         }
 
 
-        public async Task<ServiceResponse<Reservation>> AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
+        public async Task<ServerResponse<Reservation>> AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
         {
             var user = await _repository.GetUser(identityId);
             var client = await _repository.GetClientByTableId(newReservationRequest.TableIds.First());
             var resDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var states = await this.GetTablesStates(new GetTableStatesRequests()
+            {
+                Duration = newReservationRequest.Duration,
+                StartDateTime = resDate,
+                TableIds = newReservationRequest.TableIds
+            });
+            if (states != null && states.Count > 0)
+            {
+                return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+            }
             if (client.ReserveDurationAvg >= newReservationRequest.Duration)
             {
 
@@ -71,13 +82,25 @@ namespace BR.Services
                     Duration = newReservationRequest.Duration,
                     ReservationStateId = null
                 };
-                reservation = await _repository.AddReservation(reservation);
-
-                foreach (var tableId in newReservationRequest.TableIds)
+                try
                 {
-                    await _repository.AddTableReservation(reservation.Id, tableId);
+                    reservation = await _repository.AddReservation(reservation);
                 }
-
+                catch
+                {
+                    return new ServerResponse<Reservation>(StatusCode.Error, null);
+                }
+                try
+                {
+                    foreach (var tableId in newReservationRequest.TableIds)
+                    {
+                        await _repository.AddTableReservation(reservation.Id, tableId);
+                    }
+                }
+                catch
+                {
+                    return new ServerResponse<Reservation>(StatusCode.Error, null);
+                }
 
                 // add data to redis
                 await this.AddTableStateCacheData(resDate, newReservationRequest.Duration, newReservationRequest.TableIds);
@@ -98,41 +121,106 @@ namespace BR.Services
                         }
                         try
                         {
-                            _notificatinoService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());
-
+                            _notificationService.SendNotification("New reservation", MobilePlatform.gcm, "string", tags.ToArray());
                         }
                         catch
                         {
-                            return new ServiceResponse<Reservation>(StatusCodeService.SendingNotificationError, reservation);
+                            return new ServerResponse<Reservation>(StatusCode.SendingNotificationError, reservation);
                         }
                     }
                 }
-                return new ServiceResponse<Reservation>(reservation);
+                return new ServerResponse<Reservation>(reservation);
             }
             else
             {
-                return await SendReservationOnConfirmation(newReservationRequest, user.Id, client);
+                var res = await SendReservationOnConfirmation(newReservationRequest, user.Id, client);
+                return new ServerResponse<Reservation>(res.StatusCode, null);
             }
         }
 
-        class ReservationConfirm
+        private async Task HandleConfirmationTimer(string key, Timer timer, IEnumerable<Waiter> waiters)
         {
-            public int UserId { get; set; }
-            public string StartDaterTime { get; set; }
-            public int Duration { get; set; }
-            public ICollection<int> TableIds { get; set; }
+            timer.Stop();
+            string json = null;
+            _cacheMemory.TryGetValue(key, out json);
+            if (json != null)
+            {
+                ConfirmReservationRequest confirmRequest = JsonConvert.DeserializeObject<ConfirmReservationRequest>(json);
+                if (confirmRequest != null)
+                {
+                    await this.RemoveTableStateCacheData(DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture), confirmRequest.Duration, confirmRequest.TableIds);
+                }
+                if (waiters != null)
+                {
+                    List<string> tags = new List<string>();
+                    foreach (var waiter in waiters)
+                    {
+                        var tokens = await _repository.GetTokens(waiter.IdentityId);
+                        foreach (var t in tokens)
+                        {
+                            tags.Add(t.NotificationTag);
+                        }
+                    }
+                    try
+                    {
+                        _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", tags.ToArray());
+                    }
+                    catch { }
+                }
+                List<string> userTags = new List<string>();
+                var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
+                if (accountTokens != null)
+                {
+                    foreach (var token in accountTokens)
+                    {
+                        userTags.Add(token.NotificationTag);
+                    }
+                    try
+                    {
+                        _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", userTags.ToArray());
+                    }
+                    catch { }
+                }
+            }
+
+            _cacheMemory.Remove(key);
         }
 
-        public async Task<ServiceResponse<Reservation>> SendReservationOnConfirmation(NewReservationRequest newReservationRequest, int userId, Client client)
+        public async Task<ServerResponse> SendReservationOnConfirmation(NewReservationRequest newReservationRequest, int userId, Client client)
         {
-            
-            // time for cache -> to appsettings
-
-
-            _cacheMemory.Set(userId, JsonConvert.SerializeObject(newReservationRequest), TimeSpan.FromMinutes(60));
-
-
+            var key = Guid.NewGuid().ToString();
+            var closeToday = DateTime.Today.AddMinutes(client.CloseTime);
             var waiters = await _repository.GetWaitersByClientId(client.Id);
+            DateTime timerTime;
+            // а если до конца рабочего дня осталось меньше 15 мин
+            if (closeToday > DateTime.Now)
+            {
+                timerTime = DateTime.Now.AddMinutes(client.ConfirmationDuration);
+            }
+            else
+            {
+                timerTime = DateTime.Today.AddDays(1).AddMinutes(client.OpenTime).AddMinutes(client.ConfirmationDuration);
+            }
+            Timer timer = new Timer((timerTime - DateTime.Now).TotalMilliseconds);
+            timer.Elapsed += async (sender, e) => await HandleConfirmationTimer(key, timer, waiters);
+
+            ConfirmReservationRequest confirmRequest = new ConfirmReservationRequest()
+            {
+                Acceptance = false,
+                Code = key,
+                Duration = newReservationRequest.Duration,
+                StartDateTime = newReservationRequest.StartDateTime,
+                TableIds = newReservationRequest.TableIds,
+                IsChildFree = newReservationRequest.IsChildFree,
+                UserId = userId,
+                Comments = newReservationRequest.Comments,
+                GuestCount = newReservationRequest.GuestCount
+            };
+
+            _cacheMemory.Set(key, JsonConvert.SerializeObject(confirmRequest));
+
+            // уведомлять старшего(-их) официанта(-ов)
+
             if (waiters != null)
             {
                 List<string> tags = new List<string>();
@@ -146,25 +234,135 @@ namespace BR.Services
                 }
                 try
                 {
-                    _notificatinoService.SendNotification("New reservation for confirmation", MobilePlatform.gcm, "string", tags.ToArray());
-                    return new ServiceResponse<Reservation>(StatusCodeService.SendOnConfirmation, null);
+                    _notificationService.SendNotification("New reservation for confirmation", MobilePlatform.gcm, "string", tags.ToArray());
+                    return new ServerResponse(StatusCode.SendOnConfirmation);
                 }
                 catch
                 {
-                    return new ServiceResponse<Reservation>(StatusCodeService.SendingNotificationError, null);
+                    return new ServerResponse(StatusCode.SendingNotificationError);
                 }
             }
             else
             {
-                return new ServiceResponse<Reservation>(StatusCodeService.Error, null);
+                return new ServerResponse(StatusCode.Error);
             }
         }
 
-        public async Task<ServiceResponse<Reservation>> AddConfirmedReservation(ConfirmReservationRequest confirmRequest)
+        public async Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest)
         {
+            string json = null;
+            _cacheMemory.TryGetValue(confirmRequest.Code, out json);
+            if (json is null)
+            {
+                return new ServerResponse(StatusCode.Expired);
+            }
+            NewReservationRequest reservationRequest = JsonConvert.DeserializeObject<NewReservationRequest>(json);
+            if (reservationRequest is null)
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+            List<string> userTags = new List<string>();
+            var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
+            if (accountTokens != null)
+            {
+                foreach (var token in accountTokens)
+                {
+                    userTags.Add(token.NotificationTag);
+                }
 
+            }
+            var resDate = DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            if (confirmRequest.Acceptance)
+            {
+
+                var reservation = new Reservation()
+                {
+                    ChildFree = confirmRequest.IsChildFree,
+                    Comments = confirmRequest.Comments,
+                    Duration = confirmRequest.Duration,
+                    GuestCount = confirmRequest.GuestCount,
+                    ReservationDate = resDate,
+                    ReservationStateId = null,
+                    UserId = confirmRequest.UserId
+                };
+                reservation = await _repository.AddReservation(reservation);
+
+                foreach (var tableId in confirmRequest.TableIds)
+                {
+                    await _repository.AddTableReservation(reservation.Id, tableId);
+                }
+
+                // notify user
+                try
+                {
+                    _notificationService.SendNotification("reservation accepted", MobilePlatform.gcm, "string", userTags.ToArray());
+                }
+                catch { }
+                return new ServerResponse(StatusCode.Ok);
+            }
+            else
+            {
+                await this.RemoveTableStateCacheData(resDate, confirmRequest.Duration, confirmRequest.TableIds);
+                // notify user
+                try
+                {
+                    _notificationService.SendNotification("reservation rejected", MobilePlatform.gcm, "string", userTags.ToArray());
+                }
+                catch { }
+            }
+            _cacheMemory.Remove(confirmRequest.Code);
+            return new ServerResponse(StatusCode.Ok);
         }
 
+        public async Task<ServerResponse> AddReservationByPhone(NewReservationByPhoneRequest reservationRequest, string waiterIdentityId)
+        {
+            var user = await _repository.GetWaiter(waiterIdentityId);
+            var client = await _repository.GetClientByTableId(reservationRequest.TableIds.First());
+            var resDate = DateTime.ParseExact(reservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var states = await this.GetTablesStates(new GetTableStatesRequests()
+            {
+                Duration = reservationRequest.Duration,
+                StartDateTime = resDate,
+                TableIds = reservationRequest.TableIds
+            });
+            if (states != null && states.Count > 0)
+            {
+                return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+            }
+            var reservation = new Reservation()
+            {
+                ChildFree = reservationRequest.IsChildFree,
+                Duration = reservationRequest.Duration,
+                GuestCount = reservationRequest.GuestCount,
+                ReservationDate = resDate,
+                ReservationStateId = null,
+                AdditionalInfo = reservationRequest.PhoneNumber + " " + reservationRequest.UserName,
+                Comments = reservationRequest.Comments,
+            };
+            try
+            {
+                reservation = await _repository.AddReservation(reservation);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+            try
+            {
+                foreach (var tableId in reservationRequest.TableIds)
+                {
+                    await _repository.AddTableReservation(reservation.Id, tableId);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Ok);
+            }
+
+            await this.AddTableStateCacheData(resDate, reservationRequest.Duration, reservationRequest.TableIds);
+
+            return new ServerResponse(StatusCode.Ok);
+        }
         public async Task<Reservation> CancelReservation(int reservationId)
         {
             var resState = await _repository.GetReservationState("cancelled");
@@ -220,13 +418,46 @@ namespace BR.Services
 
         }
 
+        public async Task<ICollection<TableCurrentStateCacheData>> GetTablesStates(GetTableStatesRequests getStateRequest)
+        {
+            var interval = 15;  // add to appsettings
+            ICollection<TableCurrentStateCacheData> tableStates = null;
+            var json = await _cacheDistributed.GetStringAsync("tableStates");
+            if (json is null)
+            {
+                return null;
+            }
+
+            tableStates = JsonConvert.DeserializeObject<ICollection<TableCurrentStateCacheData>>(json);
+            if (tableStates is null)
+            {
+                return null;
+            }
+
+            var res = new List<TableCurrentStateCacheData>();
+
+            for (int i = 0; i < getStateRequest.Duration; i += interval)
+            {
+                foreach (var id in getStateRequest.TableIds)
+                {
+                    var tStateCache = tableStates.FirstOrDefault(s => s.DateTime.Equals(getStateRequest.StartDateTime.AddMinutes(interval)) && s.TableId == id);
+                    if (tStateCache != null)
+                    {
+                        res.Add(tStateCache);
+                    }
+                }
+            }
+
+            return res;
+        }
+
 
 
         private async Task AddTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds)
         {
             var interval = 15;  // add to appsettings
-            ICollection<TableCurrentStateCacheData> tableStates = null;
             var json = await _cacheDistributed.GetStringAsync("tableStates");
+            ICollection<TableCurrentStateCacheData> tableStates;
             if (json != null)
             {
                 tableStates = JsonConvert.DeserializeObject<ICollection<TableCurrentStateCacheData>>(json);

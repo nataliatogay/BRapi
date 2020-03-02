@@ -274,6 +274,16 @@ namespace BR.EF
         {
             return await _db.AccountTokens.Where(t => t.IdentityUserId == identityId).ToListAsync();
         }
+
+        public async Task<IEnumerable<AccountToken>> GetTokens(int id)
+        {
+            var user = await _db.ApplicationUsers.FindAsync(id);
+            if (user is null)
+            {
+                return null;
+            }
+            return await _db.AccountTokens.Where(t => t.IdentityUserId == user.IdentityId).ToListAsync();
+        }
         public async Task<AccountToken> GetToken(string refreshToken)
         {
             return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
@@ -502,6 +512,7 @@ namespace BR.EF
         {
             return await _db.Waiters.FindAsync(id);
         }
+
         public async Task<Waiter> AddWaiter(Waiter waiter)
         {
             var res = _db.Waiters.Add(waiter);

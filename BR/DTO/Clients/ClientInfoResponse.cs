@@ -44,6 +44,7 @@ namespace BR.DTO.Clients
         public bool IsBusinessLunch { get; set; }
         public int MaxReserveDays { get; set; }
         public int ReserveDurationAvg { get; set; }
+        public int ConfirmationDuration { get; set; }
         public ICollection<string> Photos { get; set; }
         public ICollection<string> SocialLinks { get; set; }
         public ICollection<string> PaymentTypes { get; set; }
@@ -77,6 +78,7 @@ namespace BR.DTO.Clients
         public string AdditionalInfo { get; set; }
         public int MaxReserveDays { get; set; }
         public int ReserveDurationAvg { get; set; }
+        public int ConfirmationDuration { get; set; }
         public ICollection<string> Photos { get; set; }
         public ICollection<string> SocialLinks { get; set; }
         public ICollection<string> PaymentTypes { get; set; }

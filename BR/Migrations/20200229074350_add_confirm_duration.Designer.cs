@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200229074350_add_confirm_duration")]
+    partial class add_confirm_duration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

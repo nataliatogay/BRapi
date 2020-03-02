@@ -22,6 +22,7 @@ namespace BR.Models
         public virtual Client Client { get; set; }
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
-       // public virtual AccountToken AccountToken { get; set; }
+        // public virtual AccountToken AccountToken { get; set; }
+        
     }
 }
