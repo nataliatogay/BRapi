@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Reservations
 {
-    public class GetTableStatesRequests
+    public class TableStatesRequests
     {
-        public DateTime StartDateTime { get; set; }
+        public string StartDateTime { get; set; }   // dd/MM/yyyy HH:mm
         public int Duration { get; set; } // in min
         public ICollection<int> TableIds { get; set; }
     }

@@ -9,5 +9,6 @@ namespace BR.DTO.Redis
     {
         public int TableId { get; set; }
         public  DateTime DateTime { get; set; }
+        public bool IsConfirmed { get; set; }
     }
 }

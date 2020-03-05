@@ -14,6 +14,7 @@ namespace BR.Services.Interfaces
     {
         Task<ICollection<Reservation>> GetReservations(string identityUserId);
         Task<Reservation> GetReservation(int id);
+        Task<ServerResponse> SetPendingTableState(TableStatesRequests stateRequest);
         Task<ServerResponse<Reservation>> AddNewReservation(NewReservationRequest newReservationRequest, string identityId);
         Task<ServerResponse> SendReservationOnConfirmation(NewReservationRequest newReservationRequest, int userId, Client client);
         Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest);
@@ -21,6 +22,6 @@ namespace BR.Services.Interfaces
         Task<Reservation> CancelReservation(int reservationId);
         Task<Reservation> CompleteReservation(int reservationId);
         Task ChangeTable(ChangeReservationTablesRequest changeRequest);
-        Task<ICollection<TableCurrentStateCacheData>> GetTablesStates(GetTableStatesRequests getStateRequest);
+        Task<ICollection<TableCurrentStateCacheData>> GetTablesStates(TableStatesRequests getStateRequest);
     }
 }

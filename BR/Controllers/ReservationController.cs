@@ -52,6 +52,12 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.GetReservation(id));
         }
 
+        [HttpPost("pending")]
+        public async Task<ActionResult<ServerResponse<ServerResponse>>> SetPendingState(TableStatesRequests stateRequest)
+        {
+            return new JsonResult(await _reservationService.SetPendingTableState(stateRequest));
+        }
+
 
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse<int>>> Post([FromBody]NewReservationRequest newReservation)
@@ -83,7 +89,7 @@ namespace BR.Controllers
         }
 
         [HttpGet("TableStates")]
-        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(GetTableStatesRequests tableStatesRequests)
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableStatesRequests tableStatesRequests)
         {
             return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
         }
