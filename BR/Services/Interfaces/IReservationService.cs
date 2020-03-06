@@ -21,7 +21,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse> AddReservationByPhone(NewReservationByPhoneRequest reservationRequest, string waiterIdentityId);
         Task<Reservation> CancelReservation(int reservationId);
         Task<Reservation> CompleteReservation(int reservationId);
-        Task ChangeTable(ChangeReservationTablesRequest changeRequest);
+        Task<ServerResponse> ChangeTable(ChangeReservationTablesRequest changeRequest);
         Task<ICollection<TableCurrentStateCacheData>> GetTablesStates(TableStatesRequests getStateRequest);
     }
 }

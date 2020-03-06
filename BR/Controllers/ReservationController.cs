@@ -146,8 +146,7 @@ namespace BR.Controllers
         {
             try
             {
-                await _reservationService.ChangeTable(changeRequest);
-                return new JsonResult(Response(Utils.StatusCode.Ok));
+                return new JsonResult(await _reservationService.ChangeTable(changeRequest));
             }
             catch
             {

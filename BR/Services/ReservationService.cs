@@ -58,13 +58,21 @@ namespace BR.Services
             var resDate = DateTime.ParseExact(stateRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
             try
             {
-                await this.AddTableStateCacheData(resDate, stateRequest.Duration, stateRequest.TableIds, false);
+                var res = await this.AddTableStateCacheData(resDate, stateRequest.Duration, stateRequest.TableIds, false);
+                if (res)
+                {
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                else
+                {
+                    return new ServerResponse(StatusCode.NotAvailable);
+                }
             }
             catch
             {
                 return new ServerResponse(StatusCode.Error);
             }
-            return new ServerResponse(StatusCode.Ok);
+
         }
 
         public async Task<ServerResponse<Reservation>> AddNewReservation(NewReservationRequest newReservationRequest, string identityId)
@@ -72,16 +80,16 @@ namespace BR.Services
             var user = await _repository.GetUser(identityId);
             var client = await _repository.GetClientByTableId(newReservationRequest.TableIds.First());
             var resDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-            var states = await this.GetTablesStates(new TableStatesRequests()
-            {
-                Duration = newReservationRequest.Duration,
-                StartDateTime = newReservationRequest.StartDateTime,
-                TableIds = newReservationRequest.TableIds
-            });
-            if (states != null && states.Count > 0)
-            {
-                return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
-            }
+            //var states = await this.GetTablesStates(new TableStatesRequests()
+            //{
+            //    Duration = newReservationRequest.Duration,
+            //    StartDateTime = newReservationRequest.StartDateTime,
+            //    TableIds = newReservationRequest.TableIds
+            //});
+            //if (states != null && states.Count > 0)
+            //{
+            //    return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+            //}
             if (client.ReserveDurationAvg >= newReservationRequest.Duration)
             {
 
@@ -116,7 +124,12 @@ namespace BR.Services
                 }
 
                 // add data to redis
-                await this.AddTableStateCacheData(resDate, newReservationRequest.Duration, newReservationRequest.TableIds);
+                var res = await this.AddTableStateCacheData(resDate, newReservationRequest.Duration, newReservationRequest.TableIds, true);
+                if (!res)
+                {
+                    return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+                }
+
 
                 if (client != null)
                 {
@@ -161,7 +174,7 @@ namespace BR.Services
                 ConfirmReservationRequest confirmRequest = JsonConvert.DeserializeObject<ConfirmReservationRequest>(json);
                 if (confirmRequest != null)
                 {
-                    await this.RemoveTableStateCacheData(DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture), confirmRequest.Duration, confirmRequest.TableIds);
+                    await this.RemoveTableStateCacheData(DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture), confirmRequest.Duration, confirmRequest.TableIds, false);
                 }
                 if (waiters != null)
                 {
@@ -201,11 +214,18 @@ namespace BR.Services
 
         public async Task<ServerResponse> SendReservationOnConfirmation(NewReservationRequest newReservationRequest, int userId, Client client)
         {
+            var resDate = DateTime.ParseExact(newReservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var res = await this.AddTableStateCacheData(resDate, newReservationRequest.Duration, newReservationRequest.TableIds, false);
+            if (!res)
+            {
+                return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+            }
+
             var key = Guid.NewGuid().ToString();
             var closeToday = DateTime.Today.AddMinutes(client.CloseTime);
             var waiters = await _repository.GetWaitersByClientId(client.Id);
             DateTime timerTime;
-            // а если до конца рабочего дня осталось меньше 15 мин
+            // а если до конца рабочего дня осталось меньше 15 мин?
             if (closeToday > DateTime.Now)
             {
                 timerTime = DateTime.Now.AddMinutes(client.ConfirmationDuration);
@@ -285,9 +305,14 @@ namespace BR.Services
 
             }
             var resDate = DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+
             if (confirmRequest.Acceptance)
             {
-
+                var res = await this.SetConfirmedTableStateCacheData(resDate, confirmRequest.Duration, confirmRequest.TableIds);
+                if (!res)
+                {
+                    return new ServerResponse(StatusCode.NotAvailable);
+                }
                 var reservation = new Reservation()
                 {
                     ChildFree = confirmRequest.IsChildFree,
@@ -315,7 +340,7 @@ namespace BR.Services
             }
             else
             {
-                await this.RemoveTableStateCacheData(resDate, confirmRequest.Duration, confirmRequest.TableIds);
+                await this.RemoveTableStateCacheData(resDate, confirmRequest.Duration, confirmRequest.TableIds, false);
                 // notify user
                 try
                 {
@@ -332,15 +357,20 @@ namespace BR.Services
             var user = await _repository.GetWaiter(waiterIdentityId);
             var client = await _repository.GetClientByTableId(reservationRequest.TableIds.First());
             var resDate = DateTime.ParseExact(reservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-            var states = await this.GetTablesStates(new TableStatesRequests()
+            //var states = await this.GetTablesStates(new TableStatesRequests()
+            //{
+            //    Duration = reservationRequest.Duration,
+            //    StartDateTime = reservationRequest.StartDateTime,
+            //    TableIds = reservationRequest.TableIds
+            //});
+            //if (states != null && states.Count > 0)
+            //{
+            //    return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+            //}
+            var res = await this.AddTableStateCacheData(resDate, reservationRequest.Duration, reservationRequest.TableIds, true);
+            if (!res)
             {
-                Duration = reservationRequest.Duration,
-                StartDateTime = reservationRequest.StartDateTime,
-                TableIds = reservationRequest.TableIds
-            });
-            if (states != null && states.Count > 0)
-            {
-                return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+                return new ServerResponse(StatusCode.NotAvailable);
             }
             var reservation = new Reservation()
             {
@@ -372,11 +402,10 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.Ok);
             }
 
-            await this.AddTableStateCacheData(resDate, reservationRequest.Duration, reservationRequest.TableIds, true);
-
             return new ServerResponse(StatusCode.Ok);
         }
 
+        // проверять reservationState
         public async Task<Reservation> CancelReservation(int reservationId)
         {
             var resState = await _repository.GetReservationState("cancelled");
@@ -393,7 +422,7 @@ namespace BR.Services
             }
 
             // remove redis data
-            await this.RemoveTableStateCacheData(reservation.ReservationDate, reservation.Duration, tableIds);
+            await this.RemoveTableStateCacheData(reservation.ReservationDate, reservation.Duration, tableIds, true);
             return await _repository.UpdateReservation(reservation);
 
         }
@@ -406,17 +435,24 @@ namespace BR.Services
             return await _repository.UpdateReservation(reservation);
         }
 
-        public async Task ChangeTable(ChangeReservationTablesRequest changeRequest)
+        public async Task<ServerResponse> ChangeTable(ChangeReservationTablesRequest changeRequest)
         {
             var reservation = await _repository.GetReservation(changeRequest.ReservationId);
             if (reservation is null)
             {
-                return;
+                return new ServerResponse(StatusCode.Error);
             }
             ICollection<int> tableIdsPrev = new List<int>();
             foreach (var table in reservation.TableReservations)
             {
                 tableIdsPrev.Add(table.TableId);
+            }
+
+            // change redis data
+            var res = await this.ChangeTableStateCacheData(reservation.ReservationDate, reservation.ReservationDate, reservation.Duration, reservation.Duration, tableIdsPrev, changeRequest.TableIds, true);
+            if (!res)
+            {
+                return new ServerResponse(StatusCode.NotAvailable);
             }
             await _repository.DeleteTableReservations(changeRequest.ReservationId);
 
@@ -424,10 +460,7 @@ namespace BR.Services
             {
                 await _repository.AddTableReservation(changeRequest.ReservationId, tableId);
             }
-
-            // change redis data
-
-            await this.ChangeTableStateCacheData(reservation.ReservationDate, reservation.ReservationDate, reservation.Duration, reservation.Duration, tableIdsPrev, changeRequest.TableIds);
+            return new ServerResponse(StatusCode.Ok);
 
 
         }
@@ -493,7 +526,8 @@ namespace BR.Services
                             DateTime = timeStart.AddMinutes(i),
                             IsConfirmed = isConfirmed
                         });
-                    } else
+                    }
+                    else
                     {
                         return false;
                     }
@@ -505,7 +539,7 @@ namespace BR.Services
             return true;
         }
 
-        private async Task SetConfirmedTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds)
+        private async Task<bool> SetConfirmedTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds)
         {
             var interval = 15;  // add to appsettings
 
@@ -526,11 +560,7 @@ namespace BR.Services
                 for (int i = 0; i < duration; i += interval)
                 {
                     var tableState = tableStates.FirstOrDefault(t => t.TableId == tableId && t.DateTime == timeStart.AddMinutes(i));
-                    if (tableState != null)
-                    {
-                        tableState.IsConfirmed = true;
-                    }
-                    else
+                    if (tableState is null)
                     {
                         tableStates.Add(new TableCurrentStateCacheData()
                         {
@@ -539,14 +569,23 @@ namespace BR.Services
                             IsConfirmed = true
                         });
                     }
+                    else if (!tableState.IsConfirmed)
+                    {
+                        tableState.IsConfirmed = true;
+
+                    }
+                    else if (tableState.IsConfirmed)
+                    {
+                        return false;
+                    }
                 }
             }
 
             json = JsonConvert.SerializeObject(tableStates);
-
             await _cacheDistributed.SetStringAsync("tableStates", json);
+            return true;
         }
-        private async Task RemoveTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds)
+        private async Task RemoveTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds, bool isConfirmed)
         {
             var interval = 15;  // add to appsettings
 
@@ -563,9 +602,19 @@ namespace BR.Services
                 for (int i = 0; i < duration; i += interval)
                 {
                     var tableState = tableStates.FirstOrDefault(t => t.TableId == tableId && t.DateTime == timeStart.AddMinutes(i));
-                    if (tableState != null)
+                    if (tableState != null && tableState.IsConfirmed)
                     {
-                        tableStates.Remove(tableState);
+                        if (isConfirmed)
+                        {
+                            tableStates.Remove(tableState);
+                        }
+                    }
+                    else if (tableState != null && !tableState.IsConfirmed)
+                    {
+                        if (!isConfirmed)
+                        {
+                            tableStates.Remove(tableState);
+                        }
                     }
                 }
             }
@@ -575,13 +624,14 @@ namespace BR.Services
             await _cacheDistributed.SetStringAsync("tableStates", json);
         }
 
-        private async Task ChangeTableStateCacheData(DateTime timePrev, DateTime timeNew, int durationPrev, int durationNew, ICollection<int> tableIdsPrev, ICollection<int> tableIdsNew)
+        private async Task<bool> ChangeTableStateCacheData(DateTime timePrev, DateTime timeNew, int durationPrev, int durationNew, ICollection<int> tableIdsPrev, ICollection<int> tableIdsNew, bool isConfirmed)
         {
             var interval = 15;  // add to appsettings
             var json = await _cacheDistributed.GetStringAsync("tableStates");
             if (json is null)
             {
-                return;
+                //?
+                return false;
             }
             ICollection<TableCurrentStateCacheData> tableStates = JsonConvert.DeserializeObject<ICollection<TableCurrentStateCacheData>>(json);
 
@@ -604,9 +654,15 @@ namespace BR.Services
 
                 for (int i = 0; i < durationNew; i += interval)
                 {
+                    var tableState = tableStates.FirstOrDefault(t => t.TableId == tableId && t.DateTime == timePrev.AddMinutes(i));
+                    if (tableState != null)
+                    {
+                        return false;
+                    }
                     tableStates.Add(new TableCurrentStateCacheData()
                     {
                         TableId = tableId,
+                        IsConfirmed = isConfirmed,
                         DateTime = timeNew.AddMinutes(i)
                     });
                 }
@@ -615,12 +671,13 @@ namespace BR.Services
             json = JsonConvert.SerializeObject(tableStates);
 
             await _cacheDistributed.SetStringAsync("tableStates", json);
+            return true;
         }
     }
 }
 
 //Reservation state:
 //-idle; - addNew
-//-cancelled; - user
+//-cancelled; - user, waiter
 //-completed; - waiter
 //-missed; - timer; 
