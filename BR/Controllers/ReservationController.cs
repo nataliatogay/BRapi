@@ -76,7 +76,7 @@ namespace BR.Controllers
             }
             else
             {
-                return new JsonResult(Response(result.StatusCode, result.Data));
+                return new JsonResult(Response(result.StatusCode, result.Data.Id));
             }
         }
 
@@ -127,18 +127,16 @@ namespace BR.Controllers
 
 
         [HttpPut("Cancel")]
-        public async Task<ActionResult<ServerResponse>> CancelReservation(int id)
+        public async Task<ActionResult<ServerResponse>> CancelReservation([FromBody]CancelReservationRequest cancelRequest)
         {
-            try
+
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
             {
-                var res = await _reservationService.CancelReservation(id);
-                if (res != null)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Ok));
-                }
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            catch { return new JsonResult(Response(Utils.StatusCode.Error)); }
-            return new JsonResult(Response(Utils.StatusCode.Error));
+            return new JsonResult(await _reservationService.CancelReservation(cancelRequest.ReservationId, cancelRequest.CancelReasonId, identityUser.Id));
+                
         }
 
         [HttpPut("ChangeTable")]

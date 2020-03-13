@@ -242,6 +242,13 @@ namespace BR.EF
             return res.Entity;
         }
 
+        // Roles
+
+        public async Task<IdentityRole> GetRole(int id)
+        {
+            return await _db.Roles.FindAsync(id);
+        }
+
         // Requests
 
         public async Task<ICollection<ClientRequest>> GetClientRequests()
@@ -600,6 +607,11 @@ namespace BR.EF
         public async Task<ReservationState> GetReservationState(string title)
         {
             return await _db.ReservationStates.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+        public async Task<CancelReason> GetCancelReason(int id)
+        {
+            return await _db.CancelReasons.FindAsync(id);
         }
 
         // Tables

@@ -6,14 +6,10 @@ using BR.Models;
 using BR.Services.Interfaces;
 using BR.Utils;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,15 +18,15 @@ namespace BR.Services
     public class UserAccountService : IUserAccountService
     {
         private readonly IAsyncRepository _repository;
-        private readonly AuthOptions _authOptions;
         private readonly IBlobService _blobService;
+        private readonly IAuthenticationService _authenticationService;
 
         public UserAccountService(IAsyncRepository repository,
-            IOptions<AuthOptions> options,
+            IAuthenticationService authenticationService,
             IBlobService blobService)
         {
             _repository = repository;
-            _authOptions = options.Value;
+            _authenticationService = authenticationService;
             _blobService = blobService;
         }
 
@@ -55,17 +51,22 @@ namespace BR.Services
             return null;
         }
 
-        public async Task<LogInUserResponse> LogIn(string userName, string identityId, string notificationTag)
+        public async Task<ServerResponse<LogInUserResponse>> LogIn(string userName, string identityId, string notificationTag)
         {
-            LogInResponse resp = await Authentication(userName, identityId, notificationTag);
-            User user = await _repository.GetUser(identityId);
-            var res = new LogInUserResponse()
+            var resp = await _authenticationService.Authentication(userName, notificationTag);
+            if(resp.StatusCode == StatusCode.Ok)
             {
-                AccessToken = resp.AccessToken,
-                RefreshToken = resp.RefreshToken,
-                User = this.UserToUserInfoResponse(user)
-            };
-            return res;
+                User user = await _repository.GetUser(identityId);
+                var res = new LogInUserResponse()
+                {
+                    AccessToken = resp.Data.AccessToken,
+                    RefreshToken = resp.Data.RefreshToken,
+                    User = this.UserToUserInfoResponse(user)
+                };
+                return new ServerResponse<LogInUserResponse>(res);
+            }
+            
+            return new ServerResponse<LogInUserResponse>(resp.StatusCode, null);
         }
 
         public async Task LogOut(string notificationTag)
@@ -81,7 +82,7 @@ namespace BR.Services
         {
             user.IsBlocked = false;
             user.RegistrationDate = DateTime.Now;
-            if(user.ImagePath is null)
+            if (user.ImagePath is null)
             {
                 user.ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png";
             }
@@ -93,24 +94,9 @@ namespace BR.Services
             return null;
         }
 
-        public async Task<LogInResponse> UpdateToken(string refreshToken)
+        public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
         {
-            AccountToken token = await _repository.GetToken(refreshToken);
-            if (token is null)
-            {
-                return null;
-            }
-            if (token.Expires <= DateTime.Now)
-            {
-                return null;
-            }
-            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
-
-            if (identityUser is null)
-            {
-                return null;
-            }
-            return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
+            return await _authenticationService.UpdateToken(refreshToken);
         }
 
 
@@ -132,43 +118,6 @@ namespace BR.Services
             user.ImagePath = path;
             await _repository.UpdateUser(user);
             return path;
-        }
-
-        private async Task<LogInResponse> Authentication(string userName, string identityId, string notificationTag)
-        {
-            List<Claim> claims = new List<Claim>()
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, "User")
-            };
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(
-                claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-
-            JwtSecurityToken token = new JwtSecurityToken(
-                issuer: _authOptions.Issuer,
-                audience: _authOptions.Audience,
-                claims: claimsIdentity.Claims,
-                expires: DateTime.Now.AddMinutes(_authOptions.AccessLifetime),
-                signingCredentials: new SigningCredentials(
-                        _authOptions.GetSymmetricSecurityKey(),
-                        SecurityAlgorithms.HmacSha256)
-                );
-            string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-
-            LogInResponse resp = new LogInResponse()
-            {
-                AccessToken = tokenStr,
-                RefreshToken = Guid.NewGuid().ToString()
-            };
-
-            await _repository.AddToken(new AccountToken()
-            {
-                IdentityUserId = identityId,
-                RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
-                NotificationTag = notificationTag
-            });
-            return resp;
         }
 
         public async Task<UserInfoResponse> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
@@ -261,7 +210,7 @@ namespace BR.Services
                 ImagePath = user.ImagePath,
                 Email = user.Identity.Email,
                 Reservations = reservations
-              
+
             };
         }
     }

@@ -42,6 +42,11 @@ namespace BR.EF
         Task<Admin> GetAdminByIdentityName(string identityName);
 
 
+        // Roles
+
+        Task<IdentityRole> GetRole(int id);
+
+
         // Requests
 
         Task<ICollection<ClientRequest>> GetClientRequests();
@@ -116,6 +121,7 @@ namespace BR.EF
         Task<TableReservation> AddTableReservation(int reservationId, int tableId);
         Task DeleteTableReservations(int reservationId);
         Task<ReservationState> GetReservationState(string title);
+        Task<CancelReason> GetCancelReason(int id);
 
 
         // Tables
@@ -124,7 +130,7 @@ namespace BR.EF
         Task<Table> AddTable(Table table);
         Task<Table> UpdateTable(Table table);
         Task<bool> DeleteTable(Table table);
-    //    Task<TableState> GetTableState(string title);
+        //    Task<TableState> GetTableState(string title);
 
 
         // Floors

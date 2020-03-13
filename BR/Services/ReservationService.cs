@@ -113,14 +113,15 @@ namespace BR.Services
                     var user = await _repository.GetUser(identityId);
                     var client = await _repository.GetClientByTableId(tableState.TableIds.First());
                     var resDate = DateTime.ParseExact(tableState.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-                    var res = await this.SetConfirmedTableStateCacheData(resDate, tableState.Duration, tableState.TableIds);
-                    if (!res)
-                    {
-                        return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
-                    }
+                    
 
                     if (client.ReserveDurationAvg >= tableState.Duration)
                     {
+                        var res = await this.SetConfirmedTableStateCacheData(resDate, tableState.Duration, tableState.TableIds);
+                        if (!res)
+                        {
+                            return new ServerResponse<Reservation>(StatusCode.NotAvailable, null);
+                        }
                         var reservation = new Reservation()
                         {
                             UserId = user.Id,
@@ -432,16 +433,26 @@ namespace BR.Services
             return new ServerResponse(StatusCode.Ok);
         }
 
-        // проверять reservationState
-        public async Task<Reservation> CancelReservation(int reservationId)
+        public async Task<ServerResponse> CancelReservation(int reservationId, int reasonId, string cancelledByIdentityUserId)
         {
             var resState = await _repository.GetReservationState("cancelled");
+            var cancelReason = await _repository.GetCancelReason(reasonId);
             var reservation = await _repository.GetReservation(reservationId);
+            if (resState is null || cancelReason is null || reservation is null)
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
             if (reservation.ReservationDate < DateTime.Now)
             {
-                return null;
+                return new ServerResponse(StatusCode.Expired);
+            }
+            if (reservation.ReservationState != null)
+            {
+                return new ServerResponse(StatusCode.Error);
             }
             reservation.ReservationStateId = resState.Id;
+            reservation.CancelReasonId = reasonId;
+            reservation.CancelledByIdentityUserId = cancelledByIdentityUserId;
             ICollection<int> tableIds = new List<int>();
             foreach (var table in reservation.TableReservations)
             {
@@ -450,7 +461,15 @@ namespace BR.Services
 
             // remove redis data
             await this.RemoveTableStateCacheData(reservation.ReservationDate, reservation.Duration, tableIds, true);
-            return await _repository.UpdateReservation(reservation);
+            try
+            {
+                await _repository.UpdateReservation(reservation);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
 
         }
 

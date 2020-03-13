@@ -76,6 +76,7 @@ namespace BR
 
             services.AddScoped<BRDbContext>();
             services.AddScoped<IAsyncRepository, EFAsyncRepository>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IWaiterService, WaiterService>();
             services.AddScoped<IAdminAccountService, AdminAccountService>();

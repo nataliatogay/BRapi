@@ -34,6 +34,7 @@ namespace BR.EF
        // public DbSet<TableState> TableStates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<TableReservation> TableReservations { get; set; }
+        public DbSet<CancelReason> CancelReasons { get; set; }
         public DbSet<Invitee> Invitees { get; set; }
         public DbSet<PhotoPoint> PhotoPoints { get; set; }
         public DbSet<AccountToken> AccountTokens { get; set; }

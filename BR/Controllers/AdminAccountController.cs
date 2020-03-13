@@ -59,7 +59,7 @@ namespace BR.Controllers
 
 
         [HttpPost("Login")]
-        public async Task<IActionResult> LogIn([FromBody]LogInRequest model)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> LogIn([FromBody]LogInRequest model)
         {
             IdentityUser identityUser = await _userManager.FindByNameAsync(model.Email);
             if (identityUser != null)
@@ -72,11 +72,9 @@ namespace BR.Controllers
                 }
                 if (checkPassword)
                 {
-                    LogInResponse resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
-                    if (resp != null)
-                    {
-                        return new JsonResult(resp);
-                    }
+                    var resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
+                    
+                        return new JsonResult(Response(resp));
                 }
             }
 
@@ -84,14 +82,9 @@ namespace BR.Controllers
         }
 
         [HttpPost("Token")] //api/account/token
-        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
-            LogInResponse resp = await _adminAccountService.UpdateToken(refreshToken);
-            if (resp is null)
-            {
-                return StatusCode(401);
-            }
-            return new JsonResult(resp);
+            return new JsonResult(await _adminAccountService.UpdateToken(refreshToken));
         }
 
         [Authorize]
@@ -125,7 +118,7 @@ namespace BR.Controllers
         [HttpPost("AddRole")]
         public async Task<IActionResult> AddRole([FromBody]string role)
         {
-            var res = await _roleManager.CreateAsync(new IdentityRole(role));
+            var res =    await _roleManager.CreateAsync(new IdentityRole(role));
             return new JsonResult(res);
         }
 
@@ -163,6 +156,15 @@ namespace BR.Controllers
                         return new JsonResult(errors.ToString());
                     }
                     identityUser = await _userManager.FindByNameAsync(adminEmail);
+                    var role = await _roleManager.FindByNameAsync("Admin");
+                    if (role != null)
+                    {
+                        var resp = await _userManager.AddToRoleAsync(identityUser, "Admin");
+                        if (!resp.Succeeded)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.Error));
+                        }
+                    }
                 }
                 else
                 {

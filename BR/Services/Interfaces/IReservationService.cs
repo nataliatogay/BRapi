@@ -19,7 +19,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse> SendReservationOnConfirmation(TableStatesRequest tableStateRequest, NewReservationRequest reservationRequest, int userId, Client client);
         Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest);
         Task<ServerResponse> AddReservationByPhone(NewReservationByPhoneRequest reservationRequest, string waiterIdentityId);
-        Task<Reservation> CancelReservation(int reservationId);
+        Task<ServerResponse> CancelReservation(int reservationId, int reasonId, string cancelledByIdentityUserId);
         Task<Reservation> CompleteReservation(int reservationId);
         Task<ServerResponse> ChangeTable(ChangeReservationTablesRequest changeRequest);
         Task<ICollection<TableCurrentStateCacheData>> GetTablesStates(TableStatesRequest getStateRequest);

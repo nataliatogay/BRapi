@@ -29,6 +29,7 @@ namespace BR.Controllers
     public class UserAccountController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserAccountService _userAccountService;
         private readonly IEmailService _emailService;
         private readonly ISMSConfiguration _smsConfiguration;
@@ -36,6 +37,7 @@ namespace BR.Controllers
 
 
         public UserAccountController(UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IUserAccountService userAccountService,
             IEmailService emailService,
             ISMSConfiguration smsConfiguration,
@@ -43,6 +45,7 @@ namespace BR.Controllers
             IAsyncRepository repository)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userAccountService = userAccountService;
             _emailService = emailService;
             _smsConfiguration = smsConfiguration;
@@ -75,15 +78,15 @@ namespace BR.Controllers
                     // TWILIO
 
 
-                    TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+                    //TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
 
-                    var msg = MessageResource.Create(body: code + " is your RB verification code",
-                    from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                    to: new Twilio.Types.PhoneNumber(phoneNumber));
-                    string sid = msg.Sid;
-                    return new JsonResult(Response(Utils.StatusCode.Ok));
+                    //var msg = MessageResource.Create(body: code + " is your RB verification code",
+                    //from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                    //to: new Twilio.Types.PhoneNumber(phoneNumber));
+                    //string sid = msg.Sid;
+                    //return new JsonResult(Response(Utils.StatusCode.Ok));
                     //return new JsonResult(msg.Sid);
-                    //return new JsonResult(code);
+                    return new JsonResult(code);
 
                 }
                 catch
@@ -117,11 +120,23 @@ namespace BR.Controllers
                             UserName = confirmModel.PhoneNumber
                         },
                         code);
+
                         if (identityResult.Succeeded)
                         {
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
+                            var role = await _roleManager.FindByNameAsync("User");
+                            if(role != null)
+                            {
+                                var res = await _userManager.AddToRoleAsync(identityUser, "User");
+                                if (!res.Succeeded)
+                                {
+                                    return new JsonResult(Response(Utils.StatusCode.Error));
+                                }
+                            }
+
                         }
                     }
+                    var userRoles = await _userManager.GetRolesAsync(identityUser);
                     var resp = await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag);
                     return new JsonResult(Response(resp));
                 }
@@ -151,6 +166,7 @@ namespace BR.Controllers
             {
                 if ((await _userAccountService.GetInfo(identityUser.Id)) == null)
                 {
+                   
                     User user = new User()
                     {
                         IdentityId = identityUser.Id,
@@ -309,12 +325,7 @@ namespace BR.Controllers
         [HttpPost("Token")] //api/account/token
         public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
-            LogInResponse resp = await _userAccountService.UpdateToken(refreshToken);
-            if (resp is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.TokenError));
-            }
-            return new JsonResult(Response(resp));
+            return new JsonResult(await _userAccountService.UpdateToken(refreshToken));
         }
 
 
