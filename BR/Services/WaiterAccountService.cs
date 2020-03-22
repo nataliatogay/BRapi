@@ -19,28 +19,17 @@ namespace BR.Services
     public class WaiterAccountService : IWaiterAccountService
     {
         private readonly IAsyncRepository _repository;
-        private readonly AuthOptions _authOptions;
-        public WaiterAccountService(IAsyncRepository repository, IOptions<AuthOptions> options)
+        private readonly IAuthenticationService _authenticationService;
+        public WaiterAccountService(IAsyncRepository repository,
+            IAuthenticationService authenticationService)
         {
             _repository = repository;
-            _authOptions = options.Value;
+            _authenticationService = authenticationService;
         }
 
-        public async Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag)
+        public async Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag)
         {
-           // var tokens = await _repository.GetTokens(identityId);
-
-            //if (tokens.Count() > 0 && tokens.First().Expires > DateTime.Now)
-            //{
-            //    await _repository.RemoveToken(tokens.First());
-            //}
-            //var waiter = await _repository.GetWaiter(identityId);
-            //if (!waiter.NotificationTag.Equals(notificationTag))
-            //{
-            //    waiter.NotificationTag = notificationTag;
-            //    await _repository.UpdateWaiter(waiter);
-            //}
-            return await Authentication(userName, identityId, notificationTag);
+            return await _authenticationService.Authentication(userName, notificationTag);
         }
 
         public async Task LogOut(string notificationTag)
@@ -58,65 +47,10 @@ namespace BR.Services
         }
 
 
-        public async Task<LogInResponse> UpdateToken(string refreshToken)
+        public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
         {
-            AccountToken token = await _repository.GetToken(refreshToken);
-            if (token is null)
-            {
-                return null;
-            }
-            if (token.Expires <= DateTime.Now)
-            {
-                return null;
-            }
-            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
-
-            if (identityUser is null)
-            {
-                return null;
-            }
-            return await Authentication(identityUser.UserName, identityUser.Id, token.NotificationTag);
+            return await _authenticationService.UpdateToken(refreshToken);
         }
 
-
-
-
-        private async Task<LogInResponse> Authentication(string userName, string identityId, string notificationTag)
-        {
-            List<Claim> claims = new List<Claim>()
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, "Waiter")
-             //   new Claim("id", admin.Id.ToString())
-            };
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(
-                claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-
-            JwtSecurityToken token = new JwtSecurityToken(
-                issuer: _authOptions.Issuer,
-                audience: _authOptions.Audience,
-                claims: claimsIdentity.Claims,
-                expires: DateTime.Now.AddMinutes(_authOptions.AccessLifetime),
-                signingCredentials: new SigningCredentials(
-                        _authOptions.GetSymmetricSecurityKey(),
-                        SecurityAlgorithms.HmacSha256)
-                );
-            string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-
-            LogInResponse resp = new LogInResponse()
-            {
-                AccessToken = tokenStr,
-                RefreshToken = Guid.NewGuid().ToString()
-            };
-
-            await _repository.AddToken(new AccountToken()
-            {
-                IdentityUserId = identityId,
-                RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime),
-                NotificationTag  = notificationTag
-            });
-            return resp;
-        }
     }
 }

@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200319104209_new_edit_model")]
+    partial class new_edit_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,7 +247,7 @@ namespace BR.Migrations
 
                     b.Property<int>("ClientId");
 
-                    b.Property<bool>("IsWhatsApp");
+                    b.Property<bool>("IsShow");
 
                     b.Property<string>("Number")
                         .IsRequired();
@@ -255,21 +257,6 @@ namespace BR.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("ClientPhones");
-                });
-
-            modelBuilder.Entity("BR.Models.ClientRating", b =>
-                {
-                    b.Property<int>("UserId");
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<int>("Rating");
-
-                    b.HasKey("UserId", "ClientId");
-
-                    b.HasAlternateKey("ClientId", "UserId");
-
-                    b.ToTable("ClientRatings");
                 });
 
             modelBuilder.Entity("BR.Models.ClientRequest", b =>
@@ -506,8 +493,6 @@ namespace BR.Migrations
 
                     b.Property<string>("AdditionalInfo");
 
-                    b.Property<int?>("BarTableId");
-
                     b.Property<int?>("CancelReasonId");
 
                     b.Property<string>("CancelledByIdentityUserId");
@@ -527,8 +512,6 @@ namespace BR.Migrations
                     b.Property<int?>("UserId");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BarTableId");
 
                     b.HasIndex("CancelReasonId");
 
@@ -651,6 +634,21 @@ namespace BR.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserPhones");
+                });
+
+            modelBuilder.Entity("BR.Models.UserRating", b =>
+                {
+                    b.Property<int>("UserId");
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Rating");
+
+                    b.HasKey("UserId", "ClientId");
+
+                    b.HasAlternateKey("ClientId", "UserId");
+
+                    b.ToTable("UserRatings");
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>
@@ -871,7 +869,7 @@ namespace BR.Migrations
             modelBuilder.Entity("BR.Models.BarTable", b =>
                 {
                     b.HasOne("BR.Models.Hall", "Hall")
-                        .WithMany("BarTables")
+                        .WithMany()
                         .HasForeignKey("HallId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -971,19 +969,6 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientRating", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientRatings")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BR.Models.User", "User")
-                        .WithMany("ClientRatings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("BR.Models.ClientRequest", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
@@ -1051,11 +1036,6 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.Reservation", b =>
                 {
-                    b.HasOne("BR.Models.BarTable", "BarTable")
-                        .WithMany("Reservations")
-                        .HasForeignKey("BarTableId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("BR.Models.CancelReason", "CancelReason")
                         .WithMany("Reservations")
                         .HasForeignKey("CancelReasonId");
@@ -1107,6 +1087,19 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+                });
+
+            modelBuilder.Entity("BR.Models.UserRating", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>

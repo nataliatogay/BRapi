@@ -121,6 +121,16 @@ namespace BR.EF
             return await this.GetClient(table.Hall.Floor.ClientId);
         }
 
+        public async Task<Client> GetClientByBarId(int barId)
+        {
+            var barTable = await this.GetBarTable(barId);
+            if (barTable is null)
+            {
+                return null;
+            }
+            return await this.GetClient(barTable.Hall.Floor.ClientId);
+        }
+
         public async Task<ClientImage> GetClientImage(int id)
         {
             return await _db.ClientImages.FindAsync(id);
@@ -147,73 +157,41 @@ namespace BR.EF
             }
         }
 
-        public async Task AddClientPaymentType(int clientId, int paymentTypeId)
+        public async Task AddClientPaymentType(ClientPaymentType clientPaymentType)
         {
-            await _db.ClientPaymentTypes.AddAsync(new ClientPaymentType()
-            {
-                ClientId = clientId,
-                PaymentTypeId = paymentTypeId
-            });
+            await _db.ClientPaymentTypes.AddAsync(clientPaymentType);
             await _db.SaveChangesAsync();
 
         }
 
-        public async Task AddClientClientType(int clientId, int clientTypeId)
+        public async Task AddClientClientType(ClientClientType clientClientType)
         {
-            await _db.ClientClientTypes.AddAsync(new ClientClientType()
-            {
-                ClientId = clientId,
-                ClientTypeId = clientTypeId
-            });
+            await _db.ClientClientTypes.AddAsync(clientClientType);
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddClientMealType(int clientId, int mealtTypeId)
+        public async Task AddClientMealType(ClientMealType clientMealType)
         {
-            await _db.ClientMealTypes.AddAsync(new ClientMealType()
-            {
-                ClientId = clientId,
-                MealTypeId = mealtTypeId
-            });
+            await _db.ClientMealTypes.AddAsync(clientMealType);
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddClientCuisine(int clientId, int cuisineId)
+        public async Task AddClientCuisine(ClientCuisine clientCuisine)
         {
-            await _db.ClientCuisines.AddAsync(new ClientCuisine()
-            {
-                ClientId = clientId,
-                CuisineId = cuisineId
-            });
+            await _db.ClientCuisines.AddAsync(clientCuisine);
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddClientSocialLink(int clientId, string link)
+        public async Task AddClientSocialLink(SocialLink socialLink)
         {
-            await _db.SocialLinks.AddAsync(new SocialLink()
-            {
-                ClientId = clientId,
-                Link = link
-            });
+            await _db.SocialLinks.AddAsync(socialLink);
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddClientPhone(int clientId, string phoneNumber, bool isShow)
+        public async Task AddClientPhone(ClientPhone clientPhone)
         {
-            var phone = new ClientPhone()
-            {
-                ClientId = clientId,
-                // PhoneCodeId = phoneCodeId,
-                Number = phoneNumber,
-                IsShow = isShow
+            await _db.ClientPhones.AddAsync(clientPhone);
 
-                //IsWhatsApp = isWhatsApp,
-                //IsTelegram = isTelegram,
-                //IsViber = isViber
-            };
-            await _db.ClientPhones.AddAsync(phone);
-
-            // whatsapp 
             await _db.SaveChangesAsync();
         }
 
@@ -586,13 +564,9 @@ namespace BR.EF
             return reservation.TableReservations;
         }
 
-        public async Task<TableReservation> AddTableReservation(int reservationId, int tableId)
+        public async Task<TableReservation> AddTableReservation(TableReservation tableReservation)
         {
-            var res = await _db.TableReservations.AddAsync(new TableReservation()
-            {
-                ReservationId = reservationId,
-                TableId = tableId
-            });
+            var res = await _db.TableReservations.AddAsync(tableReservation);
             await _db.SaveChangesAsync();
             return res.Entity;
         }
@@ -648,6 +622,11 @@ namespace BR.EF
             {
                 return false;
             }
+        }
+
+        public async Task<BarTable> GetBarTable(int id)
+        {
+            return await _db.BarTables.FindAsync(id);
         }
 
         //public async Task<TableState> GetTableState(string title)
@@ -735,47 +714,3 @@ namespace BR.EF
 
     }
 }
-
-/*
- public async Task<IEnumerable<UserMail>> GetAllUserMailsByAdminId(int adminId)
-        {
-            return await _db.UserMails.Where(m => m.AdminId == adminId).ToListAsync();
-        }
-
-        public async Task<UserMail> GetUserMail(int mailId)
-        {
-            return await _db.UserMails.FindAsync(mailId);
-        }
-        public async Task AddUserMail(UserMail userMail)
-        {
-            await _db.UserMails.AddAsync(userMail);
-            await _db.SaveChangesAsync();
-        }
-        public async Task DeleteUserMail(UserMail userMail)
-        {
-            _db.UserMails.Remove(userMail);
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<ClientMail>> GetAllClientMailsByAdminId(int adminId)
-        {
-            return await _db.ClientMails.Where(m => m.AdminId == adminId).ToListAsync();
-        }
-
-        public async Task<ClientMail> GetClientMail(int mailId)
-        {
-            return await _db.ClientMails.FindAsync(mailId);
-        }
-        public async Task AddClientMail(ClientMail clientMail)
-        {
-            await _db.ClientMails.AddAsync(clientMail);
-            await _db.SaveChangesAsync();
-        }
-        public async Task DeleteClientMail(ClientMail clientMail)
-        {
-            _db.ClientMails.Remove(clientMail);
-            await _db.SaveChangesAsync();
-        }
- */
-
-

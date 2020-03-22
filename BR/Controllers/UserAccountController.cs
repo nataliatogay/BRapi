@@ -138,7 +138,7 @@ namespace BR.Controllers
                     }
                     var userRoles = await _userManager.GetRolesAsync(identityUser);
                     var resp = await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag);
-                    return new JsonResult(Response(resp));
+                    return new JsonResult(resp);
                 }
                 else
                 {

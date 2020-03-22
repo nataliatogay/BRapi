@@ -42,6 +42,7 @@ namespace BR.Models
         public virtual ICollection<Invitee> Invitees { get; set; }
         public virtual ICollection<UserUserPhone> UserUserPhones { get; set; }
         public virtual ICollection<ClientFavourite> ClientFavourites { get; set; }
+        public virtual ICollection<ClientRating> ClientRatings { get; set; }
 
 
         //public virtual AccountToken AccountToken { get; set; }
@@ -56,6 +57,7 @@ namespace BR.Models
             Invitees = new HashSet<Invitee>();
             UserUserPhones = new HashSet<UserUserPhone>();
             ClientFavourites = new HashSet<ClientFavourite>();
+            ClientRatings = new HashSet<ClientRating>();
             //AccountTokens = new HashSet<AccountToken>();
 
 

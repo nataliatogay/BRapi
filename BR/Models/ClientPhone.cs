@@ -12,16 +12,11 @@ namespace BR.Models
 
         public int ClientId { get; set; }
 
-        //public int PhoneCodeId { get; set; }
-        public bool IsShow { get; set; }
-        
-        //public bool IsWhatsApp { get; set; }
-        //public bool IsTelegram { get; set; }
-        //public bool IsViber { get; set; }
+                
+        public bool IsWhatsApp { get; set; }
 
 
 
         public virtual Client Client { get; set; }
-        //public virtual PhoneCode PhoneCode { get; set; }
     }
 }

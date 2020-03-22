@@ -30,7 +30,7 @@ namespace BR.Services
             _authOptions = options.Value;
         }
 
-        public async Task<ServerResponse<LogInResponse>> LogIn(string userName, string identityId, string notificationTag)
+        public async Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag)
         {
             return await _authenticationService.Authentication(userName, notificationTag);
         }

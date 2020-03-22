@@ -30,6 +30,7 @@ namespace BR.EF
         public DbSet<Hall> Halls { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Table> Tables { get; set; }
+        public DbSet<BarTable> BarTables { get; set; }
         public DbSet<ReservationState> ReservationStates { get; set; }
        // public DbSet<TableState> TableStates { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
@@ -45,6 +46,8 @@ namespace BR.EF
         public DbSet<ClientFavourite> Favourites { get; set; }
         public DbSet<UserPhone> UserPhones { get; set; }
         public DbSet<UserUserPhone> UserUserPhones { get; set; }
+
+        public DbSet<ClientRating> ClientRatings { get; set; }
         //public DbSet<ClientMail> ClientMails { get; set; }
         //public DbSet<UserMail> UserMails { get; set; }
 
@@ -62,19 +65,35 @@ namespace BR.EF
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClientPaymentType>().HasKey(p => new { p.ClientId, p.PaymentTypeId });
+            
             modelBuilder.Entity<ClientMealType>().HasKey(p => new { p.ClientId, p.MealTypeId });
+            
             modelBuilder.Entity<ClientClientType>().HasKey(c => new { c.ClientId, c.ClientTypeId });
+            
             modelBuilder.Entity<ClientCuisine>().HasKey(c => new { c.ClientId, c.CuisineId });
+            
             modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });
+            
             modelBuilder.Entity<Invitee>().HasKey(i => new { i.UserId, i.ReservationId });
+            
             modelBuilder.Entity<UserUserPhone>().HasKey(u => new { u.UserId, u.UserPhoneId });
+            
             modelBuilder.Entity<ClientFavourite>().HasKey(c => new { c.UserId, c.ClientId });
+            
+            modelBuilder.Entity<ClientRating>().HasKey(u => new { u.UserId, u.ClientId });
 
             modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
+            
             modelBuilder.Entity<ClientCuisine>().HasOne(c => c.Cuisine).WithMany(c => c.ClientCuisines).OnDelete(DeleteBehavior.Restrict);
+            
             modelBuilder.Entity<ClientPaymentType>().HasOne(c => c.PaymentType).WithMany(c => c.ClientPaymentTypes).OnDelete(DeleteBehavior.Restrict);
+            
             modelBuilder.Entity<ClientClientType>().HasOne(c => c.ClientType).WithMany(c => c.ClientClientTypes).OnDelete(DeleteBehavior.Restrict);
+            
             modelBuilder.Entity<ClientMealType>().HasOne(c => c.MealType).WithMany(c => c.ClientMealTypes).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Reservation>().HasOne(r => r.BarTable).WithMany(c => c.Reservations).OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
         }
 

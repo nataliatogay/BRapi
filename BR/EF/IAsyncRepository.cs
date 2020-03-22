@@ -16,6 +16,7 @@ namespace BR.EF
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
         Task<Client> GetClientByTableId(int tableId);
+        Task<Client> GetClientByBarId(int barId);
         Task<IEnumerable<Client>> GetClients();
         Task<ClientFavourite> GetFavourite(int clientId, int userId);
         Task<IEnumerable<ClientFavourite>> GetFavourites(int userId);
@@ -27,12 +28,12 @@ namespace BR.EF
         Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
         Task<IEnumerable<Client>> GetClientsByName(string title);
         Task<Client> UpdateClient(Client client);
-        Task AddClientPaymentType(int clientId, int paymentTypeId);
-        Task AddClientClientType(int clientId, int clientTypeId);
-        Task AddClientMealType(int clientId, int mealtTypeId);
-        Task AddClientCuisine(int clientId, int cuisineId);
-        Task AddClientSocialLink(int clientId, string link);
-        Task AddClientPhone(int clientId, string phoneNumber, bool isShow);
+        Task AddClientPaymentType(ClientPaymentType clientPaymentType);
+        Task AddClientClientType(ClientClientType clientClientType);
+        Task AddClientMealType(ClientMealType clientMealType);
+        Task AddClientCuisine(ClientCuisine clientCuisine);
+        Task AddClientSocialLink(SocialLink socialLink);
+        Task AddClientPhone(ClientPhone clientPhone);
 
 
         // Admins
@@ -118,7 +119,7 @@ namespace BR.EF
         Task<Reservation> GetReservation(int id);
         Task<ICollection<Reservation>> GetReservations(int userId);
         Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId);
-        Task<TableReservation> AddTableReservation(int reservationId, int tableId);
+        Task<TableReservation> AddTableReservation(TableReservation tableReservation);
         Task DeleteTableReservations(int reservationId);
         Task<ReservationState> GetReservationState(string title);
         Task<CancelReason> GetCancelReason(int id);
@@ -131,6 +132,11 @@ namespace BR.EF
         Task<Table> UpdateTable(Table table);
         Task<bool> DeleteTable(Table table);
         //    Task<TableState> GetTableState(string title);
+
+
+        // Bars
+
+        Task<BarTable> GetBarTable(int id);
 
 
         // Floors
@@ -158,15 +164,3 @@ namespace BR.EF
 
     }
 }
-
-/*
- Task<IEnumerable<UserMail>> GetAllUserMailsByAdminId(int adminId);
-        Task<UserMail> GetUserMail(int mailId);
-        Task AddUserMail(UserMail userMail);
-        Task DeleteUserMail(UserMail userMail);
-
-        Task<IEnumerable<ClientMail>> GetAllClientMailsByAdminId(int clientId);
-        Task<ClientMail> GetClientMail(int mailId);
-        Task AddClientMail(ClientMail clientMail);
-        Task DeleteClientMail(ClientMail clientMail);
- */

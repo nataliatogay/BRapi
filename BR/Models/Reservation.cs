@@ -25,13 +25,18 @@ namespace BR.Models
 
         public int Duration { get; set; } // in min
 
+        public int? BarTableId { get; set; }
+
         // [Required]
         public int? ReservationStateId { get; set; }
         public int? CancelReasonId { get; set; }
         public string CancelledByIdentityUserId { get; set; }
-        public string AdditionalInfo { get; set; }
+        public string AdditionalInfo { get; set; } //phoneNumber + " " + userName (reservation by phone)
 
         public virtual User User { get; set; }
+
+        [ForeignKey("BarTableId")]
+        public virtual BarTable BarTable{ get; set; }
 
         [ForeignKey("ReservationStateId")]
         public virtual ReservationState ReservationState { get; set; }

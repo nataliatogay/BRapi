@@ -46,7 +46,7 @@ namespace BR.Controllers
             _userManager = userManager;
             _emailService = emailService;
             _cache = cache;
-            _roleManager = roleManager;
+            _roleManager = roleManager;_roleManager = roleManager;
         }
 
 
@@ -72,7 +72,7 @@ namespace BR.Controllers
                 }
                 if (checkPassword)
                 {
-                    var resp = await _adminAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
+                    var resp = await _adminAccountService.LogIn(identityUser.UserName, model.NotificationTag);
                     
                         return new JsonResult(Response(resp));
                 }

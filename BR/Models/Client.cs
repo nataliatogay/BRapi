@@ -50,15 +50,19 @@ namespace BR.Models
         [MaxLength(250)]
         public string AdditionalInfo { get; set; }
 
-    //    [Required]
-    //    [MaxLength(100)]
-    //    //[DataType(DataType.EmailAddress)]
-    //    [RegularExpression(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])")]
-    //    public string Email { get; set; }
+
+        //    [Required]
+        //    [MaxLength(100)]
+        //    //[DataType(DataType.EmailAddress)]
+        //    [RegularExpression(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])")]
+        //    public string Email { get; set; }
 
         //[Required]
-       // [MaxLength(20)]
-    //    public string Password { get; set; }
+        // [MaxLength(20)]
+        //    public string Password { get; set; }
+
+
+        public int PriceCategory { get; set; } // 1-4
 
         [Required]
         public string MainImagePath { get; set; }
@@ -66,6 +70,7 @@ namespace BR.Models
         [Required]
         public int MaxReserveDays { get; set; }
         public int ReserveDurationAvg { get; set; } // in mins
+        public int? BarReserveDuration { get; set; } // in mins
         public int ConfirmationDuration { get; set; } // in min
 
         public bool IsBlocked { get; set; }
@@ -89,7 +94,7 @@ namespace BR.Models
         public virtual ICollection<Event> Events { get; set; }
         public virtual ICollection<ClientImage> ClientImages { get; set; }
         public virtual ICollection<ClientFavourite> ClientFavourites{ get; set; }
-
+        public virtual ICollection<ClientRating> ClientRatings { get; set; }
 
 
         //public virtual ICollection<ClientMail> ClientMails { get; set; }
@@ -108,6 +113,7 @@ namespace BR.Models
             Waiters = new HashSet<Waiter>();
             Events = new HashSet<Event>();
             ClientImages = new HashSet<ClientImage>();
+            ClientRatings = new HashSet<ClientRating>();
             // ClientMails = new HashSet<ClientMail>();
         }
     }

@@ -72,7 +72,11 @@ namespace BR.Services
             {
                 foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
                 {
-                    await _repository.AddClientPaymentType(addedClient.Id, paymentTypeId);
+                    await _repository.AddClientPaymentType(new ClientPaymentType()
+                    {
+                        ClientId = addedClient.Id,
+                        PaymentTypeId = paymentTypeId
+                    });
                 }
             }
 
@@ -80,7 +84,12 @@ namespace BR.Services
             {
                 foreach (var mealTypeId in newClientRequest.MealTypeIds)
                 {
-                    await _repository.AddClientMealType(addedClient.Id, mealTypeId);
+                    await _repository.AddClientMealType(
+                        new ClientMealType()
+                        {
+                            ClientId = addedClient.Id,
+                            MealTypeId = mealTypeId
+                        });
                 }
             }
 
@@ -88,7 +97,11 @@ namespace BR.Services
             {
                 foreach (var clientTypeId in newClientRequest.ClientTypeIds)
                 {
-                    await _repository.AddClientClientType(addedClient.Id, clientTypeId);
+                    await _repository.AddClientClientType(new ClientClientType()
+                    {
+                        ClientId = addedClient.Id,
+                        ClientTypeId = clientTypeId
+                    });
                 }
             }
 
@@ -96,7 +109,11 @@ namespace BR.Services
             {
                 foreach (var cuisineId in newClientRequest.CuisineIds)
                 {
-                    await _repository.AddClientCuisine(addedClient.Id, cuisineId);
+                    await _repository.AddClientCuisine(new ClientCuisine()
+                    {
+                        ClientId = addedClient.Id,
+                        CuisineId = cuisineId
+                    });
                 }
             }
 
@@ -104,7 +121,11 @@ namespace BR.Services
             {
                 foreach (var link in newClientRequest.SocialLinks)
                 {
-                    await _repository.AddClientSocialLink(addedClient.Id, link);
+                    await _repository.AddClientSocialLink(new SocialLink()
+                    {
+                        ClientId = addedClient.Id,
+                        Link = link
+                    });
                 }
             }
 
@@ -113,10 +134,12 @@ namespace BR.Services
                 foreach (var phone in newClientRequest.Phones)
                 {
                     await _repository.AddClientPhone(
-                        addedClient.Id,
-                        phone.Number,
-                        phone.IsShow
-                        );
+                        new ClientPhone()
+                        {
+                            ClientId = addedClient.Id,
+                            Number = phone.Number,
+                            IsWhatsApp = phone.IsWhatsApp
+                        });
                 }
             }
 
@@ -219,13 +242,14 @@ namespace BR.Services
                 Lat = client.Lat,
                 Long = client.Long,
                 MaxReserveDays = client.MaxReserveDays,
+                IsBarReservation = client.BarReserveDuration is null ? false : true,
                 ReserveDurationAvg = client.ReserveDurationAvg,
                 ConfirmationDuration = client.ConfirmationDuration,
                 ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
                 Cuisines = this.CuisinesToList(client.ClientCuisines),
                 PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
                 Events = this.EventsToList(client.Events),
-                Phones = this.PhonesToList(client.ClientPhones, "Admin"),
+                Phones = this.PhonesToList(client.ClientPhones),
                 SocialLinks = this.SocialLinksToList(client.SocialLinks),
                 MealTypes = this.MealTypesToList(client.ClientMealTypes),
                 Photos = this.ImagesToList(client.ClientImages)
@@ -304,7 +328,7 @@ namespace BR.Services
             try
             {
                 var res = await _repository.AddFavourite(clientFav);
-                if(res is null)
+                if (res is null)
                 {
                     return false;
                 }
@@ -320,7 +344,7 @@ namespace BR.Services
                 // return UpdateError
                 return false;
             }
-            
+
         }
 
         public async Task<bool> DeleteFavourite(int clientId, string identityUserId)
@@ -332,7 +356,7 @@ namespace BR.Services
             }
 
             var favourite = await _repository.GetFavourite(clientId, user.Id);
-            if(favourite is null)
+            if (favourite is null)
             {
                 return false;
             }
@@ -399,13 +423,14 @@ namespace BR.Services
                 Lat = client.Lat,
                 Long = client.Long,
                 MaxReserveDays = client.MaxReserveDays,
+                IsBarReservation = client.BarReserveDuration is null ? false : true,
                 ReserveDurationAvg = client.ReserveDurationAvg,
                 ConfirmationDuration = client.ConfirmationDuration,
                 ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
                 Cuisines = this.CuisinesToList(client.ClientCuisines),
                 PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
                 Events = this.EventsToList(client.Events),
-                Phones = this.PhonesToList(client.ClientPhones, "Admin"),
+                Phones = this.PhonesToList(client.ClientPhones),
                 SocialLinks = this.SocialLinksToList(client.SocialLinks),
                 MealTypes = this.MealTypesToList(client.ClientMealTypes),
                 Photos = this.ImagesToList(client.ClientImages)
@@ -514,6 +539,7 @@ namespace BR.Services
                 IsParking = client.IsParking,
                 IsWiFi = client.IsWiFi,
                 MaxReserveDays = client.MaxReserveDays,
+                IsBarReservation = client.BarReserveDuration is null ? false : true,
                 ReserveDurationAvg = client.ReserveDurationAvg,
                 ConfirmationDuration = client.ConfirmationDuration,
                 MainImage = client.MainImagePath,
@@ -522,7 +548,7 @@ namespace BR.Services
                 MealTypes = this.MealTypesToList(client.ClientMealTypes),
                 PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
                 Photos = this.ImagesToList(client.ClientImages),
-                Phones = this.PhonesToList(client.ClientPhones, "User"),
+                Phones = this.PhonesToList(client.ClientPhones),
                 SocialLinks = this.SocialLinksToList(client.SocialLinks),
                 Events = this.EventsToList(client.Events)
             };
@@ -598,26 +624,20 @@ namespace BR.Services
             return res;
         }
 
-        private ICollection<string> PhonesToList(ICollection<ClientPhone> phones, string role)
+        private ICollection<ClientPhoneInfo> PhonesToList(ICollection<ClientPhone> phones)
         {
             if (phones is null)
             {
                 return null;
             }
-            var res = new List<string>();
+            var res = new List<ClientPhoneInfo>();
             foreach (var item in phones)
             {
-                if (role.ToUpper().Equals("USER"))
+                res.Add(new ClientPhoneInfo()
                 {
-                    if (item.IsShow)
-                    {
-                        res.Add(item.Number);
-                    }
-                }
-                else
-                {
-                    res.Add(item.Number);
-                }
+                    Number = item.Number,
+                    IsWhatsApp = item.IsWhatsApp
+                });
             }
             return res;
         }

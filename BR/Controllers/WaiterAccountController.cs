@@ -20,7 +20,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WaiterAccountController : ControllerBase
+    public class WaiterAccountController : ResponseController
     {
         private readonly IWaiterAccountService _waiterAccountService;
         private readonly UserManager<IdentityUser> _userManager;
@@ -39,7 +39,7 @@ namespace BR.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> LogIn([FromBody]LogInWaiterRequest model)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> LogIn([FromBody]LogInWaiterRequest model)
         {
             IdentityUser identityUser = await _userManager.FindByNameAsync(model.Login);
             if (identityUser != null)
@@ -47,15 +47,11 @@ namespace BR.Controllers
                 bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 if (checkPassword)
                 {
-                    LogInResponse resp = await _waiterAccountService.LogIn(identityUser.UserName, identityUser.Id, model.NotificationTag);
-                    if (resp != null)
-                    {
-                        return new JsonResult(resp);
-                    }
+                    return new JsonResult(await _waiterAccountService.LogIn(identityUser.UserName, model.NotificationTag));
                 }
             }
 
-            return new JsonResult(null);
+            return new JsonResult(Response(Utils.StatusCode.WaiterNotFound));
         }
 
 
@@ -189,16 +185,9 @@ namespace BR.Controllers
 
 
         [HttpPost("Token")] //api/account/token
-        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
-            LogInResponse resp = await _waiterAccountService.UpdateToken(refreshToken);
-            if (resp is null)
-            {
-                return StatusCode(401);
-            }
-            return new JsonResult(resp);
+            return new JsonResult(await _waiterAccountService.UpdateToken(refreshToken));
         }
-
-        
     }
 }

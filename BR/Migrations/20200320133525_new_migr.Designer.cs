@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200320133525_new_migr")]
+    partial class new_migr
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,7 +247,7 @@ namespace BR.Migrations
 
                     b.Property<int>("ClientId");
 
-                    b.Property<bool>("IsWhatsApp");
+                    b.Property<bool>("IsShow");
 
                     b.Property<string>("Number")
                         .IsRequired();
@@ -255,21 +257,6 @@ namespace BR.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("ClientPhones");
-                });
-
-            modelBuilder.Entity("BR.Models.ClientRating", b =>
-                {
-                    b.Property<int>("UserId");
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<int>("Rating");
-
-                    b.HasKey("UserId", "ClientId");
-
-                    b.HasAlternateKey("ClientId", "UserId");
-
-                    b.ToTable("ClientRatings");
                 });
 
             modelBuilder.Entity("BR.Models.ClientRequest", b =>
@@ -653,6 +640,21 @@ namespace BR.Migrations
                     b.ToTable("UserPhones");
                 });
 
+            modelBuilder.Entity("BR.Models.UserRating", b =>
+                {
+                    b.Property<int>("UserId");
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("Rating");
+
+                    b.HasKey("UserId", "ClientId");
+
+                    b.HasAlternateKey("ClientId", "UserId");
+
+                    b.ToTable("UserRatings");
+                });
+
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>
                 {
                     b.Property<int>("UserId");
@@ -971,19 +973,6 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientRating", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientRatings")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BR.Models.User", "User")
-                        .WithMany("ClientRatings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("BR.Models.ClientRequest", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
@@ -1107,6 +1096,19 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+                });
+
+            modelBuilder.Entity("BR.Models.UserRating", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("UserRatings")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.User", "User")
+                        .WithMany("UserRatings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>

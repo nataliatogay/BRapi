@@ -49,6 +49,9 @@
         TokenError,
         SendOnConfirmation,
         NotAvailable,
-        SendingNotificationError
+        SendingNotificationError,
+        ClientIsBlocked,
+        ClientNotFound,
+        WaiterNotFound
     }
 }

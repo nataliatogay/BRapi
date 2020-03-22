@@ -28,14 +28,17 @@ namespace BR.Controllers
         private readonly IClientService _clientService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
 
         public ClientController(IClientService clientService,
             UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailService emailService)
         {
             _clientService = clientService;
             _userManager = userManager;
+            _roleManager = roleManager;
             _emailService = emailService;
 
         }
@@ -158,6 +161,15 @@ namespace BR.Controllers
                 if (res.Succeeded)
                 {
                     identityUser = await _userManager.FindByNameAsync(newClient.Email);
+                    var role = await _roleManager.FindByNameAsync("Client");
+                    if (role != null)
+                    {
+                        var resp = await _userManager.AddToRoleAsync(identityUser, "Client");
+                        if (!resp.Succeeded)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.Error));
+                        }
+                    }
                     try
                     {
                         await _clientService.AddNewClient(newClient, identityUser.Id);

@@ -6,6 +6,7 @@ using BR.DTO.Account;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace BR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientAccountController : ControllerBase
+    public class ClientAccountController : ResponseController
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IClientAccountService _clientAccountService;
@@ -34,7 +35,7 @@ namespace BR.Controllers
         }
 
         [HttpPost("LogIn")]
-        public async Task<IActionResult> LogIn([FromBody]LogInRequest model)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> LogIn([FromBody]LogInRequest model)
         {
             var identityUser = await _userManager.FindByNameAsync(model.Email);
 
@@ -47,20 +48,16 @@ namespace BR.Controllers
                     {
                         // надо ли - ??
                         //if(!(await _userManager.IsEmailConfirmedAsync(identityUser))) { }
-                        LogInResponse resp = await _clientAccountService.LogIn(identityUser, model.NotificationTag);
-                        if (resp != null)
-                        {
-                            return new JsonResult(resp);
-                        }
+                        return new JsonResult(await _clientAccountService.LogIn(identityUser.UserName, model.NotificationTag));
                     }
                 }
                 else
                 {
-                    return new JsonResult("Client is blocked");
+                    return new JsonResult(Response(Utils.StatusCode.ClientIsBlocked));
                 }
             }
 
-            return new JsonResult("Invalid data");
+            return new JsonResult(Response(Utils.StatusCode.IncorrectLoginOrPassword));
         }
 
         [Authorize]
@@ -314,14 +311,9 @@ namespace BR.Controllers
         }
 
         [HttpPost("Token")] 
-        public async Task<IActionResult> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
-            LogInResponse resp = await _clientAccountService.UpdateToken(refreshToken);
-            if (resp is null)
-            {
-                return StatusCode(401);
-            }
-            return new JsonResult(resp);
+            return new JsonResult(await _clientAccountService.UpdateToken(refreshToken));
         }
 
 

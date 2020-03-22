@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200319103749_edit_models.cs" />
+    <Compile Remove="Migrations\20200319103749_edit_models.Designer.cs" />
+    <Compile Remove="Migrations\20200319202618_add_barReservation1.cs" />
+    <Compile Remove="Migrations\20200319202618_add_barReservation1.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

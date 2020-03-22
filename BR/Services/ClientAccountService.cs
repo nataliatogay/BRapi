@@ -20,20 +20,20 @@ namespace BR.Services
     {
         private readonly IAsyncRepository _repository;
         private readonly IBlobService _blobService;
-        private readonly AuthOptions _authOptions;
+        private readonly IAuthenticationService _authenticationService;
 
         public ClientAccountService(IAsyncRepository repository,
             IBlobService blobService,
-            IOptions<AuthOptions> options)
+            IAuthenticationService authenticationService)
         {
             _repository = repository;
             _blobService = blobService;
-            _authOptions = options.Value;
+            _authenticationService = authenticationService;
         }
 
-        public async Task<LogInResponse> LogIn(IdentityUser identityUser, string notificationTag)
+        public async Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag)
         {
-            return await Authentication(identityUser, notificationTag);
+            return await _authenticationService.Authentication(userName, notificationTag);
         }
 
 
@@ -51,26 +51,11 @@ namespace BR.Services
             return await _repository.GetClient(identityId);
         }
 
-        public async Task<LogInResponse> UpdateToken(string refreshToken)
+        public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
         {
-            AccountToken token = await _repository.GetToken(refreshToken);
-            if (token is null)
-            {
-                return null;
-            }
-            if (token.Expires <= DateTime.Now)
-            {
-                return null;
-            }
-            IdentityUser identityUser = await _repository.GetIdentityUser(token.IdentityUserId);
-           // Client client = await _repository.GetClientById(token.ClientId);
-
-            if (identityUser is null)
-            {
-                return null;
-            }
-            return await Authentication(identityUser, token.NotificationTag);
+            return await _authenticationService.UpdateToken(refreshToken);
         }
+
 
         public async Task<bool> ClientIsBlocked(string identityId)
         {
@@ -80,42 +65,6 @@ namespace BR.Services
                 return true;
             }
             return false;
-        }
-
-        private async Task<LogInResponse> Authentication(IdentityUser identityUser, string notificationTag)
-        {
-            List<Claim> claims = new List<Claim>()
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, identityUser.UserName),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, "Client")
-            };
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(
-                claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-
-            JwtSecurityToken token = new JwtSecurityToken(
-                issuer: _authOptions.Issuer,
-                audience: _authOptions.Audience,
-                claims: claimsIdentity.Claims,
-                expires: DateTime.Now.AddMinutes(_authOptions.AccessLifetime),
-                signingCredentials: new SigningCredentials(
-                        _authOptions.GetSymmetricSecurityKey(),
-                        SecurityAlgorithms.HmacSha256)
-                );
-            string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-
-            LogInResponse resp = new LogInResponse()
-            {
-                AccessToken = tokenStr,
-                RefreshToken = Guid.NewGuid().ToString()
-            };
-
-            await _repository.AddToken(new AccountToken()
-            {
-                IdentityUserId = identityUser.Id,
-                RefreshToken = resp.RefreshToken,
-                Expires = DateTime.Now.AddMinutes(_authOptions.RefreshLifetime)
-            });
-            return resp;
         }
 
         public async Task<string> UploadMainImage(string identityId, string imageString)
@@ -141,7 +90,7 @@ namespace BR.Services
         public async Task<bool> DeleteImage(int id)
         {
             var img = await _repository.GetClientImage(id);
-            if(img is null)
+            if (img is null)
             {
                 return false;
             }

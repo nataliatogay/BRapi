@@ -1,6 +1,7 @@
 ﻿using BR.DTO;
 using BR.DTO.Account;
 using BR.Models;
+using BR.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace BR.Services.Interfaces
 {
     public interface IWaiterAccountService
     {
-        Task<LogInResponse> LogIn(string userName, string identityId, string notificationTag);
+        Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag);
         Task LogOut(string identityId);
-        Task<LogInResponse> UpdateToken(string refreshToken);
+        Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
         Task<Waiter> GetWaiter(string identityId);
     }
 }

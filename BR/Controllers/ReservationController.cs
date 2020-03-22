@@ -58,6 +58,12 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.SetPendingTableState(stateRequest));
         }
 
+        [HttpPost("barpending")]
+        public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetBarPendingState(BarStatesRequest stateRequest)
+        {
+            return new JsonResult(await _reservationService.SetBarPendingTableState(stateRequest));
+        }
+
 
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse<int>>> Post([FromBody]NewReservationRequest newReservation)
@@ -79,6 +85,29 @@ namespace BR.Controllers
                 return new JsonResult(Response(result.StatusCode, result.Data.Id));
             }
         }
+
+
+        [HttpPost("bar")]
+        public async Task<ActionResult<ServerResponse<int>>> NewBarReservation([FromBody]NewReservationRequest newReservation)
+        {
+            // add notification to waiters
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            var result = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
+            if (result.Data is null)
+            {
+                return new JsonResult(Response(result.StatusCode));
+            }
+            else
+            {
+                return new JsonResult(Response(result.StatusCode, result.Data.Id));
+            }
+        }
+
 
 
 

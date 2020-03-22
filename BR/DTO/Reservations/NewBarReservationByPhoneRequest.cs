@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Reservations
 {
-    public class NewReservationByPhoneRequest
+    public class NewBarReservationByPhoneRequest
     {
         [Required]
         public string UserName { get; set; }
@@ -14,10 +14,9 @@ namespace BR.DTO.Reservations
         public string StartDateTime { get; set; } // dd/MM/yyyy HH:mm
         public int Duration { get; set; } // in min
         [Required]
-        public bool IsChildFree { get; set; }
         public int GuestCount { get; set; }
         public string Comments { get; set; }
         public string PhoneNumber { get; set; }
-        public ICollection<int> TableIds { get; set; }
+        public int BarId { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace BR.Services.Interfaces
 {
     public interface IAdminAccountService
     {
-        Task<ServerResponse<LogInResponse>> LogIn(string userName, string identityId, string notificationTag);
+        Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag);
         Task LogOut(string notificationTag);
         Task LogOut(IdentityUser identityUser);
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);

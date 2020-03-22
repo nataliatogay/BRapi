@@ -11,16 +11,5 @@ namespace BR.DTO.Schema
         public ICollection<FloorInfo> Floors { get; set; }
 
     }
-
-    public class FloorInfo
-    {
-        public int Number { get; set; }
-        public ICollection<HallInfo> Halls { get; set; }
-    }
-
-    public class HallInfo
-    {
-        public string Title { get; set; }
-        public string JsonInfo { get; set; }
-    }
+    
 }
