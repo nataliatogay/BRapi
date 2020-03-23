@@ -29,6 +29,5 @@ namespace BR.Services.Interfaces
         Task<ClientHallsInfoResponse> GetClientHalls(int id);
         Task<Client> UpdateClient(Client client);
         Task<Client> BlockClient(BlockUserRequest blockRequest);
-        string GeneratePassword();
     }
 }

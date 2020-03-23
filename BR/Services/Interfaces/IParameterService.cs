@@ -19,10 +19,5 @@ namespace BR.Services.Interfaces
         Task AddClientType(ICollection<string> clientTypeTitles);
         Task UpdateClientType(ICollection<ClientType> clientType);
         Task<bool> DeleteClientType(int id);
-        Task<ICollection<ParameterInfo>> GetAllPaymentTypes();
-        Task AddPaymentType(ICollection<string> paymentTypeTitle);
-        Task UpdatePaymentType(ICollection<PaymentType> paymentType);
-        Task<bool> DeletePaymentType(int id);
-
     }
 }

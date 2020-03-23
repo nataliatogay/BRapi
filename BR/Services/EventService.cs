@@ -157,7 +157,7 @@ namespace BR.Services
                 Title = clientEvent.Title,
                 Type = clientEvent.EventType.Title,
                 ClientId = clientEvent.Client.Id,
-                ClientName = clientEvent.Client.Name
+                ClientName = clientEvent.Client.RestaurantName
             };
         }
     }

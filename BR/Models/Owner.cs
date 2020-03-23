@@ -18,14 +18,15 @@ namespace BR.Models
         
         public int OrganizationId { get; set; }
 
-        public int IdentityId { get; set; }
+        public string IdentityId { get; set; }
 
         [ForeignKey("OrganizationId")]
         public virtual Organization Organization { get; set; }
 
-        [ForeignKey("IdentityIdS")]
+        [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
 
+        public virtual ClientRequest ClientRequest { get; set; }
 
     }
 }

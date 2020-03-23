@@ -59,11 +59,13 @@ namespace BR.Services
 
         public async Task<bool> ClientIsBlocked(string identityId)
         {
-            var client = await _repository.GetClient(identityId);
-            if (client != null && client.IsBlocked)
-            {
-                return true;
-            }
+            // TODO
+
+            //var client = await _repository.GetClient(identityId);
+            //if (client != null && client.IsBlocked)
+            //{
+            //    return true;
+            //}
             return false;
         }
 

@@ -78,7 +78,7 @@ namespace BR.Services
                         Date = res.ReservationDate,
                         ReservationState = res.ReservationState.Title,
                         ChildFree = res.ChildFree,
-                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.Name,
+                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
                         Floor = res.TableReservations.First().Table.Hall.Floor.Number,
                         HallTitle = res.TableReservations.First().Table.Hall.Title,
                         GuestCount = res.GuestCount,

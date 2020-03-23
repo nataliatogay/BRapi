@@ -8,7 +8,6 @@ namespace BR.DTO.Parameters
     public class ParametersInfoResponse
     {
         public ICollection<ParameterInfo> Cuisines { get; set; }
-        public ICollection<ParameterInfo> PaymentTypes { get; set; }
         public ICollection<ParameterInfo> ClientTypes { get; set; }
         public ICollection<ParameterInfo> MealTypes { get; set; }
     }

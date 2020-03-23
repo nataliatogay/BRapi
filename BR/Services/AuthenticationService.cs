@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BR.Services
@@ -95,6 +96,18 @@ namespace BR.Services
                 return new ServerResponse<LogInResponse>(StatusCode.UserNotFound, null);
             }
             return await this.Authentication(identityUser.UserName, token.NotificationTag);
+        }
+
+        public string GeneratePassword()
+        {
+            Random random = new Random();
+            string letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            StringBuilder password = new StringBuilder();
+            for (int i = 0; i < 8; ++i)
+            {
+                password.Append(letters.ElementAt(random.Next(0, letters.Length)));
+            }
+            return password.ToString();
         }
     }
 }

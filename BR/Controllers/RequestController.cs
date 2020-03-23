@@ -25,18 +25,15 @@ namespace BR.Controllers
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody]NewRequestRequest newClientRequest)
+        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequestRequest newClientRequest)
         {
-            //ClientRequest clientRequest = new ClientRequest()
-            //{
-            //    RegisteredDate = DateTime.Now,
-            //    JsonInfo = JsonConvert.SerializeObject(newClientRequest)
-            //};
-            //await _clientRequestService.AddNewClientRequest(clientRequest);
+            return new JsonResult(await _clientRequestService.AddNewClientRequest(newClientRequest));
+        }
 
-            await _clientRequestService.AddNewClientRequest(newClientRequest);
-            return Ok();
-            //return new JsonResult((await _clientRequestService.GetAllClientRequests()).ToList());
+        [HttpGet("new")]
+        public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> GetNew()
+        {
+            return new JsonResult(Response((await _clientRequestService.GetNewClientRequests()).ToList()));
         }
 
         [HttpGet("")]
@@ -48,7 +45,7 @@ namespace BR.Controllers
         [HttpGet("count")]
         public async Task<ActionResult<ServerResponse<int>>> GetCount()
         {
-            return new JsonResult(Response(await _clientRequestService.ClientRequestCount()));
+            return new JsonResult(Response(await _clientRequestService.NewClientRequestCount()));
         }
 
         [HttpGet("{id}")]

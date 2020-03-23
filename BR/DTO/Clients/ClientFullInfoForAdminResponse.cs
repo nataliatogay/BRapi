@@ -32,7 +32,6 @@ namespace BR.DTO.Clients
         public int ConfirmationDuration { get; set; }
         public ICollection<string> Photos { get; set; }
         public ICollection<string> SocialLinks { get; set; }
-        public ICollection<string> PaymentTypes { get; set; }
         public ICollection<string> ClientTypes { get; set; }
         public ICollection<string> MealTypes { get; set; }
         public ICollection<string> Cuisines { get; set; }

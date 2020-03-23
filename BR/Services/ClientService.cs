@@ -26,60 +26,49 @@ namespace BR.Services
 
     public class ClientService : IClientService
     {
-        private readonly IAsyncRepository _repository;
-        //private readonly IEmailService _emailService;
+            private readonly IAsyncRepository _repository;
+            //private readonly IEmailService _emailService;
 
-        public ClientService(IAsyncRepository repository)
-        {
-            _repository = repository;
-        }
+            public ClientService(IAsyncRepository repository)
+            {
+                _repository = repository;
+            }
 
         public async Task AddNewClient(NewClientRequest newClientRequest, string identityId)
         {
             Client client = new Client()
             {
-                Name = newClientRequest.Name,
-                Address = newClientRequest.Address,
-                Lat = newClientRequest.Lat,
-                Long = newClientRequest.Long,
-                OpenTime = newClientRequest.OpenTime,
-                CloseTime = newClientRequest.CloseTime,
-                IsParking = newClientRequest.IsParking,
-                IsWiFi = newClientRequest.IsWiFi,
-                IsLiveMusic = newClientRequest.IsLiveMusic,
-                IsOpenSpace = newClientRequest.IsOpenSpace,
-                IsChildrenZone = newClientRequest.IsChildrenZone,
-                IsBusinessLunch = newClientRequest.IsBusinessLunch,
-                AdditionalInfo = newClientRequest.AdditionalInfo,
-                MaxReserveDays = newClientRequest.MaxReserveDays,
-                ReserveDurationAvg = newClientRequest.ReserveDurationAvg,
-                ConfirmationDuration = newClientRequest.ConfirmationDuration,
-                MainImagePath = newClientRequest.MainImage,
-                IsBlocked = false,
-                IdentityId = identityId,
-                RegistrationDate = DateTime.Now
+                //RestaurantName = newClientRequest.RestaurantName,
+                //Address = newClientRequest.Address,
+                //Lat = newClientRequest.Lat,
+                //Long = newClientRequest.Long,
+                //OpenTime = newClientRequest.OpenTime,
+                //CloseTime = newClientRequest.CloseTime,
+                //IsParking = newClientRequest.IsParking,
+                //IsWiFi = newClientRequest.IsWiFi,
+                //IsLiveMusic = newClientRequest.IsLiveMusic,
+                //IsOpenSpace = newClientRequest.IsOpenSpace,
+                //IsChildrenZone = newClientRequest.IsChildrenZone,
+                //IsBusinessLunch = newClientRequest.IsBusinessLunch,
+                //Description = newClientRequest.Description,
+                //MaxReserveDays = newClientRequest.MaxReserveDays,
+                //ReserveDurationAvg = newClientRequest.ReserveDurationAvg,
+                //ConfirmationDuration = newClientRequest.ConfirmationDuration,
+                //MainImagePath = newClientRequest.MainImage,
+                //IsBlocked = false,
+                //IdentityId = identityId,
+                //RegistrationDate = DateTime.Now
             };
             //if (client.MainImagePath is null)
             //{
-            //    client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+            //    client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-logo.png";
             //}
 
             //client.MainImagePath = await _blobService.UploadImage(newClientRequest.MainImage);
 
             Client addedClient = await _repository.AddClient(client);
 
-            if (newClientRequest.PaymentTypeIds != null)
-            {
-                foreach (var paymentTypeId in newClientRequest.PaymentTypeIds)
-                {
-                    await _repository.AddClientPaymentType(new ClientPaymentType()
-                    {
-                        ClientId = addedClient.Id,
-                        PaymentTypeId = paymentTypeId
-                    });
-                }
-            }
-
+            
             if (newClientRequest.MealTypeIds != null)
             {
                 foreach (var mealTypeId in newClientRequest.MealTypeIds)
@@ -143,15 +132,8 @@ namespace BR.Services
                 }
             }
 
-            if (newClientRequest.ClientRequestId != null)
-            {
-                ClientRequest clientRequest = await _repository.GetClientRequest(newClientRequest.ClientRequestId ?? default(int));
-                if (clientRequest != null)
-                {
-                    clientRequest.ClientId = addedClient.Id;
-                }
-                await _repository.UpdateClientRequest(clientRequest);
-            }
+
+            
         }
 
         public async Task<bool> DeleteClient(int id)
@@ -180,7 +162,7 @@ namespace BR.Services
                 res.Add(new ClientShortInfoForUsersResponse()
                 {
                     Id = client.Id,
-                    Name = client.Name,
+                    Name = client.RestaurantName,
                     MainImage = client.MainImagePath,
                     RegistrationDate = client.RegistrationDate
                 });
@@ -201,13 +183,13 @@ namespace BR.Services
             {
                 res.Add(new ClientShortInfoForAdminResponse()
                 {
-                    Id = client.Id,
-                    Name = client.Name,
-                    MainImage = client.MainImagePath,
-                    Address = client.Address,
-                    Email = client.Identity.Email,
-                    RegistrationDate = client.RegistrationDate,
-                    IsBlocked = client.IsBlocked
+                    //Id = client.Id,
+                    //Name = client.RestaurantName,
+                    //MainImage = client.MainImagePath,
+                    //Address = client.Address,
+                    //Email = client.Identity.Email,
+                    //RegistrationDate = client.RegistrationDate,
+                    //IsBlocked = client.IsBlocked
                 });
             }
             return res;
@@ -223,36 +205,35 @@ namespace BR.Services
             }
             return new ClientFullInfoForAdminResponse()
             {
-                Id = client.Id,
-                Name = client.Name,
-                MainImage = client.MainImagePath,
-                Address = client.Address,
-                Email = client.Identity.Email,
-                RegistrationDate = client.RegistrationDate,
-                IsBlocked = client.IsBlocked,
-                OpenTime = client.OpenTime,
-                CloseTime = client.CloseTime,
-                AdditionalInfo = client.AdditionalInfo,
-                IsBusinessLunch = client.IsBusinessLunch,
-                IsChildrenZone = client.IsChildrenZone,
-                IsLiveMusic = client.IsLiveMusic,
-                IsOpenSpace = client.IsOpenSpace,
-                IsParking = client.IsParking,
-                IsWiFi = client.IsWiFi,
-                Lat = client.Lat,
-                Long = client.Long,
-                MaxReserveDays = client.MaxReserveDays,
-                IsBarReservation = client.BarReserveDuration is null ? false : true,
-                ReserveDurationAvg = client.ReserveDurationAvg,
-                ConfirmationDuration = client.ConfirmationDuration,
-                ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
-                Cuisines = this.CuisinesToList(client.ClientCuisines),
-                PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
-                Events = this.EventsToList(client.Events),
-                Phones = this.PhonesToList(client.ClientPhones),
-                SocialLinks = this.SocialLinksToList(client.SocialLinks),
-                MealTypes = this.MealTypesToList(client.ClientMealTypes),
-                Photos = this.ImagesToList(client.ClientImages)
+                //Id = client.Id,
+                //Name = client.RestaurantName,
+                //MainImage = client.MainImagePath,
+                //Address = client.Address,
+                //Email = client.Identity.Email,
+                //RegistrationDate = client.RegistrationDate,
+                //IsBlocked = client.IsBlocked,
+                //OpenTime = client.OpenTime,
+                //CloseTime = client.CloseTime,
+                //AdditionalInfo = client.Description,
+                //IsBusinessLunch = client.IsBusinessLunch,
+                //IsChildrenZone = client.IsChildrenZone,
+                //IsLiveMusic = client.IsLiveMusic,
+                //IsOpenSpace = client.IsOpenSpace,
+                //IsParking = client.IsParking,
+                //IsWiFi = client.IsWiFi,
+                //Lat = client.Lat,
+                //Long = client.Long,
+                //MaxReserveDays = client.MaxReserveDays,
+                //IsBarReservation = client.BarReserveDurationAvg is null ? false : true,
+                //ReserveDurationAvg = client.ReserveDurationAvg,
+                //ConfirmationDuration = client.ConfirmationDuration,
+                //ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
+                //Cuisines = this.CuisinesToList(client.ClientCuisines),
+                //Events = this.EventsToList(client.Events),
+                //Phones = this.PhonesToList(client.ClientPhones),
+                //SocialLinks = this.SocialLinksToList(client.SocialLinks),
+                //MealTypes = this.MealTypesToList(client.ClientMealTypes),
+                //Photos = this.ImagesToList(client.ClientImages)
             };
         }
 
@@ -300,7 +281,7 @@ namespace BR.Services
                 {
                     Id = fav.Client.Id,
                     MainImage = fav.Client.MainImagePath,
-                    Name = fav.Client.Name,
+                    Name = fav.Client.RestaurantName,
                     RegistrationDate = fav.Client.RegistrationDate
                 });
             }
@@ -404,36 +385,35 @@ namespace BR.Services
             }
             return new ClientFullInfoForAdminResponse()
             {
-                Id = client.Id,
-                Name = client.Name,
-                MainImage = client.MainImagePath,
-                Address = client.Address,
-                Email = client.Identity.Email,
-                RegistrationDate = client.RegistrationDate,
-                IsBlocked = client.IsBlocked,
-                OpenTime = client.OpenTime,
-                CloseTime = client.CloseTime,
-                AdditionalInfo = client.AdditionalInfo,
-                IsBusinessLunch = client.IsBusinessLunch,
-                IsChildrenZone = client.IsChildrenZone,
-                IsLiveMusic = client.IsLiveMusic,
-                IsOpenSpace = client.IsOpenSpace,
-                IsParking = client.IsParking,
-                IsWiFi = client.IsWiFi,
-                Lat = client.Lat,
-                Long = client.Long,
-                MaxReserveDays = client.MaxReserveDays,
-                IsBarReservation = client.BarReserveDuration is null ? false : true,
-                ReserveDurationAvg = client.ReserveDurationAvg,
-                ConfirmationDuration = client.ConfirmationDuration,
-                ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
-                Cuisines = this.CuisinesToList(client.ClientCuisines),
-                PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
-                Events = this.EventsToList(client.Events),
-                Phones = this.PhonesToList(client.ClientPhones),
-                SocialLinks = this.SocialLinksToList(client.SocialLinks),
-                MealTypes = this.MealTypesToList(client.ClientMealTypes),
-                Photos = this.ImagesToList(client.ClientImages)
+                //Id = client.Id,
+                //Name = client.RestaurantName,
+                //MainImage = client.MainImagePath,
+                //Address = client.Address,
+                //Email = client.Identity.Email,
+                //RegistrationDate = client.RegistrationDate,
+                //IsBlocked = client.IsBlocked,
+                //OpenTime = client.OpenTime,
+                //CloseTime = client.CloseTime,
+                //AdditionalInfo = client.Description,
+                //IsBusinessLunch = client.IsBusinessLunch,
+                //IsChildrenZone = client.IsChildrenZone,
+                //IsLiveMusic = client.IsLiveMusic,
+                //IsOpenSpace = client.IsOpenSpace,
+                //IsParking = client.IsParking,
+                //IsWiFi = client.IsWiFi,
+                //Lat = client.Lat,
+                //Long = client.Long,
+                //MaxReserveDays = client.MaxReserveDays,
+                //IsBarReservation = client.BarReserveDurationAvg is null ? false : true,
+                //ReserveDurationAvg = client.ReserveDurationAvg,
+                //ConfirmationDuration = client.ConfirmationDuration,
+                //ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
+                //Cuisines = this.CuisinesToList(client.ClientCuisines),
+                //Events = this.EventsToList(client.Events),
+                //Phones = this.PhonesToList(client.ClientPhones),
+                //SocialLinks = this.SocialLinksToList(client.SocialLinks),
+                //MealTypes = this.MealTypesToList(client.ClientMealTypes),
+                //Photos = this.ImagesToList(client.ClientImages)
             };
         }
 
@@ -477,30 +457,20 @@ namespace BR.Services
             {
                 return null;
             }
-            clientToUpdate.Name = client.Name;
-            clientToUpdate.Address = client.Address;
-            clientToUpdate.OpenTime = client.OpenTime;
-            clientToUpdate.CloseTime = client.CloseTime;
-            clientToUpdate.AdditionalInfo = client.AdditionalInfo ?? clientToUpdate.AdditionalInfo;
-            clientToUpdate.IsLiveMusic = client.IsLiveMusic;
-            clientToUpdate.IsOpenSpace = client.IsOpenSpace;
-            clientToUpdate.IsParking = client.IsParking;
-            clientToUpdate.IsWiFi = client.IsWiFi;
+            //clientToUpdate.RestaurantName = client.RestaurantName;
+            //clientToUpdate.Address = client.Address;
+            //clientToUpdate.OpenTime = client.OpenTime;
+            //clientToUpdate.CloseTime = client.CloseTime;
+            //clientToUpdate.Description = client.Description ?? clientToUpdate.Description;
+            //clientToUpdate.IsLiveMusic = client.IsLiveMusic;
+            //clientToUpdate.IsOpenSpace = client.IsOpenSpace;
+            //clientToUpdate.IsParking = client.IsParking;
+            //clientToUpdate.IsWiFi = client.IsWiFi;
             await _repository.UpdateClient(clientToUpdate);
             return clientToUpdate;
         }
 
-        public string GeneratePassword()
-        {
-            Random random = new Random();
-            string letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            StringBuilder password = new StringBuilder();
-            for (int i = 0; i < 8; ++i)
-            {
-                password.Append(letters.ElementAt(random.Next(0, letters.Length)));
-            }
-            return password.ToString();
-        }
+        
 
 
 
@@ -511,7 +481,10 @@ namespace BR.Services
             {
                 return null;
             }
-            client.IsBlocked = blockRequest.ToBlock;
+            // TODO
+            if(client.Blocked is null) { }
+            else {  }
+            
             return await _repository.UpdateClient(client);
         }
 
@@ -525,32 +498,31 @@ namespace BR.Services
             }
             return new ClientFullInfoForUsersResponse()
             {
-                Id = client.Id,
-                Name = client.Name,
-                Address = client.Address,
-                Lat = client.Lat,
-                Long = client.Long,
-                OpenTime = client.OpenTime,
-                CloseTime = client.CloseTime,
-                IsBusinessLunch = client.IsBusinessLunch,
-                IsChildrenZone = client.IsChildrenZone,
-                IsLiveMusic = client.IsLiveMusic,
-                IsOpenSpace = client.IsOpenSpace,
-                IsParking = client.IsParking,
-                IsWiFi = client.IsWiFi,
-                MaxReserveDays = client.MaxReserveDays,
-                IsBarReservation = client.BarReserveDuration is null ? false : true,
-                ReserveDurationAvg = client.ReserveDurationAvg,
-                ConfirmationDuration = client.ConfirmationDuration,
-                MainImage = client.MainImagePath,
-                ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
-                Cuisines = this.CuisinesToList(client.ClientCuisines),
-                MealTypes = this.MealTypesToList(client.ClientMealTypes),
-                PaymentTypes = this.PaymentTypesToList(client.ClientPaymentTypes),
-                Photos = this.ImagesToList(client.ClientImages),
-                Phones = this.PhonesToList(client.ClientPhones),
-                SocialLinks = this.SocialLinksToList(client.SocialLinks),
-                Events = this.EventsToList(client.Events)
+                //Id = client.Id,
+                //Name = client.RestaurantName,
+                //Address = client.Address,
+                //Lat = client.Lat,
+                //Long = client.Long,
+                //OpenTime = client.OpenTime,
+                //CloseTime = client.CloseTime,
+                //IsBusinessLunch = client.IsBusinessLunch,
+                //IsChildrenZone = client.IsChildrenZone,
+                //IsLiveMusic = client.IsLiveMusic,
+                //IsOpenSpace = client.IsOpenSpace,
+                //IsParking = client.IsParking,
+                //IsWiFi = client.IsWiFi,
+                //MaxReserveDays = client.MaxReserveDays,
+                //IsBarReservation = client.BarReserveDurationAvg is null ? false : true,
+                //ReserveDurationAvg = client.ReserveDurationAvg,
+                //ConfirmationDuration = client.ConfirmationDuration,
+                //MainImage = client.MainImagePath,
+                //ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
+                //Cuisines = this.CuisinesToList(client.ClientCuisines),
+                //MealTypes = this.MealTypesToList(client.ClientMealTypes),
+                //Photos = this.ImagesToList(client.ClientImages),
+                //Phones = this.PhonesToList(client.ClientPhones),
+                //SocialLinks = this.SocialLinksToList(client.SocialLinks),
+                //Events = this.EventsToList(client.Events)
             };
         }
 
@@ -564,20 +536,6 @@ namespace BR.Services
             foreach (var item in cuisines)
             {
                 res.Add(item.Cuisine.Title);
-            }
-            return res;
-        }
-
-        private ICollection<string> PaymentTypesToList(ICollection<ClientPaymentType> paymentTypes)
-        {
-            if (paymentTypes is null)
-            {
-                return null;
-            }
-            var res = new List<string>();
-            foreach (var item in paymentTypes)
-            {
-                res.Add(item.PaymentType.Title);
             }
             return res;
         }

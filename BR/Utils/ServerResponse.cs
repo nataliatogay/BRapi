@@ -52,6 +52,8 @@
         SendingNotificationError,
         ClientIsBlocked,
         ClientNotFound,
-        WaiterNotFound
+        WaiterNotFound,
+        OwnerNotFound,
+        RoleNotFound
     }
 }

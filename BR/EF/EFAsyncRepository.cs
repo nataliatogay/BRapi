@@ -95,7 +95,7 @@ namespace BR.EF
 
         public async Task<IEnumerable<Client>> GetClientsByName(string title)
         {
-            return await _db.Clients.Where(c => c.Name.ToUpper().Contains(title.ToUpper())).ToListAsync();
+            return await _db.Clients.Where(c => c.RestaurantName.ToUpper().Contains(title.ToUpper())).ToListAsync();
 
         }
 
@@ -157,13 +157,6 @@ namespace BR.EF
             }
         }
 
-        public async Task AddClientPaymentType(ClientPaymentType clientPaymentType)
-        {
-            await _db.ClientPaymentTypes.AddAsync(clientPaymentType);
-            await _db.SaveChangesAsync();
-
-        }
-
         public async Task AddClientClientType(ClientClientType clientClientType)
         {
             await _db.ClientClientTypes.AddAsync(clientClientType);
@@ -220,6 +213,21 @@ namespace BR.EF
             return res.Entity;
         }
 
+
+        // Owners
+
+        public async Task<Owner> AddOwner(Owner owner)
+        {
+            var res = await _db.Owners.AddAsync(owner);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+
+
+
+
+
         // Roles
 
         public async Task<IdentityRole> GetRole(int id)
@@ -231,7 +239,7 @@ namespace BR.EF
 
         public async Task<ICollection<ClientRequest>> GetClientRequests()
         {
-            return await _db.ClientRequests.Where(c => c.ClientId == null).ToListAsync();
+            return await _db.ClientRequests.ToListAsync();
         }
 
         public async Task<ClientRequest> GetClientRequest(int id)
@@ -294,10 +302,6 @@ namespace BR.EF
 
         // Parameters        
 
-        public async Task<IEnumerable<PaymentType>> GetAllPaymentTypes()
-        {
-            return await _db.PaymentTypes.ToListAsync();
-        }
         public async Task<IEnumerable<Cuisine>> GetAllCuisines()
         {
             return await _db.Cuisines.ToListAsync();
@@ -374,44 +378,6 @@ namespace BR.EF
             try
             {
                 _db.ClientTypes.Remove(clientType);
-                await _db.SaveChangesAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public async Task<PaymentType> AddPaymentType(PaymentType paymentType)
-        {
-            var res = await _db.PaymentTypes.AddAsync(paymentType);
-            await _db.SaveChangesAsync();
-            return res.Entity;
-        }
-
-        public async Task<PaymentType> GetPaymentType(int id)
-        {
-            return await _db.PaymentTypes.FindAsync(id);
-        }
-
-        public async Task<PaymentType> GetPaymentType(string title)
-        {
-            return await _db.PaymentTypes.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
-        }
-
-        public async Task<PaymentType> UpdatePaymentType(PaymentType paymentType)
-        {
-            var res = _db.PaymentTypes.Update(paymentType);
-            await _db.SaveChangesAsync();
-            return res.Entity;
-        }
-
-        public async Task<bool> DeletePaymentType(PaymentType paymentType)
-        {
-            try
-            {
-                _db.PaymentTypes.Remove(paymentType);
                 await _db.SaveChangesAsync();
                 return true;
             }

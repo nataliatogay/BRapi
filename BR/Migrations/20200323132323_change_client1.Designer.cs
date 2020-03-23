@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200323132323_change_client1")]
+    partial class change_client1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,8 +125,6 @@ namespace BR.Migrations
 
                     b.Property<int>("OpenTime");
 
-                    b.Property<int?>("OrganizationId");
-
                     b.Property<int>("PriceCategory");
 
                     b.Property<DateTime>("RegistrationDate");
@@ -137,8 +137,6 @@ namespace BR.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IdentityId");
-
-                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Clients");
                 });
@@ -996,11 +994,6 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
-
-                    b.HasOne("BR.Models.Organization", "Organization")
-                        .WithMany("Clients")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BR.Models.ClientClientType", b =>

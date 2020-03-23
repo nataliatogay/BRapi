@@ -861,7 +861,7 @@ namespace BR.Services
 
 
 
-                    if (client.BarReserveDuration >= barState.Duration)
+                    if (client.BarReserveDurationAvg >= barState.Duration)
                     {
                         var res = await this.SetConfirmedBarStateCacheData(resDate, barState.Duration, barState.BarId, barState.GuestCount, barTable.MaxGuestCount);
 

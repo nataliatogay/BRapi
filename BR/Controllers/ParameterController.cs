@@ -31,19 +31,14 @@ namespace BR.Controllers
         [HttpGet]
         public async Task<ActionResult<ClientParametersResponse>> Get()
         {
-            var paymentTypes = await _parameterService.GetAllPaymentTypes();
             var cuisines = await _parameterService.GetAllCuisines();
             var clientTypes = await _parameterService.GetAllClientTypes();
             var mealTypes = await _parameterService.GetAllMealType();
-            Dictionary<int, string> paymentTypesDict = new Dictionary<int, string>();
             Dictionary<int, string> cuisinesDict = new Dictionary<int, string>();
             Dictionary<int, string> clientTypesDict = new Dictionary<int, string>();
             Dictionary<int, string> mealTypesDict = new Dictionary<int, string>();
 
-            foreach (var item in paymentTypes)
-            {
-                paymentTypesDict.Add(item.Id, item.Title);
-            }
+            
             foreach (var item in cuisines)
             {
                 cuisinesDict.Add(item.Id, item.Title);
@@ -60,7 +55,6 @@ namespace BR.Controllers
             return new JsonResult(new ClientParametersResponse()
             {
                 ClientTypes = clientTypesDict,
-                PaymentTypes = paymentTypesDict,
                 Cuisines = cuisinesDict,
                 MealTypes = mealTypesDict
             });
@@ -69,7 +63,6 @@ namespace BR.Controllers
         [HttpGet("info")]
         public async Task<ActionResult<ServerResponse<ParametersInfoResponse>>> GetInfo()
         {
-            var paymentTypes = await _parameterService.GetAllPaymentTypes();
             var cuisines = await _parameterService.GetAllCuisines();
             var clientTypes = await _parameterService.GetAllClientTypes();
             var mealTypes = await _parameterService.GetAllMealType();
@@ -77,8 +70,7 @@ namespace BR.Controllers
             {
                 ClientTypes = clientTypes,
                 Cuisines = cuisines,
-                MealTypes = mealTypes,
-                PaymentTypes = paymentTypes
+                MealTypes = mealTypes
             }));
         }
 
@@ -143,37 +135,5 @@ namespace BR.Controllers
             }
             return new JsonResult(Response(Utils.StatusCode.Error));
         }
-
-
-        [HttpGet("paymentType")]
-        public async Task<ActionResult<IEnumerable<Cuisine>>> GetPaymentTypes()
-        {
-            return new JsonResult(await _parameterService.GetAllPaymentTypes());
-        }
-
-        [HttpPost("paymentType")]
-        public async Task<ActionResult<Cuisine>> AddPaymentType([FromBody]ICollection<string> paymentTypeTitle)
-        {
-            await _parameterService.AddPaymentType(paymentTypeTitle);
-            return new JsonResult(Response(Utils.StatusCode.Ok));
-        }
-
-        [HttpPut("paymentType")]
-        public async Task<ActionResult<Cuisine>> UpdatePaymentType([FromBody]ICollection<PaymentType> paymentTypes)
-        {
-            await _parameterService.UpdatePaymentType(paymentTypes);
-            return new JsonResult(Response(Utils.StatusCode.Ok));
-        }
-
-        [HttpDelete("paymentType/{id}")]
-        public async Task<IActionResult> DeletePaymentType(int id)
-        {
-            if (await _parameterService.DeletePaymentType(id))
-            {
-                return new JsonResult(Response(Utils.StatusCode.Ok));
-            }
-            return new JsonResult(Response(Utils.StatusCode.Error));
-        }
-
     }
 }

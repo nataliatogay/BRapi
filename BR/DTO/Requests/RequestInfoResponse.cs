@@ -8,7 +8,16 @@ namespace BR.DTO.Requests
     public class RequestInfoResponse
     {
         public int Id { get; set; }
+        public string OwnerName { get; set; }
+
+        public string OwnerPhoneNumber { get; set; }
+
+        public string OrganizationName { get; set; }
+
+        public string Email { get; set; }
+
+        public string Comments { get; set; }
+
         public DateTime RegisteredDate { get; set; }
-        public string JsonInfo { get; set; }
     }
 }

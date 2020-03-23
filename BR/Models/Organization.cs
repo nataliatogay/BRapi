@@ -8,7 +8,6 @@ namespace BR.Models
 {
     public class Organization
     {
-        [Key]
         public int Id { get; set; }
 
         [Required]
@@ -18,9 +17,12 @@ namespace BR.Models
 
         public virtual ICollection<Owner> Owners{ get; set; }
 
+        public virtual ICollection<Client> Clients { get; set; }
+
         public Organization()
         {
             Owners = new HashSet<Owner>();
+            Clients = new HashSet<Client>();
         }
     }
 }

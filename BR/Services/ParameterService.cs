@@ -18,16 +18,6 @@ namespace BR.Services
         {
             _repository = repository;
         }
-        public async Task<ICollection<ParameterInfo>> GetAllPaymentTypes()
-        {
-            var types = await _repository.GetAllPaymentTypes();
-            var res = new List<ParameterInfo>();
-            foreach (var item in types)
-            {
-                res.Add(ToParameterInfo(item.Id, item.Title));
-            }
-            return res;
-        }
         public async Task<ICollection<ParameterInfo>> GetAllCuisines()
         {
             var types = await _repository.GetAllCuisines();
@@ -168,56 +158,7 @@ namespace BR.Services
             return false;
         }
 
-        public async Task AddPaymentType(ICollection<string> paymentTypeTitles)
-        {
-            if(paymentTypeTitles is null)
-            {
-                return;
-            }
-            foreach (var item in paymentTypeTitles)
-            {
-                if (!String.IsNullOrEmpty(item) && !String.IsNullOrWhiteSpace(item))
-                {
-                    if (await _repository.GetPaymentType(item) == null)
-                    {
-                        await _repository.AddPaymentType(new PaymentType() { Title = item});
-                    }
-                }
-            }
-        }
 
-        public async Task UpdatePaymentType(ICollection<PaymentType> paymentTypes)
-        {
-            if(paymentTypes is null)
-            {
-                return;
-            }
-            foreach (var item in paymentTypes)
-            {
-                var paymentTypeToUpdate = await _repository.GetPaymentType(item.Id);
-                if (paymentTypeToUpdate != null)
-                {
-                    if (!String.IsNullOrEmpty(item.Title) && !String.IsNullOrWhiteSpace(item.Title))
-                    {
-                        if (await _repository.GetPaymentType(item.Title) == null)
-                        {
-                            paymentTypeToUpdate.Title = item.Title;
-                            await _repository.UpdatePaymentType(paymentTypeToUpdate);
-                        }
-                    }
-                }
-            }
-        }
-
-        public async Task<bool> DeletePaymentType(int id)
-        {
-            var paymentType = await _repository.GetPaymentType(id);
-            if (paymentType != null)
-            {
-                return await _repository.DeletePaymentType(paymentType);
-            }
-            return false;
-        }
 
         private ParameterInfo ToParameterInfo(int id, string title)
         {

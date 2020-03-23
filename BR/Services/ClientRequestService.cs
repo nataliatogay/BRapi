@@ -3,6 +3,7 @@ using BR.DTO.Requests;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
+using BR.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,31 +22,42 @@ namespace BR.Services
             _repository = repository;
             _blobService = blobService;
         }
-        public async Task AddNewClientRequest(ClientRequest clientRequest)
+        
+        public async Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest)
         {
+            //  перенести в добавление клиента
 
-            await _repository.AddClientRequest(clientRequest);
-        }
+            //string imagePath;
 
-        public async Task AddNewClientRequest(NewRequestRequest newClientRequest)
-        {
-            string imagePath;
-            if (!String.IsNullOrEmpty(newClientRequest.MainImage))
-            {
+            //if (!String.IsNullOrEmpty(newClientRequest.MainImage))
+            //{
 
-                imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
-            }
-            else
-            {
-                newClientRequest.MainImage = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+            //    imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
+            //}
+            //else
+            //{
+            //    newClientRequest.MainImage = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
 
-            }
+            //}
+
             ClientRequest clientRequest = new ClientRequest()
             {
-                RegisteredDate = DateTime.Now,
-                JsonInfo = JsonConvert.SerializeObject(newClientRequest)
+                OwnerName = newClientRequest.OwnerName,
+                OrganizationName = newClientRequest.OrganizationName,
+                OwnerPhoneNumber = newClientRequest.OwnerPhoneNumber,
+                Email = newClientRequest.Email,
+                Comments = newClientRequest.Comments,
+                RegisteredDate = DateTime.Now
             };
-            await _repository.AddClientRequest(clientRequest);
+            try
+            {
+                await _repository.AddClientRequest(clientRequest);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
         }
 
         public async Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests()
@@ -57,12 +69,37 @@ namespace BR.Services
                 requestsInfo.Add(new RequestInfoResponse()
                 {
                     Id = item.Id,
-                    RegisteredDate = item.RegisteredDate,
-                    JsonInfo = item.JsonInfo
+                    OwnerName = item.OwnerName,
+                    OrganizationName = item.OrganizationName,
+                    OwnerPhoneNumber = item.OwnerPhoneNumber,
+                    Email = item.Email,
+                    Comments = item.Comments,
+                    RegisteredDate = item.RegisteredDate
                 });
             }
-            {
+            return requestsInfo;
+        }
 
+
+        public async Task<IEnumerable<RequestInfoResponse>> GetNewClientRequests()
+        {
+            var requests = await _repository.GetClientRequests();
+            var requestsInfo = new List<RequestInfoResponse>();
+            foreach (var item in requests)
+            {
+                if (item.OwnerId is null)
+                {
+                    requestsInfo.Add(new RequestInfoResponse()
+                    {
+                        Id = item.Id,
+                        OwnerName = item.OwnerName,
+                        OrganizationName = item.OrganizationName,
+                        OwnerPhoneNumber = item.OwnerPhoneNumber,
+                        Email = item.Email,
+                        Comments = item.Comments,
+                        RegisteredDate = item.RegisteredDate
+                    });
+                }
             }
             return requestsInfo;
         }
@@ -73,17 +110,19 @@ namespace BR.Services
             return new RequestInfoResponse()
             {
                 Id = req.Id,
-                RegisteredDate = req.RegisteredDate,
-                JsonInfo = req.JsonInfo
+                OwnerName = req.OwnerName,
+                OrganizationName = req.OrganizationName,
+                OwnerPhoneNumber = req.OwnerPhoneNumber,
+                Email = req.Email,
+                Comments = req.Comments,
+                RegisteredDate = req.RegisteredDate
             };
         }
 
-
-
-        public async Task<int> ClientRequestCount()
+        public async Task<int> NewClientRequestCount()
         {
-            var res = await _repository.GetClientRequests();
-            if (res is null)
+            var res = await this.GetNewClientRequests();
+            if(res is null)
             {
                 return 0;
             }

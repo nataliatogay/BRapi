@@ -28,7 +28,6 @@ namespace BR.EF
         Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
         Task<IEnumerable<Client>> GetClientsByName(string title);
         Task<Client> UpdateClient(Client client);
-        Task AddClientPaymentType(ClientPaymentType clientPaymentType);
         Task AddClientClientType(ClientClientType clientClientType);
         Task AddClientMealType(ClientMealType clientMealType);
         Task AddClientCuisine(ClientCuisine clientCuisine);
@@ -42,6 +41,10 @@ namespace BR.EF
         Task<Admin> GetAdminByIdentityId(string identityId);
         Task<Admin> GetAdminByIdentityName(string identityName);
 
+
+        // Owners
+
+        Task<Owner> AddOwner(Owner owner);
 
         // Roles
 
@@ -69,7 +72,6 @@ namespace BR.EF
 
         // Parameters
 
-        Task<IEnumerable<PaymentType>> GetAllPaymentTypes();
         Task<IEnumerable<MealType>> GetAllMealTypes();
         Task<IEnumerable<Cuisine>> GetAllCuisines();
         Task<IEnumerable<ClientType>> GetAllClientTypes();
@@ -83,11 +85,6 @@ namespace BR.EF
         Task<ClientType> GetClientType(string clientTypeTitle);
         Task<ClientType> UpdateClientType(ClientType clientType);
         Task<bool> DeleteClientType(ClientType clientType);
-        Task<PaymentType> AddPaymentType(PaymentType paymentType);
-        Task<PaymentType> GetPaymentType(int id);
-        Task<PaymentType> GetPaymentType(string paymentTypeTitle);
-        Task<PaymentType> UpdatePaymentType(PaymentType paymentType);
-        Task<bool> DeletePaymentType(PaymentType paymentType);
 
 
 

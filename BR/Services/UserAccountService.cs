@@ -182,7 +182,7 @@ namespace BR.Services
                         }
                     }
 
-                    var title = res.TableReservations.First().Table.Hall.Floor.Client.Name;
+                    var title = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName;
                     var floor = res.TableReservations.First().Table.Hall.Floor.Number;
                     var hallTitle = res.TableReservations.First().Table.Hall.Title;
 
@@ -192,7 +192,7 @@ namespace BR.Services
                         Date = res.ReservationDate,
                         ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
                         ChildFree = res.ChildFree,
-                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.Name,
+                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
                         Floor = res.TableReservations.First().Table.Hall.Floor.Number,
                         HallTitle = res.TableReservations.First().Table.Hall.Title,
                         GuestCount = res.GuestCount,

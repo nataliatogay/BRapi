@@ -1,6 +1,7 @@
 ﻿using BR.DTO;
 using BR.DTO.Requests;
 using BR.Models;
+using BR.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,10 @@ namespace BR.Services.Interfaces
     public interface IClientRequestService
     {
         Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests();
+        Task<IEnumerable<RequestInfoResponse>> GetNewClientRequests();
         Task<RequestInfoResponse> GetClientRequest(int id);
-        Task AddNewClientRequest(ClientRequest clientRequest);
-        Task AddNewClientRequest(NewRequestRequest newClientRequest);
-        Task<int> ClientRequestCount();
+        Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest);
+        Task<int> NewClientRequestCount();
         
 
     }

@@ -9,7 +9,6 @@ namespace BR.DTO.Parameters
     public class ClientParametersResponse
     {
         public Dictionary<int, string> Cuisines { get; set; }
-        public Dictionary<int, string> PaymentTypes { get; set; }
         public Dictionary<int, string> ClientTypes { get; set; }
         public Dictionary<int, string> MealTypes { get; set; }
 

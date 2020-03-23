@@ -29,17 +29,20 @@ namespace BR.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IAuthenticationService _authenticationService;
 
 
         public ClientController(IClientService clientService,
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            IAuthenticationService authenticationService)
         {
             _clientService = clientService;
             _userManager = userManager;
             _roleManager = roleManager;
             _emailService = emailService;
+            _authenticationService = authenticationService;
 
         }
 
@@ -148,7 +151,7 @@ namespace BR.Controllers
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
         {
-            string password = _clientService.GeneratePassword();
+            string password = _authenticationService.GeneratePassword();
             if (await _userManager.FindByNameAsync(newClient.Email) is null)
             {
                 IdentityUser identityUser = new IdentityUser()
