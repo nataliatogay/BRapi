@@ -10,7 +10,9 @@ namespace BR.DTO.Reservations
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public int GuestCount { get; set; }
-        public bool ChildFree { get; set; }
+        //public bool ChildFree { get; set; }
+        //public bool PetsFree { get; set; }
+        //public bool Invalids { get; set; }
         public string ReservationState { get; set; }
         public string ClientTitle { get; set; }
         public string HallTitle { get; set; }

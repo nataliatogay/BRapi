@@ -15,8 +15,16 @@ namespace BR.Models
 
         public int? UserId { get; set; }
 
+        public int ClientId { get; set; }
+
         [Required]
         public bool ChildFree { get; set; }
+
+        [Required]
+        public bool PetsFree { get; set; }
+
+        [Required]
+        public bool Invalids { get; set; }
 
         [Required]
         public int GuestCount { get; set; }
@@ -35,8 +43,10 @@ namespace BR.Models
 
         public virtual User User { get; set; }
 
+        public virtual Client Client { get; set; }
+
         [ForeignKey("BarTableId")]
-        public virtual BarTable BarTable{ get; set; }
+        public virtual BarTable BarTable { get; set; }
 
         [ForeignKey("ReservationStateId")]
         public virtual ReservationState ReservationState { get; set; }

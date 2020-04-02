@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BR.DTO.Users
+namespace BR.DTO.Privileges
 {
-    public class BlockUserRequest
+    public class AssignPrivilegeRequest
     {
         public int UserId { get; set; }
-        public bool ToBlock { get; set; }
+        public int PrivilegeId { get; set; }
     }
 }

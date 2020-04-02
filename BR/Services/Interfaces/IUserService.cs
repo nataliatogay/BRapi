@@ -1,6 +1,7 @@
 ﻿using BR.DTO;
 using BR.DTO.Users;
 using BR.Models;
+using BR.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,10 @@ namespace BR.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserInfoResponse>> GetUsers(string role);
-        Task<UserInfoResponse> GetUser(int id, string role);
-        Task<User> BlockUser(BlockUserRequest blockRequest);
+        Task<ServerResponse<ICollection<UserInfoForAdminResponse>>> GetUsers();
+        Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id);
+        Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id);
+        Task<ServerResponse> BlockUser(int userId);
+        Task<ServerResponse> UnblockUser(int userId);
     }
 }

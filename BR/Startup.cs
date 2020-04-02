@@ -25,6 +25,7 @@ using Quartz.Spi;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 //using Microsoft.AspNetCore.SignalR.Redis;
 
 namespace BR
@@ -68,9 +69,10 @@ namespace BR
                 options =>
                 {
                     string connStrAzure = Configuration.GetConnectionString("AzureDbConnectionString");
+                    string connSql = Configuration.GetConnectionString("SQLConnectionString");
                    // string connStrPostgre = Configuration.GetConnectionString("PostgreSQLConnectionString");
                    // options.UseNpgsql(connStrPostgre);
-                    options.UseSqlServer(connStrAzure);
+                    options.UseSqlServer(connSql);
                     options.UseLazyLoadingProxies();
                 });
 
@@ -83,7 +85,6 @@ namespace BR
             services.AddScoped<IClientAccountService, ClientAccountService>();
             services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddScoped<IWaiterAccountService, WaiterAccountService>();
-            //services.AddScoped<IAdminMailService, AdminMailService>();
             services.AddScoped<IClientRequestService, ClientRequestService>();
             services.AddScoped<IParameterService, ParameterService>();
             services.AddScoped<IBlobService, BlobService>();
@@ -148,6 +149,14 @@ namespace BR
                         ClockSkew = TimeSpan.Zero
                     };
                 });
+
+            services.AddAuthorization(opts => {
+                opts.AddPolicy("Headwaiter", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.NameIdentifier, "Headwaiter");
+                });
+            });
+
             services.Configure<IdentityOptions>(
                 options => 
                 {
@@ -187,6 +196,8 @@ namespace BR
                 opt.Configuration = options.ConnectionString;
                 opt.InstanceName = options.InstanceName;
             });
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

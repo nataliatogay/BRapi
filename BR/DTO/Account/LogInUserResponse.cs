@@ -11,6 +11,6 @@ namespace BR.DTO.Account
     {
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
-        public UserInfoResponse User { get; set; }
+        public UserInfoForUsersResponse User { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using BR.DTO;
 using BR.DTO.Account;
+using BR.DTO.Admin;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
@@ -22,7 +23,7 @@ namespace BR.Services
         private readonly AuthOptions _authOptions;
         private readonly IAuthenticationService _authenticationService;
         public AdminAccountService(IAsyncRepository repository,
-             IAuthenticationService authenticationService, 
+             IAuthenticationService authenticationService,
              IOptions<AuthOptions> options)
         {
             _repository = repository;
@@ -63,15 +64,33 @@ namespace BR.Services
             return await _authenticationService.UpdateToken(refreshToken);
         }
 
-        public async Task<Admin> GetAdmin(string identityId)
+        public async Task<ServerResponse<AdminInfoResponse>> GetAdminInfo(string identityId)
         {
-            return await _repository.GetAdminByIdentityId(identityId);
+            Admin admin;
+            try
+            {
+                admin = await _repository.GetAdmin(identityId);
+                if (admin is null)
+                {
+                    return new ServerResponse<AdminInfoResponse>(StatusCode.UserNotFound, null);
+                }
+                return new ServerResponse<AdminInfoResponse>(
+                    StatusCode.Ok,
+                    new AdminInfoResponse()
+                    {
+                        Email = admin.Identity.Email
+                    });
+            }
+            catch
+            {
+                return new ServerResponse<AdminInfoResponse>(StatusCode.DbConnectionError, null);
+            }
         }
 
         public async Task<Admin> AddNewAdmin(Admin admin)
         {
             return await _repository.AddAdmin(admin);
         }
-       
+
     }
 }

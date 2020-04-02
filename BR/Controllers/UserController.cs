@@ -27,45 +27,36 @@ namespace BR.Controllers
             _userService = userService;
         }
 
-        [HttpGet("")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserInfoResponse>>>> Get()
-        {
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            if (String.IsNullOrEmpty(role))
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
 
-            return new JsonResult(Response(await _userService.GetUsers(role)));
+        [HttpGet("")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserInfoForAdminResponse>>>> Get()
+        {
+            return new JsonResult(await _userService.GetUsers());
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Get(int id)
+        [HttpGet("ForUsers/{id}")]
+        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> GetInfoForUser(int id)
         {
-            string role = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsIdentity.DefaultRoleClaimType)?.Value;
-            if (String.IsNullOrEmpty(role))
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(Response(await _userService.GetUser(id, role)));
+            return new JsonResult(await _userService.GetUserInfoForUsers(id));
+        }
+
+        [Authorize]
+        [HttpGet("ForAdmin/{id}")]
+        public async Task<ActionResult<ServerResponse<UserInfoForAdminResponse>>> GetInfoForAdmin(int id)
+        {
+            return new JsonResult(await _userService.GetUserInfoForAdmin(id));
         }
 
         [HttpPut("Block")]
-        public async Task<ActionResult<ServerResponse>> BlockUser([FromBody]BlockUserRequest blockRequest)
+        public async Task<ActionResult<ServerResponse>> BlockUser([FromBody]int userId)
         {
-            try
-            {
-               var res = await _userService.BlockUser(blockRequest);
-                if(res is null)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-                }
-            }
-            catch
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            return new JsonResult(Response(Utils.StatusCode.Ok));
-        }        
+            return new JsonResult(await _userService.BlockUser(userId));
+        }
+
+        [HttpPut("Unblock")]
+        public async Task<ActionResult<ServerResponse>> UnblockUser([FromBody]int userId)
+        {
+            return new JsonResult(await _userService.UnblockUser(userId));
+        }
     }
 }

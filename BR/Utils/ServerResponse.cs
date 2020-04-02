@@ -42,7 +42,6 @@
         SendingMailError,
         UserNotFound,
         IncorrectLoginOrPassword,
-        UserBlocked,
         Error,
         UserRegistered,
         EmailUsed,
@@ -50,10 +49,15 @@
         SendOnConfirmation,
         NotAvailable,
         SendingNotificationError,
-        ClientIsBlocked,
-        ClientNotFound,
-        WaiterNotFound,
-        OwnerNotFound,
-        RoleNotFound
+        RoleNotFound,
+        InvalidRole,
+        UserBlocked,
+        UserUnblocked,
+        UserDeleted,
+        DbConnectionError,
+        NotFound,
+        Duplicate,
+        EmailNotConfirmed,
+        BlobError
     }
 }

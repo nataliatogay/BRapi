@@ -1,6 +1,8 @@
 ﻿using BR.DTO;
+using BR.DTO.Privileges;
 using BR.DTO.Waiters;
 using BR.Models;
+using BR.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +17,8 @@ namespace BR.Services.Interfaces
         Task<Waiter> AddNewWaiter(NewWaiterRequest newWaiterRequest, string identityId, string clientIdentityId);
         Task<Waiter> UpdateWaiter(Waiter waiter);
         Task<bool> DeleteWaiter(int id);
+
+        Task<ServerResponse> AssignPrivilege(AssignPrivilegeRequest assignmentRequest);
 
         string GenerateLogin(string lastName);
         string GeneratePassword();

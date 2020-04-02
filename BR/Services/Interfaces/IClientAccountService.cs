@@ -1,5 +1,6 @@
 ﻿using BR.DTO;
 using BR.DTO.Account;
+using BR.DTO.Clients;
 using BR.Models;
 using BR.Utils;
 using Microsoft.AspNetCore.Identity;
@@ -16,9 +17,12 @@ namespace BR.Services.Interfaces
         Task LogOut(string refreshToken);
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
         Task<Client> GetInfo(string identityId);
-        Task<bool> ClientIsBlocked(string identityId);
-        Task<string> UploadMainImage(string identityId, string imageString);
-        Task<bool> DeleteImage(int id);
-        Task<ClientImage> UploadImage(string identityId, string imageString);
+        Task<ServerResponse<bool>> ClientIsBlocked(string identityId);
+        Task<ServerResponse<bool>> ClientIsDeleted(string identityId);
+        Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString);
+        Task<ServerResponse> DeleteImage(int imageId);
+        Task<ServerResponse> UploadImages(string identityId, ICollection<string> imagesString);
+
+        Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient);
     }
 }

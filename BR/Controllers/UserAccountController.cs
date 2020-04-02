@@ -41,8 +41,7 @@ namespace BR.Controllers
             IUserAccountService userAccountService,
             IEmailService emailService,
             ISMSConfiguration smsConfiguration,
-            IMemoryCache cache,
-            IAsyncRepository repository)
+            IMemoryCache cache)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -53,25 +52,14 @@ namespace BR.Controllers
         }
 
 
+        // DONE
         [HttpPost("Login")]
         public async Task<ActionResult<ServerResponse>> Login([FromBody]string phoneNumber)
         {
-            var res = await _userManager.FindByNameAsync(phoneNumber);
-            if (res != null)
-            {
-                if (await _userAccountService.UserIsBlocked(res.Id))
-                {
-                    return Response(Utils.StatusCode.UserBlocked);
-                    //   return new JsonResult(Response(Utils.StatusCode.UserBlocked));
-                }
-            }
-
             if (!_cache.TryGetValue(phoneNumber, out _))
             {
                 string code = _userAccountService.GenerateCode();
                 _cache.Set(phoneNumber, code, TimeSpan.FromMinutes(3));
-
-
 
                 try
                 {
@@ -99,8 +87,11 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.CodeHasAlreadyBeenSent));
             }
+
         }
 
+
+        //DONE
         [HttpPost("Confirm")]
         public async Task<ActionResult<ServerResponse<LogInUserResponse>>> ConfirmPhone([FromBody]ConfirmPhoneRequest confirmModel)
         {
@@ -111,6 +102,7 @@ namespace BR.Controllers
                 _cache.Remove(confirmModel.PhoneNumber);
                 if (confirmModel.Code.Equals(code))
                 {
+                    bool isDeleted = false;
                     var identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
                     if (identityUser is null)
                     {
@@ -124,20 +116,37 @@ namespace BR.Controllers
                         if (identityResult.Succeeded)
                         {
                             identityUser = await _userManager.FindByNameAsync(confirmModel.PhoneNumber);
-                            var role = await _roleManager.FindByNameAsync("User");
-                            if(role != null)
+                            var res = await _userManager.AddToRoleAsync(identityUser, "User");
+                            if (!res.Succeeded)
                             {
-                                var res = await _userManager.AddToRoleAsync(identityUser, "User");
-                                if (!res.Succeeded)
-                                {
-                                    return new JsonResult(Response(Utils.StatusCode.Error));
-                                }
+                                return new JsonResult(Response(Utils.StatusCode.Error));
                             }
 
                         }
+                        else
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.Error));
+                        }
                     }
-                    var userRoles = await _userManager.GetRolesAsync(identityUser);
+                    else
+                    {
+                        var blockedRes = await _userAccountService.UserIsBlocked(identityUser.Id);
+                        if (blockedRes.StatusCode == Utils.StatusCode.Ok && blockedRes.Data)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.UserBlocked));
+                        }
+                        var deletedRes = await _userAccountService.UserIsDeleted(identityUser.Id);
+                        if (deletedRes.StatusCode == Utils.StatusCode.Ok && deletedRes.Data)
+                        {
+                            // делать log In, отправлять токены и спросить, желает ли восстановить данные 
+                            isDeleted = true;
+                        }
+                    }
                     var resp = await _userAccountService.LogIn(identityUser.UserName, identityUser.Id, confirmModel.NotificationTag);
+                    if (resp.StatusCode == Utils.StatusCode.Ok && isDeleted)
+                    {
+                        resp.StatusCode = Utils.StatusCode.UserDeleted;
+                    }
                     return new JsonResult(resp);
                 }
                 else
@@ -152,66 +161,135 @@ namespace BR.Controllers
         }
 
 
+        [Authorize]
+        [HttpPut("Restore")]
+        public async Task<ActionResult<ServerResponse>> RestoreDeletedUser()
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser != null)
+            {
+                return new JsonResult(await _userAccountService.RestoreUser(identityUser.Id));
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+        }
 
-
-        // email confirm
 
         [Authorize]
+        [HttpPut("FinallyDelete")]
+        public async Task<ActionResult<ServerResponse<LogInUserResponse>>> FinallyDelete(string notificationTag)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            var userPhone = identityUser.UserName;
+
+
+            // check unique
+            var newName = identityUser.UserName + "_DELETED_" + DateTime.Now.ToString();
+            identityUser.UserName = newName;
+
+            var changeRes = await _userManager.UpdateAsync(identityUser);
+            if (!changeRes.Succeeded)
+            {
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+            var newUserRes = await _userManager.CreateAsync(new IdentityUser()
+            {
+                PhoneNumber = userPhone,
+                UserName = userPhone
+            },
+            "1234");
+            if (!newUserRes.Succeeded)
+            {
+                identityUser.UserName = userPhone;
+                await _userManager.UpdateAsync(identityUser);
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+            else
+            {
+                var newIdentityId = await _userManager.FindByNameAsync(userPhone);
+                if (newIdentityId is null)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                var roleRes = await _userManager.AddToRoleAsync(newIdentityId, "User");
+                if (!roleRes.Succeeded)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                await _userAccountService.FinallyDelete(notificationTag);
+                return new JsonResult(await _userAccountService.LogIn(userPhone, newIdentityId.Id, notificationTag));
+            }
+        }
+
+
+        // DONE
+        [Authorize]
         [HttpPost("Register")]
-        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> Register([FromBody]NewUserRequest newUserRequest)
+        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
             if (identityUser != null)
             {
-                if ((await _userAccountService.GetInfo(identityUser.Id)) == null)
+                var isRegistered = await _userAccountService.UserIsRegistered(identityUser.Id);
+                if (isRegistered.StatusCode == Utils.StatusCode.Ok)
                 {
-                   
-                    User user = new User()
+                    if (!isRegistered.Data)
                     {
-                        IdentityId = identityUser.Id,
-                        FirstName = newUserRequest.FirstName,
-                        LastName = newUserRequest.LastName,
-                        Gender = newUserRequest.Gender,
-                        BirthDate = null
-                    };
-                    if (newUserRequest.BirthDate != null)
-                    {
-                        user.BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                    }
-                    var userResponse = await _userAccountService.Register(user);
-                    if (newUserRequest.Email != null)
-                    {
-                        _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
 
-
-                        var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                        var callbackUrl = Url.Action(
-                                    "ConfirmEmail",
-                                    "UserAccount",
-                                    new { userId = identityUser.Id, code = emailConfirmationCode },
-                                    protocol: HttpContext.Request.Scheme);
-
-                        try
+                        var userResponse = await _userAccountService.Register(newUserRequest, identityUser.Id);
+                        if (userResponse.StatusCode != Utils.StatusCode.Ok)
                         {
-                            string msgBody = $"<a href='{callbackUrl}'>link</a>";
-                            await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
-                            //return new JsonResult(Response(Utils.StatusCode.Ok));
+                            return new JsonResult(Response(userResponse.StatusCode));
                         }
-                        catch
+
+                        if (newUserRequest.Email != null)
                         {
-                            _cache.Remove(identityUser.Id);
-                            return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
+                            _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
+
+
+                            var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+                            var callbackUrl = Url.Action(
+                                        "ConfirmEmail",
+                                        "UserAccount",
+                                        new { userId = identityUser.Id, code = emailConfirmationCode },
+                                        protocol: HttpContext.Request.Scheme);
+
+                            try
+                            {
+                                string msgBody = $"<a href='{callbackUrl}'>link</a>";
+                                await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
+                            }
+                            catch
+                            {
+                                _cache.Remove(identityUser.Id);
+                                return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
+                            }
                         }
+                        return new JsonResult(Response(userResponse));
+
                     }
-                    return new JsonResult(Response(userResponse));
+                    else
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.UserRegistered));
+                    }
                 }
                 else
                 {
-                    return new JsonResult(Response(Utils.StatusCode.UserRegistered));
+                    return new JsonResult(Response(isRegistered.StatusCode));
                 }
+
             }
-            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
         }
 
 
@@ -254,6 +332,7 @@ namespace BR.Controllers
         }
 
 
+        // DONE
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
@@ -298,30 +377,18 @@ namespace BR.Controllers
         }
 
 
-        [Authorize]
-        [HttpGet("getinfo")]
-        public async Task<ActionResult<ServerResponse<UserInfoResponse>>> GetInfo()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser != null)
-            {
-                var user = await _userAccountService.GetInfo(identityUser.Id);
-                if (user != null)
-                {
-                    return new JsonResult(Response(user));
-                }
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-        }
+
+
 
         [HttpPost("LogOut")]
-        public async Task<IActionResult> LogOut([FromBody]string notificationTag)
+        public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
         {
             await _userAccountService.LogOut(notificationTag);
             return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
+
+        // DONE
         [HttpPost("Token")] //api/account/token
         public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
@@ -372,31 +439,17 @@ namespace BR.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete()
+
+        // DONE
+        [HttpPut]
+        public async Task<ActionResult<ServerResponse>> Delete()
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            try
-            {
-                var res = await _userAccountService.DeleteUser(identityUser.Id);
-                if (res)
-                {
-                    var resDel = await _userManager.DeleteAsync(identityUser);
-                    if (resDel.Succeeded)
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.Ok));
-                    }
-                }
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            catch
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
+            return new JsonResult(await _userAccountService.DeleteUser(identityUser.Id));
         }
     }
 

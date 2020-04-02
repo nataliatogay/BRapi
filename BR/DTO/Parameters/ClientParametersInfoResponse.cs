@@ -5,11 +5,21 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Parameters
 {
-    public class ParametersInfoResponse
+    public class ClientParametersInfoResponse
     {
         public ICollection<ParameterInfo> Cuisines { get; set; }
+
         public ICollection<ParameterInfo> ClientTypes { get; set; }
+
         public ICollection<ParameterInfo> MealTypes { get; set; }
+
+        public ICollection<ParameterInfo> Features { get; set; }
+
+        public ICollection<ParameterInfo> GoodFors { get; set; }
+
+        public ICollection<ParameterInfo> SpecialDiets { get; set; }
+
+        public ICollection<ParameterInfo> Dishes { get; set; }
     }
 
     public class ParameterInfo

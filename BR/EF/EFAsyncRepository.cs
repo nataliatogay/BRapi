@@ -49,17 +49,12 @@ namespace BR.EF
         public async Task<Client> GetClient(int id)
         {
             return await _db.Clients
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FindAsync(id);
         }
 
         public async Task<IEnumerable<Client>> GetClients()
         {
             return await _db.Clients.ToListAsync();
-        }
-
-        public async Task<IEnumerable<ClientFavourite>> GetFavourites(int userId)
-        {
-            return await _db.Favourites.Where(f => f.UserId == userId).ToListAsync();
         }
 
         public async Task<ClientFavourite> GetFavourite(int clientId, int userId)
@@ -111,26 +106,6 @@ namespace BR.EF
             return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
 
-        public async Task<Client> GetClientByTableId(int tableId)
-        {
-            var table = await this.GetTable(tableId);
-            if (table is null)
-            {
-                return null;
-            }
-            return await this.GetClient(table.Hall.Floor.ClientId);
-        }
-
-        public async Task<Client> GetClientByBarId(int barId)
-        {
-            var barTable = await this.GetBarTable(barId);
-            if (barTable is null)
-            {
-                return null;
-            }
-            return await this.GetClient(barTable.Hall.Floor.ClientId);
-        }
-
         public async Task<ClientImage> GetClientImage(int id)
         {
             return await _db.ClientImages.FindAsync(id);
@@ -141,6 +116,12 @@ namespace BR.EF
             var img = _db.ClientImages.Add(image);
             await _db.SaveChangesAsync();
             return img.Entity;
+        }
+
+        public async Task AddClientImages(ICollection<ClientImage> images)
+        {
+            _db.ClientImages.AddRange(images.ToArray());
+            await _db.SaveChangesAsync();
         }
 
         public async Task<bool> DeleteClientImage(ClientImage image)
@@ -175,6 +156,30 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
+        public async Task AddClientDish(ClientDish clientDish)
+        {
+            await _db.ClientDishes.AddAsync(clientDish);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddClientGoodFor(ClientGoodFor clientGoodFor)
+        {
+            await _db.ClientGoodFors.AddAsync(clientGoodFor);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddClientFeature(ClientFeature clientFeature)
+        {
+            await _db.ClientFeatures.AddAsync(clientFeature);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task AddClientSpecialDiet(ClientSpecialDiet clientSpecialDiet)
+        {
+            await _db.ClientSpecialDiets.AddAsync(clientSpecialDiet);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task AddClientSocialLink(SocialLink socialLink)
         {
             await _db.SocialLinks.AddAsync(socialLink);
@@ -188,9 +193,62 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
+        public async Task RemoveClientClientType(IEnumerable<ClientClientType> clientClientType)
+        {
+            _db.ClientClientTypes.RemoveRange(clientClientType);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientMealType(IEnumerable<ClientMealType> clientMealType)
+        {
+            _db.ClientMealTypes.RemoveRange(clientMealType);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientCuisine(IEnumerable<ClientCuisine> clientCuisine)
+        {
+            _db.ClientCuisines.RemoveRange(clientCuisine);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientDish(IEnumerable<ClientDish> clientDish)
+        {
+            _db.ClientDishes.RemoveRange(clientDish);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientGoodFor(IEnumerable<ClientGoodFor> clientGoodFor)
+        {
+            _db.ClientGoodFors.RemoveRange(clientGoodFor);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientFeature(IEnumerable<ClientFeature> clientFeature)
+        {
+            _db.ClientFeatures.RemoveRange(clientFeature);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientSpecialDiet(IEnumerable<ClientSpecialDiet> clientSpecialDiet)
+        {
+            _db.ClientSpecialDiets.RemoveRange(clientSpecialDiet);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RemoveClientSocialLink(IEnumerable<SocialLink> socialLink) {
+            _db.SocialLinks.RemoveRange(socialLink);
+            await _db.SaveChangesAsync();
+        }
+        public async Task RemoveClientPhone(IEnumerable<ClientPhone> clientPhone) {
+            _db.ClientPhones.RemoveRange(clientPhone);
+            await _db.SaveChangesAsync();
+        }
+
+
+
         // Admins
 
-        public async Task<Admin> GetAdminByIdentityId(string identityId)
+        public async Task<Admin> GetAdmin(string identityId)
         {
             return await _db.Admins.FirstOrDefaultAsync(a => a.IdentityId == identityId);
         }
@@ -200,10 +258,15 @@ namespace BR.EF
             var identityUser = _db.Users.FirstOrDefault(u => u.UserName == identityName);
             if (identityUser != null)
             {
-                return await this.GetAdminByIdentityId(identityUser.Id);
+                return await this.GetAdmin(identityUser.Id);
             }
             return null;
 
+        }
+
+        public async Task<ICollection<Admin>> GetAdmins()
+        {
+            return await _db.Admins.ToListAsync();
         }
 
         public async Task<Admin> AddAdmin(Admin admin)
@@ -223,8 +286,42 @@ namespace BR.EF
             return res.Entity;
         }
 
+        public async Task<Owner> GetOwner(string identityId)
+        {
+            return await _db.Owners.FirstOrDefaultAsync(o => o.IdentityId == identityId);
+        }
+
+        public async Task<Owner> GetOwner(int id)
+        {
+            return await _db.Owners.FindAsync(id);
+        }
 
 
+        // Organizations
+
+        public async Task<ICollection<Organization>> GetOrganizations()
+        {
+            return await _db.Organizations.ToListAsync();
+        }
+
+        public async Task<Organization> GetOrganization(int id)
+        {
+            return await _db.Organizations.FindAsync(id);
+        }
+
+        public async Task<Organization> AddOrganization(Organization organization)
+        {
+            var res = _db.Organizations.Add(organization);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<Organization> UpdateOrganization(Organization organization)
+        {
+            var res = _db.Organizations.Update(organization);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
 
 
 
@@ -245,7 +342,7 @@ namespace BR.EF
         public async Task<ClientRequest> GetClientRequest(int id)
         {
             return await _db.ClientRequests
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FindAsync(id);
         }
 
         public async Task UpdateClientRequest(ClientRequest clientRequest)
@@ -268,15 +365,7 @@ namespace BR.EF
             return await _db.AccountTokens.Where(t => t.IdentityUserId == identityId).ToListAsync();
         }
 
-        public async Task<IEnumerable<AccountToken>> GetTokens(int id)
-        {
-            var user = await _db.ApplicationUsers.FindAsync(id);
-            if (user is null)
-            {
-                return null;
-            }
-            return await _db.AccountTokens.Where(t => t.IdentityUserId == user.IdentityId).ToListAsync();
-        }
+
         public async Task<AccountToken> GetToken(string refreshToken)
         {
             return await _db.AccountTokens.FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
@@ -300,22 +389,36 @@ namespace BR.EF
         }
 
 
-        // Parameters        
+        // Privileges
 
-        public async Task<IEnumerable<Cuisine>> GetAllCuisines()
+        public async Task<IEnumerable<UserPrivileges>> GetUserPrivileges(string identityId)
         {
-            return await _db.Cuisines.ToListAsync();
-        }
-        public async Task<IEnumerable<ClientType>> GetAllClientTypes()
-        {
-            return await _db.ClientTypes.ToListAsync();
+            return await _db.UserPrivileges.Where(p => p.IdentityId.Equals(identityId)).ToListAsync();
         }
 
-        public async Task<Cuisine> AddCuisine(Cuisine cuisine)
+        public async Task<UserPrivileges> AddUserPrivilage(UserPrivileges userPrivileges)
         {
-            var res = await _db.Cuisines.AddAsync(cuisine);
+            var res = _db.UserPrivileges.Add(userPrivileges);
             await _db.SaveChangesAsync();
             return res.Entity;
+        }
+
+        public async Task<Privilege> GetPrivilege(int id)
+        {
+            return await _db.Privileges.FindAsync(id);
+        }
+
+
+        // Parameters        
+
+        public async Task<ICollection<MealType>> GetAllMealTypes()
+        {
+            return await _db.MealTypes.ToListAsync();
+        }
+
+        public async Task<ICollection<Cuisine>> GetAllCuisines()
+        {
+            return await _db.Cuisines.ToListAsync();
         }
 
         public async Task<Cuisine> GetCuisine(int id)
@@ -328,6 +431,13 @@ namespace BR.EF
             return await _db.Cuisines.FirstOrDefaultAsync(c => c.Title.ToUpper().Equals(title.ToUpper()));
         }
 
+        public async Task<Cuisine> AddCuisine(Cuisine cuisine)
+        {
+            var res = await _db.Cuisines.AddAsync(cuisine);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
         public async Task<Cuisine> UpdateCuisine(Cuisine cuisine)
         {
             var res = _db.Cuisines.Update(cuisine);
@@ -335,25 +445,16 @@ namespace BR.EF
             return res.Entity;
         }
 
-        public async Task<bool> DeleteCuisine(Cuisine cuisine)
+        public async Task DeleteCuisine(Cuisine cuisine)
         {
-            try
-            {
-                _db.Cuisines.Remove(cuisine);
-                await _db.SaveChangesAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            _db.Cuisines.Remove(cuisine);
+            await _db.SaveChangesAsync();
         }
 
-        public async Task<ClientType> AddClientType(ClientType clientType)
+
+        public async Task<ICollection<ClientType>> GetAllClientTypes()
         {
-            var res = await _db.ClientTypes.AddAsync(clientType);
-            await _db.SaveChangesAsync();
-            return res.Entity;
+            return await _db.ClientTypes.ToListAsync();
         }
 
         public async Task<ClientType> GetClientType(int id)
@@ -366,6 +467,13 @@ namespace BR.EF
             return await _db.ClientTypes.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
         }
 
+        public async Task<ClientType> AddClientType(ClientType clientType)
+        {
+            var res = await _db.ClientTypes.AddAsync(clientType);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
         public async Task<ClientType> UpdateClientType(ClientType clientType)
         {
             var res = _db.ClientTypes.Update(clientType);
@@ -373,24 +481,155 @@ namespace BR.EF
             return res.Entity;
         }
 
-        public async Task<bool> DeleteClientType(ClientType clientType)
+        public async Task DeleteClientType(ClientType clientType)
         {
-            try
-            {
-                _db.ClientTypes.Remove(clientType);
-                await _db.SaveChangesAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            _db.ClientTypes.Remove(clientType);
+            await _db.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<MealType>> GetAllMealTypes()
+
+        public async Task<ICollection<GoodFor>> GetAllGoodFors()
         {
-            return await _db.MealTypes.ToListAsync();
+            return await _db.GoodFors.ToListAsync();
         }
+
+        public async Task<GoodFor> GetGoodFor(int id)
+        {
+            return await _db.GoodFors.FindAsync(id);
+        }
+
+        public async Task<GoodFor> GetGoodFor(string title)
+        {
+            return await _db.GoodFors.FirstOrDefaultAsync(g => g.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+        public async Task<GoodFor> AddGoodFor(GoodFor goodFor)
+        {
+            var res = await _db.GoodFors.AddAsync(goodFor);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+
+        }
+        public async Task<GoodFor> UpdateGoodFor(GoodFor goodFor)
+        {
+            var res = _db.GoodFors.Update(goodFor);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+        public async Task DeleteGoodFor(GoodFor goodFor)
+        {
+            _db.GoodFors.Remove(goodFor);
+            await _db.SaveChangesAsync();
+        }
+
+
+        public async Task<ICollection<Feature>> GetAllFeatures()
+        {
+            return await _db.Features.ToListAsync();
+        }
+
+        public async Task<Feature> GetFeature(int id)
+        {
+            return await _db.Features.FindAsync(id);
+        }
+
+        public async Task<Feature> GetFeature(string title)
+        {
+            return await _db.Features.FirstOrDefaultAsync(f => f.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+        public async Task<Feature> AddFeature(Feature feature)
+        {
+            var res = _db.Features.Add(feature);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<Feature> UpdateFeature(Feature feature)
+        {
+            var res = _db.Features.Update(feature);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+        public async Task DeleteFeature(Feature feature)
+        {
+            _db.Features.Remove(feature);
+            await _db.SaveChangesAsync();
+        }
+
+
+        public async Task<ICollection<SpecialDiet>> GetAllSpecialDiets()
+        {
+            return await _db.SpecialDiets.ToListAsync();
+        }
+
+        public async Task<SpecialDiet> GetSpecialDiet(int id)
+        {
+            return await _db.SpecialDiets.FindAsync(id);
+        }
+
+        public async Task<SpecialDiet> GetSpecialDiet(string title)
+        {
+            return await _db.SpecialDiets.FirstOrDefaultAsync(d => d.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+        public async Task<SpecialDiet> AddSpecialDiet(SpecialDiet specialDiet)
+        {
+            var res = _db.SpecialDiets.Add(specialDiet);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<SpecialDiet> UpdateSpecialDiet(SpecialDiet specialDiet)
+        {
+            var res = _db.SpecialDiets.Update(specialDiet);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+        public async Task DeleteSpecialDiet(SpecialDiet specialDiet)
+        {
+            _db.SpecialDiets.Remove(specialDiet);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<ICollection<Dish>> GetAllDishes()
+        {
+            return await _db.Dishes.ToListAsync();
+        }
+
+        public async Task<Dish> GetDish(int id)
+        {
+            return await _db.Dishes.FindAsync(id);
+        }
+
+        public async Task<Dish> GetDish(string dish)
+        {
+            return await _db.Dishes.FirstOrDefaultAsync();
+        }
+
+        public async Task<Dish> AddDish(Dish dish)
+        {
+            var res = _db.Dishes.Add(dish);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<Dish> UpdateDish(Dish dish)
+        {
+            var res = _db.Dishes.Update(dish);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task DeleteDish(Dish dish)
+        {
+            _db.Dishes.Remove(dish);
+            await _db.SaveChangesAsync();
+        }
+
+
+
+
 
 
         // Users
@@ -412,7 +651,7 @@ namespace BR.EF
             return res.Entity;
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<ICollection<User>> GetUsers()
         {
             return await _db.ApplicationUsers.ToListAsync();
         }
@@ -449,10 +688,6 @@ namespace BR.EF
 
         // Waiters
 
-        public async Task<IEnumerable<Waiter>> GetWaitersByClientId(int clientId)
-        {
-            return await _db.Waiters.Where(w => w.ClientId == clientId).ToListAsync();
-        }
 
         public async Task<IEnumerable<Waiter>> GetWaiters()
         {
@@ -515,11 +750,6 @@ namespace BR.EF
             return await _db.Reservations.FindAsync(id);
         }
 
-        public async Task<ICollection<Reservation>> GetReservations(int userId)
-        {
-            return await _db.Reservations.Where(r => r.UserId == userId).ToListAsync();
-        }
-
         public async Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId)
         {
             var reservation = await _db.Reservations.FindAsync(reservationId);
@@ -552,6 +782,11 @@ namespace BR.EF
         public async Task<CancelReason> GetCancelReason(int id)
         {
             return await _db.CancelReasons.FindAsync(id);
+        }
+
+        public async Task<CancelReason> GetCancelReason(string title)
+        {
+            return await _db.CancelReasons.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
         }
 
         // Tables
@@ -594,12 +829,6 @@ namespace BR.EF
         {
             return await _db.BarTables.FindAsync(id);
         }
-
-        //public async Task<TableState> GetTableState(string title)
-        //{
-        //    return await _db.TableStates.FirstOrDefaultAsync(t => t.Title.ToUpper().Equals(title.ToUpper()));
-        //}
-
 
         // Floors
 

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    [Migration("20200222085931_edit_reservation")]
-    partial class edit_reservation
+    [Migration("20200402194501_edit_parameters")]
+    partial class edit_parameters
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -60,36 +60,59 @@ namespace BR.Migrations
                     b.ToTable("Admins");
                 });
 
+            modelBuilder.Entity("BR.Models.BarTable", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("HallId");
+
+                    b.Property<int>("MaxGuestCount");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HallId");
+
+                    b.ToTable("BarTables");
+                });
+
+            modelBuilder.Entity("BR.Models.CancelReason", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("RoleId");
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("CancelReasons");
+                });
+
             modelBuilder.Entity("BR.Models.Client", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("AdditionalInfo")
-                        .HasMaxLength(250);
+                    b.Property<int?>("BarReserveDurationAvg");
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(150);
+                    b.Property<DateTime?>("Blocked");
 
                     b.Property<int>("CloseTime");
 
+                    b.Property<int>("ConfirmationDuration");
+
+                    b.Property<DateTime?>("Deleted");
+
+                    b.Property<string>("Description");
+
                     b.Property<string>("IdentityId");
-
-                    b.Property<bool>("IsBlocked");
-
-                    b.Property<bool>("IsBusinessLunch");
-
-                    b.Property<bool>("IsChildrenZone");
-
-                    b.Property<bool?>("IsLiveMusic");
-
-                    b.Property<bool>("IsOpenSpace");
-
-                    b.Property<bool>("IsParking");
-
-                    b.Property<bool>("IsWiFi");
 
                     b.Property<float>("Lat");
 
@@ -100,19 +123,24 @@ namespace BR.Migrations
 
                     b.Property<int>("MaxReserveDays");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30);
-
                     b.Property<int>("OpenTime");
+
+                    b.Property<int>("OrganizationId");
+
+                    b.Property<int>("PriceCategory");
 
                     b.Property<DateTime>("RegistrationDate");
 
                     b.Property<int>("ReserveDurationAvg");
 
+                    b.Property<string>("RestaurantName")
+                        .IsRequired();
+
                     b.HasKey("Id");
 
                     b.HasIndex("IdentityId");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Clients");
                 });
@@ -143,6 +171,19 @@ namespace BR.Migrations
                     b.ToTable("ClientCuisines");
                 });
 
+            modelBuilder.Entity("BR.Models.ClientDish", b =>
+                {
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("DishId");
+
+                    b.HasKey("ClientId", "DishId");
+
+                    b.HasIndex("DishId");
+
+                    b.ToTable("ClientDishes");
+                });
+
             modelBuilder.Entity("BR.Models.ClientFavourite", b =>
                 {
                     b.Property<int>("UserId");
@@ -154,6 +195,32 @@ namespace BR.Migrations
                     b.HasAlternateKey("ClientId", "UserId");
 
                     b.ToTable("Favourites");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientFeature", b =>
+                {
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("FeatureId");
+
+                    b.HasKey("ClientId", "FeatureId");
+
+                    b.HasIndex("FeatureId");
+
+                    b.ToTable("ClientFeatures");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientGoodFor", b =>
+                {
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("GoodForId");
+
+                    b.HasKey("ClientId", "GoodForId");
+
+                    b.HasIndex("GoodForId");
+
+                    b.ToTable("ClientGoodFors");
                 });
 
             modelBuilder.Entity("BR.Models.ClientImage", b =>
@@ -186,37 +253,32 @@ namespace BR.Migrations
                     b.ToTable("ClientMealTypes");
                 });
 
-            modelBuilder.Entity("BR.Models.ClientPaymentType", b =>
-                {
-                    b.Property<int>("ClientId");
-
-                    b.Property<int>("PaymentTypeId");
-
-                    b.HasKey("ClientId", "PaymentTypeId");
-
-                    b.HasIndex("PaymentTypeId");
-
-                    b.ToTable("ClientPaymentTypes");
-                });
-
             modelBuilder.Entity("BR.Models.ClientPhone", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int>("ClientId");
+
+                    b.Property<string>("Number");
+
+                    b.Property<bool>("IsWhatsApp");
+
+                    b.HasKey("ClientId", "Number");
+
+                    b.ToTable("ClientPhones");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientRating", b =>
+                {
+                    b.Property<int>("UserId");
 
                     b.Property<int>("ClientId");
 
-                    b.Property<bool>("IsShow");
+                    b.Property<int>("Rating");
 
-                    b.Property<string>("Number")
-                        .IsRequired();
+                    b.HasKey("UserId", "ClientId");
 
-                    b.HasKey("Id");
+                    b.HasAlternateKey("ClientId", "UserId");
 
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientPhones");
+                    b.ToTable("ClientRatings");
                 });
 
             modelBuilder.Entity("BR.Models.ClientRequest", b =>
@@ -225,18 +287,46 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ClientId");
+                    b.Property<string>("Comments");
 
-                    b.Property<string>("JsonInfo")
+                    b.Property<string>("Email")
+                        .IsRequired();
+
+                    b.Property<bool>("IsDone");
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired();
+
+                    b.Property<int?>("OwnerId");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired();
+
+                    b.Property<string>("OwnerPhoneNumber")
                         .IsRequired();
 
                     b.Property<DateTime>("RegisteredDate");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("OwnerId")
+                        .IsUnique()
+                        .HasFilter("[OwnerId] IS NOT NULL");
 
                     b.ToTable("ClientRequests");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientSpecialDiet", b =>
+                {
+                    b.Property<int>("ClientId");
+
+                    b.Property<int>("SpecialDietId");
+
+                    b.HasKey("ClientId", "SpecialDietId");
+
+                    b.HasIndex("SpecialDietId");
+
+                    b.ToTable("ClientSpecialDiets");
                 });
 
             modelBuilder.Entity("BR.Models.ClientType", b =>
@@ -249,6 +339,9 @@ namespace BR.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("ClientTypes");
                 });
@@ -264,7 +357,27 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Cuisines");
+                });
+
+            modelBuilder.Entity("BR.Models.Dish", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("Dishes");
                 });
 
             modelBuilder.Entity("BR.Models.Event", b =>
@@ -307,6 +420,25 @@ namespace BR.Migrations
                     b.ToTable("EventTypes");
                 });
 
+            modelBuilder.Entity("BR.Models.Feature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("Editable");
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("Features");
+                });
+
             modelBuilder.Entity("BR.Models.Floor", b =>
                 {
                     b.Property<int>("Id")
@@ -322,6 +454,23 @@ namespace BR.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("Floors");
+                });
+
+            modelBuilder.Entity("BR.Models.GoodFor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("GoodFors");
                 });
 
             modelBuilder.Entity("BR.Models.Hall", b =>
@@ -369,6 +518,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("MealTypes");
                 });
 
@@ -393,34 +545,42 @@ namespace BR.Migrations
                     b.ToTable("News");
                 });
 
-            modelBuilder.Entity("BR.Models.PaymentType", b =>
+            modelBuilder.Entity("BR.Models.Organization", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("LogoPath");
 
                     b.Property<string>("Title")
                         .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentTypes");
+                    b.ToTable("Organizations");
                 });
 
-            modelBuilder.Entity("BR.Models.PhoneCode", b =>
+            modelBuilder.Entity("BR.Models.Owner", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("Code");
+                    b.Property<string>("IdentityId");
 
-                    b.Property<string>("Country")
+                    b.Property<string>("Name")
                         .IsRequired();
+
+                    b.Property<int>("OrganizationId");
 
                     b.HasKey("Id");
 
-                    b.ToTable("PhoneCodes");
+                    b.HasIndex("IdentityId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("Owners");
                 });
 
             modelBuilder.Entity("BR.Models.PhotoPoint", b =>
@@ -445,25 +605,66 @@ namespace BR.Migrations
                     b.ToTable("PhotoPoints");
                 });
 
+            modelBuilder.Entity("BR.Models.Privilege", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("IdentityRoleId");
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdentityRoleId");
+
+                    b.ToTable("Privileges");
+                });
+
             modelBuilder.Entity("BR.Models.Reservation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("AdditionalInfo");
+
+                    b.Property<int?>("BarTableId");
+
+                    b.Property<int?>("CancelReasonId");
+
+                    b.Property<string>("CancelledByIdentityUserId");
+
                     b.Property<bool>("ChildFree");
+
+                    b.Property<int>("ClientId");
 
                     b.Property<string>("Comments");
 
+                    b.Property<int>("Duration");
+
                     b.Property<int>("GuestCount");
+
+                    b.Property<bool>("Invalids");
+
+                    b.Property<bool>("PetsFree");
 
                     b.Property<DateTime>("ReservationDate");
 
                     b.Property<int?>("ReservationStateId");
 
-                    b.Property<int>("UserId");
+                    b.Property<int?>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BarTableId");
+
+                    b.HasIndex("CancelReasonId");
+
+                    b.HasIndex("CancelledByIdentityUserId");
+
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("ReservationStateId");
 
@@ -488,20 +689,30 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.SocialLink", b =>
                 {
+                    b.Property<int>("ClientId");
+
+                    b.Property<string>("Link");
+
+                    b.HasKey("ClientId", "Link");
+
+                    b.ToTable("SocialLinks");
+                });
+
+            modelBuilder.Entity("BR.Models.SpecialDiet", b =>
+                {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ClientId");
-
-                    b.Property<string>("Link")
+                    b.Property<string>("Title")
                         .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("Title")
+                        .IsUnique();
 
-                    b.ToTable("SocialLinks");
+                    b.ToTable("SpecialDiets");
                 });
 
             modelBuilder.Entity("BR.Models.Table", b =>
@@ -546,6 +757,10 @@ namespace BR.Migrations
 
                     b.Property<DateTime?>("BirthDate");
 
+                    b.Property<DateTime?>("Blocked");
+
+                    b.Property<DateTime?>("Deleted");
+
                     b.Property<string>("FirstName")
                         .IsRequired();
 
@@ -554,8 +769,6 @@ namespace BR.Migrations
                     b.Property<string>("IdentityId");
 
                     b.Property<string>("ImagePath");
-
-                    b.Property<bool>("IsBlocked");
 
                     b.Property<string>("LastName")
                         .IsRequired();
@@ -582,6 +795,19 @@ namespace BR.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserPhones");
+                });
+
+            modelBuilder.Entity("BR.Models.UserPrivileges", b =>
+                {
+                    b.Property<int>("PrivilegeId");
+
+                    b.Property<string>("IdentityId");
+
+                    b.HasKey("PrivilegeId", "IdentityId");
+
+                    b.HasAlternateKey("IdentityId", "PrivilegeId");
+
+                    b.ToTable("UserPrivileges");
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>
@@ -799,11 +1025,31 @@ namespace BR.Migrations
                         .HasForeignKey("IdentityId");
                 });
 
+            modelBuilder.Entity("BR.Models.BarTable", b =>
+                {
+                    b.HasOne("BR.Models.Hall", "Hall")
+                        .WithMany("BarTables")
+                        .HasForeignKey("HallId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.CancelReason", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "IdentityRole")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
+                });
+
             modelBuilder.Entity("BR.Models.Client", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+
+                    b.HasOne("BR.Models.Organization", "Organization")
+                        .WithMany("Clients")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BR.Models.ClientClientType", b =>
@@ -832,6 +1078,19 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("BR.Models.ClientDish", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientDishes")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.Dish", "Dish")
+                        .WithMany("ClientDishes")
+                        .HasForeignKey("DishId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("BR.Models.ClientFavourite", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
@@ -842,6 +1101,32 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.User", "User")
                         .WithMany("ClientFavourites")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.ClientFeature", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientFeatures")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.Feature", "Feature")
+                        .WithMany("ClientFeatures")
+                        .HasForeignKey("FeatureId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.ClientGoodFor", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientGoodFors")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.GoodFor", "GoodFor")
+                        .WithMany("ClientGoodFors")
+                        .HasForeignKey("GoodForId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -866,19 +1151,6 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientPaymentType", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientPaymentTypes")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BR.Models.PaymentType", "PaymentType")
-                        .WithMany("ClientPaymentTypes")
-                        .HasForeignKey("PaymentTypeId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
             modelBuilder.Entity("BR.Models.ClientPhone", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
@@ -887,11 +1159,37 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BR.Models.ClientRequest", b =>
+            modelBuilder.Entity("BR.Models.ClientRating", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId");
+                        .WithMany("ClientRatings")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.User", "User")
+                        .WithMany("ClientRatings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.ClientRequest", b =>
+                {
+                    b.HasOne("BR.Models.Owner", "Owner")
+                        .WithOne("ClientRequest")
+                        .HasForeignKey("BR.Models.ClientRequest", "OwnerId");
+                });
+
+            modelBuilder.Entity("BR.Models.ClientSpecialDiet", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientSpecialDiets")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.SpecialDiet", "SpecialDiet")
+                        .WithMany("ClientSpecialDiets")
+                        .HasForeignKey("SpecialDietId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.Event", b =>
@@ -944,6 +1242,18 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("BR.Models.Owner", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
+                        .WithMany()
+                        .HasForeignKey("IdentityId");
+
+                    b.HasOne("BR.Models.Organization", "Organization")
+                        .WithMany("Owners")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("BR.Models.PhotoPoint", b =>
                 {
                     b.HasOne("BR.Models.Hall", "Hall")
@@ -952,16 +1262,40 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("BR.Models.Privilege", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "IdentityRole")
+                        .WithMany()
+                        .HasForeignKey("IdentityRoleId");
+                });
+
             modelBuilder.Entity("BR.Models.Reservation", b =>
                 {
+                    b.HasOne("BR.Models.BarTable", "BarTable")
+                        .WithMany("Reservations")
+                        .HasForeignKey("BarTableId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BR.Models.CancelReason", "CancelReason")
+                        .WithMany("Reservations")
+                        .HasForeignKey("CancelReasonId");
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CancelledByIdentityUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledByIdentityUserId");
+
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("Reservations")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BR.Models.ReservationState", "ReservationState")
                         .WithMany("Reservations")
                         .HasForeignKey("ReservationStateId");
 
                     b.HasOne("BR.Models.User", "User")
                         .WithMany("Reservations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("BR.Models.SocialLink", b =>
@@ -998,6 +1332,19 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+                });
+
+            modelBuilder.Entity("BR.Models.UserPrivileges", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.Privilege", "Privilege")
+                        .WithMany("UserPrivileges")
+                        .HasForeignKey("PrivilegeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>

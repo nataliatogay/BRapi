@@ -22,7 +22,7 @@ namespace BR.Services
         private readonly AuthOptions _authOptions;
         private readonly IAsyncRepository _repository;
 
-        public AuthenticationService(UserManager<IdentityUser> userManager, 
+        public AuthenticationService(UserManager<IdentityUser> userManager,
             IAsyncRepository repository,
             IOptions<AuthOptions> options)
         {
@@ -38,8 +38,8 @@ namespace BR.Services
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
             };
             var identityUser = await _userManager.FindByNameAsync(userName);
-            
-            if(identityUser is null)
+
+            if (identityUser is null)
             {
                 return new ServerResponse<LogInResponse>(StatusCode.UserNotFound, null);
             }
@@ -48,6 +48,17 @@ namespace BR.Services
             {
                 claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, item));
             }
+
+            var userPrivileges = await _repository.GetUserPrivileges(identityUser.Id);
+
+            if (userPrivileges != null && userPrivileges.Count() > 0)
+            {
+                foreach (var item in userPrivileges)
+                {
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, item.Privilege.Title));
+                }
+            }
+
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
 

@@ -15,12 +15,9 @@ namespace BR.Services
     public class ClientRequestService : IClientRequestService
     {
         private readonly IAsyncRepository _repository;
-        private readonly IBlobService _blobService;
-        public ClientRequestService(IAsyncRepository repository,
-            IBlobService blobService)
+        public ClientRequestService(IAsyncRepository repository)
         {
             _repository = repository;
-            _blobService = blobService;
         }
         
         public async Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest)
@@ -47,7 +44,8 @@ namespace BR.Services
                 OwnerPhoneNumber = newClientRequest.OwnerPhoneNumber,
                 Email = newClientRequest.Email,
                 Comments = newClientRequest.Comments,
-                RegisteredDate = DateTime.Now
+                RegisteredDate = DateTime.Now,
+                IsDone = false
             };
             try
             {
@@ -74,7 +72,8 @@ namespace BR.Services
                     OwnerPhoneNumber = item.OwnerPhoneNumber,
                     Email = item.Email,
                     Comments = item.Comments,
-                    RegisteredDate = item.RegisteredDate
+                    RegisteredDate = item.RegisteredDate,
+                    IsDone = item.IsDone
                 });
             }
             return requestsInfo;
@@ -97,7 +96,8 @@ namespace BR.Services
                         OwnerPhoneNumber = item.OwnerPhoneNumber,
                         Email = item.Email,
                         Comments = item.Comments,
-                        RegisteredDate = item.RegisteredDate
+                        RegisteredDate = item.RegisteredDate,
+                        IsDone = item.IsDone
                     });
                 }
             }
@@ -115,7 +115,8 @@ namespace BR.Services
                 OwnerPhoneNumber = req.OwnerPhoneNumber,
                 Email = req.Email,
                 Comments = req.Comments,
-                RegisteredDate = req.RegisteredDate
+                RegisteredDate = req.RegisteredDate,
+                IsDone = req.IsDone
             };
         }
 

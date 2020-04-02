@@ -9,6 +9,7 @@ using BR.DTO.Users;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
+using BR.Utils;
 
 namespace BR.Services
 {
@@ -21,104 +22,165 @@ namespace BR.Services
             _repository = repository;
 
         }
-        public async Task<IEnumerable<UserInfoResponse>> GetUsers(string role)
+        public async Task<ServerResponse<ICollection<UserInfoForAdminResponse>>> GetUsers()
         {
-            var users = await _repository.GetUsers();
+            ICollection<User> users;
+            try
+            {
+                users = await _repository.GetUsers();
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Error, null);
+            }
             if (users is null)
-                return null;
+                return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Ok, null);
 
-            var res = new List<UserInfoResponse>();
+            var res = new List<UserInfoForAdminResponse>();
             foreach (var user in users)
             {
-                res.Add(this.UserToUserInfoResponse(user, role));
-            }
-            return res;
-        }
-
-        public async Task<UserInfoResponse> GetUser(int id, string role)
-        {
-            var user = await _repository.GetUser(id);
-            if (user is null)
-            {
-                return null;
-            }
-            return this.UserToUserInfoResponse(user, role);
-        }
-
-        public async Task<User> BlockUser(BlockUserRequest blockRequest)
-        {
-            var user = await _repository.GetUser(blockRequest.UserId);
-            if (user is null)
-            {
-                return null;
-            }
-            user.IsBlocked = blockRequest.ToBlock;
-            return await _repository.UpdateUser(user);
-        }
-
-        private UserInfoResponse UserToUserInfoResponse(User user, string role)
-        {
-            var reservations = new List<ReservationInfo>();
-            if (user.Reservations != null)
-            {
-                foreach (var res in user.Reservations)
+                res.Add(new UserInfoForAdminResponse()
                 {
-                    var tableNums = new List<int>();
-                    if (res.TableReservations != null)
-                    {
-                        foreach (var t in res.TableReservations)
-                        {
-                            tableNums.Add(t.Table.Number);
-                        }
-                    }
-
-                    var resInfo = new ReservationInfo()
-                    {
-                        Id = res.Id,
-                        Date = res.ReservationDate,
-                        ReservationState = res.ReservationState.Title,
-                        ChildFree = res.ChildFree,
-                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
-                        Floor = res.TableReservations.First().Table.Hall.Floor.Number,
-                        HallTitle = res.TableReservations.First().Table.Hall.Title,
-                        GuestCount = res.GuestCount,
-                        TableNumbers = tableNums,
-                        Comments = res.Comments
-                    };
-                    reservations.Add(resInfo);
-                }
-            }
-            UserInfoResponse userInfo;
-            if (role.Equals("Admin"))
-            {
-                userInfo = new UserInfoForAdminResponse()
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
                     BirthDate = user.BirthDate,
                     Email = user.Identity.Email,
+                    FirstName = user.FirstName,
                     Gender = user.Gender,
+                    Id = user.Id,
                     ImagePath = user.ImagePath,
-                    IsBlocked = user.IsBlocked,
+                    Blocked = user.Blocked,
+                    Deleted = user.Deleted,
+                    LastName = user.LastName,
+                    PhoneNumber = user.Identity.PhoneNumber,
+                    RegistrationDate = user.RegistrationDate
+                });
+            }
+            return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Ok, res);
+        }
+
+        public async Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id)
+        {
+            try
+            {
+                var user = await _repository.GetUser(id);
+                if (user is null)
+                {
+                    return new ServerResponse<UserInfoForAdminResponse>(StatusCode.UserNotFound, null);
+                }
+                var res = new UserInfoForAdminResponse()
+                {
+                    BirthDate = user.BirthDate,
+                    Blocked = user.Blocked,
+                    Deleted = user.Deleted,
+                    Email = user.Identity.Email,
+                    FirstName = user.FirstName,
+                    Gender = user.Gender,
+                    Id = user.Id,
+                    ImagePath = user.ImagePath,
+                    LastName = user.LastName,
                     PhoneNumber = user.Identity.PhoneNumber,
                     RegistrationDate = user.RegistrationDate
                 };
-            } else 
+                return new ServerResponse<UserInfoForAdminResponse>(StatusCode.Ok, res);
+            }
+            catch
             {
-                userInfo = new UserInfoForUsersResponse()
+                return new ServerResponse<UserInfoForAdminResponse>(StatusCode.Error, null);
+            }
+        }
+
+        public async Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id)
+        {
+            try
+            {
+                var user = await _repository.GetUser(id);
+                if (user is null)
                 {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
+                    return new ServerResponse<UserInfoForUsersResponse>(StatusCode.UserNotFound, null);
+                }
+                var res = new UserInfoForUsersResponse()
+                {
                     BirthDate = user.BirthDate,
                     Email = user.Identity.Email,
+                    FirstName = user.FirstName,
                     Gender = user.Gender,
                     ImagePath = user.ImagePath,
-                    Reservations = reservations
-
+                    LastName = user.LastName
                 };
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, res);
             }
-            return userInfo;
+            catch
+            {
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
+            }
         }
+
+        public async Task<ServerResponse> BlockUser(int userId)
+        {
+            User user;
+            try
+            {
+                user = await _repository.GetUser(userId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+            if (user is null)
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (user.Blocked is null)
+            {
+                user.Blocked = DateTime.Now;
+                try
+                {
+                    await _repository.UpdateUser(user);
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+            }
+            else
+            {
+                return new ServerResponse(StatusCode.UserBlocked);
+            }
+        }
+
+        public async Task<ServerResponse> UnblockUser(int userId)
+        {
+            User user;
+            try
+            {
+                user = await _repository.GetUser(userId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+            if (user is null)
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (user.Blocked != null)
+            {
+                user.Blocked = null;
+                try
+                {
+                    await _repository.UpdateUser(user);
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+            }
+            else
+            {
+                return new ServerResponse(StatusCode.UserUnblocked);
+            }
+        }
+
     }
 }

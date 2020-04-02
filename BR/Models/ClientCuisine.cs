@@ -5,8 +5,6 @@ namespace BR.Models
 {
     public class ClientCuisine
     {
-       // [Key]
-       // public int Id { get; set; }
                                           
          [Key]
         [Column(Order = 1)]

@@ -139,6 +139,7 @@ namespace BR.Controllers
             return new JsonResult(Response(await _clientService.GetFullClientInfoForUsers(id)));
         }
 
+
         [HttpGet("schema/{id}")]
         public async Task<ActionResult<ServerResponse<ClientHallsInfoResponse>>> ClientSchema(int id)
         {
@@ -151,6 +152,9 @@ namespace BR.Controllers
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
         {
+
+
+
             string password = _authenticationService.GeneratePassword();
             if (await _userManager.FindByNameAsync(newClient.Email) is null)
             {
@@ -175,7 +179,30 @@ namespace BR.Controllers
                     }
                     try
                     {
-                        await _clientService.AddNewClient(newClient, identityUser.Id);
+                        var identityOwner = await _userManager.FindByNameAsync(User.Identity.Name);
+                        if (identityOwner is null)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                        }
+
+                        var identityRole = await _userManager.GetRolesAsync(identityOwner);
+                        ServerResponse clientAddResponse;
+                        if (!identityRole.First().ToUpper().Equals("OWNER"))
+                        {
+                            if (newClient.OrganizationId is null)
+                            {
+                                return new JsonResult(Response(Utils.StatusCode.Error));
+                            }
+                            clientAddResponse = await _clientService.AddNewClient(newClient, identityUser.Id);
+                        }
+                        else
+                        {
+                            clientAddResponse = await _clientService.AddNewClient(newClient, identityUser.Id, identityOwner.Id);
+                        }
+                        if(clientAddResponse.StatusCode != Utils.StatusCode.Ok)
+                        {
+                            return new JsonResult(clientAddResponse);
+                        }
                     }
                     catch
                     {
@@ -188,7 +215,7 @@ namespace BR.Controllers
                         await _emailService.SendAsync(identityUser.Email, "Registration info ", msgBody);
                         return new JsonResult(Response(Utils.StatusCode.Ok));
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         return new JsonResult(Response(Utils.StatusCode.Error));
                     }
@@ -208,37 +235,30 @@ namespace BR.Controllers
 
 
         [HttpPut("")]
-        public async Task<ActionResult<ServerResponse<Client>>> Update([FromBody]Client client)
+        public async Task<ActionResult<ServerResponse<Client>>> Update([FromBody]UpdateClientRequest updateRequest)
         {
-            return new JsonResult(Response(await _clientService.UpdateClient(client)));
-        }
-
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _clientService.DeleteClient(id);
-            return Ok();
-            //  return new JsonResult((await _clientService.GetAllClients()).ToList());
+            return new JsonResult(Response(await _clientService.UpdateClient(updateRequest)));
         }
 
 
         [HttpPut("Block")]
-        public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]BlockUserRequest blockRequest)
+        public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]int clientId)
         {
-            try
-            {
-                var res = await _clientService.BlockClient(blockRequest);
-                if (res is null)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-                }
-            }
-            catch
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            return new JsonResult(Response(Utils.StatusCode.Ok));
+            return new JsonResult(await _clientService.BlockClient(clientId));
+        }
+
+        [HttpPut("Unblock")]
+        public async Task<ActionResult<ServerResponse>> UnblockClient([FromBody]int clientId)
+        {
+            return new JsonResult(await _clientService.UnblockClient(clientId));
+        }
+
+
+        // DONE
+        [HttpPut("Delete")]
+        public async Task<ActionResult<ServerResponse>> Delete(int id)
+        {
+            return new JsonResult(await _clientService.DeleteClient(id));
         }
 
 

@@ -51,7 +51,7 @@ namespace BR.Controllers
                 }
             }
 
-            return new JsonResult(Response(Utils.StatusCode.WaiterNotFound));
+            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
         }
 
 

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using BR.DTO;
 using BR.DTO.Account;
+using BR.DTO.Clients;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
@@ -41,19 +43,48 @@ namespace BR.Controllers
 
             if (identityUser != null)
             {
-                if (!(await _clientAccountService.ClientIsBlocked(identityUser.Id)))
+                var role = await _userManager.GetRolesAsync(identityUser);
+                if (!role.Contains("Client"))
                 {
-                    bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
-                    if (checkPassword)
+                    return new JsonResult(Response(Utils.StatusCode.InvalidRole));
+                }
+                var blockedRes = await _clientAccountService.ClientIsBlocked(identityUser.Id);
+                if (blockedRes.StatusCode == Utils.StatusCode.Ok)
+                {
+                    if (!blockedRes.Data)
                     {
-                        // надо ли - ??
-                        //if(!(await _userManager.IsEmailConfirmedAsync(identityUser))) { }
-                        return new JsonResult(await _clientAccountService.LogIn(identityUser.UserName, model.NotificationTag));
+                        var deletedRes = await _clientAccountService.ClientIsDeleted(identityUser.Id);
+                        if (deletedRes.StatusCode == Utils.StatusCode.Ok)
+                        {
+                            if (!deletedRes.Data)
+                            {
+                                bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
+                                if (checkPassword)
+                                {
+                                    return new JsonResult(await _clientAccountService.LogIn(identityUser.UserName, model.NotificationTag));
+                                }
+                            }
+                            else
+                            {
+                                return new JsonResult(Response(Utils.StatusCode.UserDeleted));
+                            }
+                        }
+                        else
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                        }
+
+
+
+                    }
+                    else
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.UserBlocked));
                     }
                 }
                 else
                 {
-                    return new JsonResult(Response(Utils.StatusCode.ClientIsBlocked));
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
             }
 
@@ -88,6 +119,8 @@ namespace BR.Controllers
             return Ok();
         }
 
+
+        
         [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody]string newPassword)
@@ -215,35 +248,65 @@ namespace BR.Controllers
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
         //  [ValidateAntiForgeryToken] -> BadRequest
-        public async Task<IActionResult> ForgotPassword([FromBody]string email)
+        public async Task<ActionResult<ServerResponse>> ForgotPassword([FromBody]string email)
         {
             var user = await _userManager.FindByNameAsync(email);
             if (user == null)
             {
-                return new JsonResult("Client not found");
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
-            if (await _clientAccountService.ClientIsBlocked(user.Id))
+            var blockedRes = await _clientAccountService.ClientIsBlocked(user.Id);
+            if (blockedRes.StatusCode == Utils.StatusCode.Ok)
             {
-                return new JsonResult("Client is blocked");
+                if (!blockedRes.Data)
+                {
+                    var deletedRes = await _clientAccountService.ClientIsDeleted(user.Id);
+                    if (deletedRes.StatusCode == Utils.StatusCode.Ok)
+                    {
+                        if (!deletedRes.Data)
+                        {
+                            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                            var callbackUrl = Url.Action("ResetPassword",
+                                "ClientAccount",
+                                new { userId = user.Id, code = code },
+                                protocol: HttpContext.Request.Scheme);
+                            try
+                            {
+                                string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+                                await _emailService.SendAsync(email, "Password reset", msgBody);
+                                return new JsonResult(Response(Utils.StatusCode.Ok));
+                            }
+                            catch 
+                            {
+                                return new JsonResult(Response(Utils.StatusCode.Error));
+                            }
+                        }
+                        else
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.UserDeleted));
+                        }
+                    }
+                    else
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                    }
+
+
+                    
+                }
+                else
+                {
+                    return new JsonResult(Response(Utils.StatusCode.UserBlocked));
+                }
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.Action("ResetPassword",
-                "ClientAccount",
-                new { userId = user.Id, code = code },
-                protocol: HttpContext.Request.Scheme);
-            try
-            {
-                string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
-                await _emailService.SendAsync(email, "Password reset", msgBody);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
 
         [HttpGet("ResetPassword")]
@@ -278,43 +341,61 @@ namespace BR.Controllers
             return new JsonResult("Error");
         }
 
-        // [Authorize]
-        [HttpPost("UploadMainImage")]
-        public async Task<ActionResult<string>> UploadMainImage([FromBody]string imageString)
+
+        [HttpPut("UpdateProfile")]
+        public async Task<ActionResult<ServerResponse>> UpdateClientProfile(UpdateClientRequest updateRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult("Client not found");
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientAccountService.UpdateClient(updateRequest, identityUser.Id));
+        }
+
+
+
+        // by client
+        // [Authorize]
+        [HttpPost("UploadMainImage")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadMainImage([FromBody]string imageString)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _clientAccountService.UploadMainImage(identityUser.Id, imageString));
         }
-        
+
         // [Authorize]
-        [HttpPost("UploadImage")]
-        public async Task<ActionResult<string>> UploadImage([FromBody]string imageString)
+        [HttpPut("UploadImages")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadImages([FromBody]ICollection<string> imagesString)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult("Client not found");
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            var img = await _clientAccountService.UploadImage(identityUser.Id, imageString);
-            return new JsonResult(img.ImagePath);
+            return new JsonResult(await _clientAccountService.UploadImages(identityUser.Id, imagesString));
         }
+
 
         // [Authorize]
         [HttpDelete("DeleteImage/{id}")]
-        public async Task<ActionResult<bool>> DeleteImage(int id)
+        public async Task<ActionResult<ServerResponse>> DeleteImage(int id)
         {
             return new JsonResult(await _clientAccountService.DeleteImage(id));
         }
 
-        [HttpPost("Token")] 
+        [HttpPost("Token")]
         public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
         {
             return new JsonResult(await _clientAccountService.UpdateToken(refreshToken));
         }
+
+
+       
 
 
     }

@@ -15,9 +15,12 @@ namespace BR.DTO.Reservations
         public int Duration { get; set; } // in min
         [Required]
         public bool IsChildFree { get; set; }
+        public bool IsPetsFree { get; set; }
+        public bool Invalids { get; set; }
         public int GuestCount { get; set; }
         public string Comments { get; set; }
         public string PhoneNumber { get; set; }
         public ICollection<int> TableIds { get; set; }
+
     }
 }

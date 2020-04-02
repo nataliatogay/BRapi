@@ -26,128 +26,337 @@ namespace BR.Services
 
     public class ClientService : IClientService
     {
-            private readonly IAsyncRepository _repository;
-            //private readonly IEmailService _emailService;
+        private readonly IAsyncRepository _repository;
+        private readonly IBlobService _blobService;
+        private readonly IReservationService _reservationService;
 
-            public ClientService(IAsyncRepository repository)
+        public ClientService(IAsyncRepository repository,
+            IReservationService reservationService,
+            IBlobService blobService)
+        {
+            _repository = repository;
+            _reservationService = reservationService;
+            _blobService = blobService;
+        }
+
+        public async Task<ServerResponse> AddNewClient(NewClientRequest newRequest, string identityId, string identityUserOwnerId = null)
+        {
+            int organizationId;
+            if (identityUserOwnerId is null)
             {
-                _repository = repository;
+                if (newRequest.OrganizationId is null)
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+                organizationId = newRequest.OrganizationId ?? default(int);
+            }
+            else
+            {
+                var owner = await _repository.GetOwner(identityUserOwnerId);
+                if (owner is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+                organizationId = owner.OrganizationId;
             }
 
-        public async Task AddNewClient(NewClientRequest newClientRequest, string identityId)
-        {
             Client client = new Client()
             {
-                //RestaurantName = newClientRequest.RestaurantName,
-                //Address = newClientRequest.Address,
-                //Lat = newClientRequest.Lat,
-                //Long = newClientRequest.Long,
-                //OpenTime = newClientRequest.OpenTime,
-                //CloseTime = newClientRequest.CloseTime,
-                //IsParking = newClientRequest.IsParking,
-                //IsWiFi = newClientRequest.IsWiFi,
-                //IsLiveMusic = newClientRequest.IsLiveMusic,
-                //IsOpenSpace = newClientRequest.IsOpenSpace,
-                //IsChildrenZone = newClientRequest.IsChildrenZone,
-                //IsBusinessLunch = newClientRequest.IsBusinessLunch,
-                //Description = newClientRequest.Description,
-                //MaxReserveDays = newClientRequest.MaxReserveDays,
-                //ReserveDurationAvg = newClientRequest.ReserveDurationAvg,
-                //ConfirmationDuration = newClientRequest.ConfirmationDuration,
-                //MainImagePath = newClientRequest.MainImage,
-                //IsBlocked = false,
-                //IdentityId = identityId,
-                //RegistrationDate = DateTime.Now
+                RestaurantName = newRequest.RestaurantName,
+                Lat = newRequest.Lat,
+                Long = newRequest.Long,
+                OpenTime = newRequest.OpenTime,
+                CloseTime = newRequest.CloseTime,
+                Description = newRequest.Description,
+                MaxReserveDays = newRequest.MaxReserveDays,
+                ReserveDurationAvg = newRequest.ReserveDurationAvg,
+                BarReserveDurationAvg = newRequest.BarReserveDurationAvg,
+                ConfirmationDuration = newRequest.ConfirmationDuration,
+                PriceCategory = newRequest.PriceCategory,
+                IdentityId = identityId,
+                RegistrationDate = DateTime.Now,
+                OrganizationId = organizationId
             };
-            //if (client.MainImagePath is null)
-            //{
-            //    client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-logo.png";
-            //}
 
-            //client.MainImagePath = await _blobService.UploadImage(newClientRequest.MainImage);
 
-            Client addedClient = await _repository.AddClient(client);
-
-            
-            if (newClientRequest.MealTypeIds != null)
+            if (newRequest.MainImage is null)
             {
-                foreach (var mealTypeId in newClientRequest.MealTypeIds)
-                {
-                    await _repository.AddClientMealType(
-                        new ClientMealType()
-                        {
-                            ClientId = addedClient.Id,
-                            MealTypeId = mealTypeId
-                        });
-                }
+
+                // change path
+                client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-logo.png";
             }
-
-            if (newClientRequest.ClientTypeIds != null)
+            else
             {
-                foreach (var clientTypeId in newClientRequest.ClientTypeIds)
+                try
                 {
-                    await _repository.AddClientClientType(new ClientClientType()
-                    {
-                        ClientId = addedClient.Id,
-                        ClientTypeId = clientTypeId
-                    });
+                    client.MainImagePath = await _blobService.UploadImage(newRequest.MainImage);
                 }
-            }
-
-            if (newClientRequest.CuisineIds != null)
-            {
-                foreach (var cuisineId in newClientRequest.CuisineIds)
+                catch
                 {
-                    await _repository.AddClientCuisine(new ClientCuisine()
-                    {
-                        ClientId = addedClient.Id,
-                        CuisineId = cuisineId
-                    });
-                }
-            }
-
-            if (newClientRequest.SocialLinks != null)
-            {
-                foreach (var link in newClientRequest.SocialLinks)
-                {
-                    await _repository.AddClientSocialLink(new SocialLink()
-                    {
-                        ClientId = addedClient.Id,
-                        Link = link
-                    });
-                }
-            }
-
-            if (newClientRequest.Phones != null)
-            {
-                foreach (var phone in newClientRequest.Phones)
-                {
-                    await _repository.AddClientPhone(
-                        new ClientPhone()
-                        {
-                            ClientId = addedClient.Id,
-                            Number = phone.Number,
-                            IsWhatsApp = phone.IsWhatsApp
-                        });
+                    return new ServerResponse(StatusCode.BlobError);
                 }
             }
 
 
-            
+
+            try
+            {
+                Client addedClient = await _repository.AddClient(client);
+
+                await this.AddClientsParameters(client.Id, newRequest.CuisineIds, newRequest.ClientTypeIds, newRequest.MealTypeIds, newRequest.DishIds, newRequest.GoodForIds, newRequest.SpecialDietIds, newRequest.FeatureIds, newRequest.Phones, newRequest.SocialLinks);
+
+
+
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+
+
         }
 
-        public async Task<bool> DeleteClient(int id)
+
+        private async Task AddClientsParameters(int clientId, ICollection<int> cuisineIds, ICollection<int> clientTypeIds, ICollection<int> mealTypeIds, ICollection<int> dishIds, ICollection<int> goodForIds, ICollection<int> specialDietIds, ICollection<int> featureIds, ICollection<ClientPhoneInfo> phones, ICollection<string> socialLinks)
         {
-            var client = await _repository.GetClient(id);
-            if (client != null)
+
+            if (mealTypeIds != null)
             {
-                //var clientRequest = await _repository.GetClientRequest(client.ClientRequestId);
-                //clientRequest.ClientId = null;
-                // await _repository.UpdateClientRequest(clientRequest);
-                return await _repository.DeleteClient(client);
+                foreach (var item in mealTypeIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientMealType(
+                            new ClientMealType()
+                            {
+                                ClientId = clientId,
+                                MealTypeId = item
+                            });
+                    }
+                    catch { }
+                }
             }
-            return false;
+
+            if (clientTypeIds != null)
+            {
+                foreach (var clientTypeId in clientTypeIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientClientType(new ClientClientType()
+                        {
+                            ClientId = clientId,
+                            ClientTypeId = clientTypeId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (cuisineIds != null)
+            {
+                foreach (var cuisineId in cuisineIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientCuisine(new ClientCuisine()
+                        {
+                            ClientId = clientId,
+                            CuisineId = cuisineId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (dishIds != null)
+            {
+                foreach (var dishId in dishIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientDish(new ClientDish()
+                        {
+                            ClientId = clientId,
+                            DishId = dishId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (goodForIds != null)
+            {
+                foreach (var goodForId in goodForIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientGoodFor(new ClientGoodFor()
+                        {
+                            ClientId = clientId,
+                            GoodForId = goodForId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (specialDietIds != null)
+            {
+                foreach (var dietId in specialDietIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientSpecialDiet(new ClientSpecialDiet()
+                        {
+                            ClientId = clientId,
+                            SpecialDietId = dietId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (featureIds != null)
+            {
+                foreach (var featureId in featureIds)
+                {
+                    try
+                    {
+                        await _repository.AddClientFeature(new ClientFeature()
+                        {
+                            ClientId = clientId,
+                            FeatureId = featureId
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (socialLinks != null)
+            {
+                foreach (var link in socialLinks)
+                {
+                    try
+                    {
+                        await _repository.AddClientSocialLink(new SocialLink()
+                        {
+                            ClientId = clientId,
+                            Link = link.Trim()
+                        });
+                    }
+                    catch { }
+                }
+            }
+
+            if (phones != null)
+            {
+                foreach (var phone in phones)
+                {
+                    try
+                    {
+                        await _repository.AddClientPhone(
+                            new ClientPhone()
+                            {
+                                ClientId = clientId,
+                                Number = phone.Number,
+                                IsWhatsApp = phone.IsWhatsApp
+                            });
+                    }
+                    catch { }
+                }
+            }
         }
+
+        private async Task RemoveClientsParameters(ICollection<ClientCuisine> cuisines, ICollection<ClientClientType> clientTypes, ICollection<ClientMealType> mealTypes, ICollection<ClientDish> dishes, ICollection<ClientGoodFor> goodFors, ICollection<ClientSpecialDiet> specialDiets, ICollection<ClientFeature> features, ICollection<ClientPhone> phones, ICollection<SocialLink> socialLinks)
+        {
+
+            if (cuisines != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientCuisine(cuisines);
+                }
+                catch { }
+            }
+
+            if (clientTypes != null)
+            {
+
+                try
+                {
+                    await _repository.RemoveClientClientType(clientTypes);
+                }
+                catch { }
+            }
+
+            if (mealTypes != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientMealType(mealTypes);
+                }
+                catch { }
+            }
+
+            if (dishes != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientDish(dishes);
+                }
+                catch { }
+            }
+
+            if (goodFors != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientGoodFor(goodFors);
+                }
+                catch { }
+            }
+
+            if (specialDiets != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientSpecialDiet(specialDiets);
+                }
+                catch { }
+            }
+
+            if (features != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientFeature(features);
+                }
+                catch { }
+            }
+
+            if (socialLinks != null)
+            {
+
+                try
+                {
+                    await _repository.RemoveClientSocialLink(socialLinks);
+                }
+                catch { }
+            }
+
+            if (phones != null)
+            {
+                try
+                {
+                    await _repository.RemoveClientPhone(phones);
+                }
+                catch { }
+            }
+        }
+
+
 
         public async Task<ICollection<ClientShortInfoForUsersResponse>> GetShortClientInfoForUsers()
         {
@@ -239,7 +448,8 @@ namespace BR.Services
 
         public async Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id)
         {
-            var client = await _repository.GetClient(id);
+            Client client = await _repository.GetClient(id);
+
             if (client is null)
             {
                 return null;
@@ -269,7 +479,7 @@ namespace BR.Services
             {
                 return null;
             }
-            var favourites = await _repository.GetFavourites(user.Id);
+            var favourites = user.ClientFavourites;
             if (favourites is null)
             {
                 return null;
@@ -296,7 +506,7 @@ namespace BR.Services
                 return false;
             }
 
-            var favourites = await _repository.GetFavourites(user.Id);
+            var favourites = user.ClientFavourites;
             var clientFav = new ClientFavourite()
             {
                 ClientId = clientId,
@@ -315,12 +525,12 @@ namespace BR.Services
                 }
                 return true;
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException)
             {
                 // return concurrencyError;
                 return false;
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
                 // return UpdateError
                 return false;
@@ -450,42 +660,131 @@ namespace BR.Services
             };
         }
 
-        public async Task<Client> UpdateClient(Client client)
+
+        public async Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest)
         {
-            var clientToUpdate = await _repository.GetClient(client.Id);
-            if (clientToUpdate is null)
+            if (updateRequest.ClientId is null)
             {
-                return null;
+                return new ServerResponse(StatusCode.Error);
             }
-            //clientToUpdate.RestaurantName = client.RestaurantName;
-            //clientToUpdate.Address = client.Address;
-            //clientToUpdate.OpenTime = client.OpenTime;
-            //clientToUpdate.CloseTime = client.CloseTime;
-            //clientToUpdate.Description = client.Description ?? clientToUpdate.Description;
-            //clientToUpdate.IsLiveMusic = client.IsLiveMusic;
-            //clientToUpdate.IsOpenSpace = client.IsOpenSpace;
-            //clientToUpdate.IsParking = client.IsParking;
-            //clientToUpdate.IsWiFi = client.IsWiFi;
-            await _repository.UpdateClient(clientToUpdate);
-            return clientToUpdate;
+
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(updateRequest.ClientId ?? default);
+                if (client is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+
+
+            client.RestaurantName = updateRequest.RestaurantName;
+            client.Lat = updateRequest.Lat;
+            client.Long = updateRequest.Long;
+            client.OpenTime = updateRequest.OpenTime;
+            client.CloseTime = updateRequest.CloseTime;
+            client.Description = updateRequest.Description;
+            client.MaxReserveDays = updateRequest.MaxReserveDays;
+            client.ReserveDurationAvg = updateRequest.ReserveDurationAvg;
+            client.BarReserveDurationAvg = updateRequest.BarReserveDurationAvg;
+            client.ConfirmationDuration = updateRequest.ConfirmationDuration;
+            client.PriceCategory = updateRequest.PriceCategory;
+
+            try
+            {
+                await _repository.UpdateClient(client);
+            }
+            catch (DbUpdateException)
+            {
+                return new ServerResponse(StatusCode.Duplicate);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+
+            await this.RemoveClientsParameters(client.ClientCuisines, client.ClientClientTypes, client.ClientMealTypes, client.ClientDishes, client.ClientGoodFors, client.ClientSpecialDiets, client.ClientFeatures, client.ClientPhones, client.SocialLinks);
+
+            await this.AddClientsParameters(client.Id, updateRequest.CuisineIds, updateRequest.ClientTypeIds, updateRequest.MealTypeIds, updateRequest.DishIds, updateRequest.GoodForIds, updateRequest.SpecialDietIds, updateRequest.FeatureIds, updateRequest.Phones, updateRequest.SocialLinks);
+
+            return new ServerResponse(StatusCode.Ok);
         }
 
-        
 
 
 
-        public async Task<Client> BlockClient(BlockUserRequest blockRequest)
+
+        public async Task<ServerResponse> BlockClient(int clientId)
         {
-            var client = await _repository.GetClient(blockRequest.UserId);
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
             if (client is null)
             {
-                return null;
+                return new ServerResponse(StatusCode.UserNotFound);
             }
-            // TODO
-            if(client.Blocked is null) { }
-            else {  }
-            
-            return await _repository.UpdateClient(client);
+            if (client.Blocked is null)
+            {
+                client.Blocked = DateTime.Now;
+                try
+                {
+                    await _repository.UpdateClient(client);
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+            }
+            else
+            {
+                return new ServerResponse(StatusCode.UserBlocked);
+            }
+        }
+
+        public async Task<ServerResponse> UnblockClient(int clientId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+            if (client is null)
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (client.Blocked != null)
+            {
+                client.Blocked = null;
+                try
+                {
+                    await _repository.UpdateClient(client);
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+            }
+            else
+            {
+                return new ServerResponse(StatusCode.UserUnblocked);
+            }
         }
 
 
@@ -635,6 +934,54 @@ namespace BR.Services
             return res;
         }
 
+
+        // send notifications to users
+        public async Task<ServerResponse> DeleteClient(int clientId)
+        {
+            var client = await _repository.GetClient(clientId);
+            if (client != null)
+            {
+                client.Deleted = DateTime.Now;
+                try
+                {
+                    await _repository.UpdateClient(client);
+
+                    // delete tokens
+                    var tokens = await _repository.GetTokens(client.IdentityId);
+                    if (tokens != null)
+                    {
+                        foreach (var item in tokens)
+                        {
+                            await _repository.RemoveToken(item);
+                        }
+                    }
+
+                    // cancel upcoming reservations
+                    var reservations = client.Reservations;
+                    var cancelReason = await _repository.GetCancelReason("ClientDeleted");
+
+                    // maybe change later
+                    var admin = (await _repository.GetAdmins()).FirstOrDefault();
+                    if (cancelReason != null && reservations != null && admin != null)
+                    {
+                        foreach (var item in reservations)
+                        {
+                            if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
+                            {
+                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, admin.IdentityId);
+                            }
+                        }
+                    }
+
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
+            }
+            return new ServerResponse(StatusCode.UserNotFound);
+        }
 
     }
 }

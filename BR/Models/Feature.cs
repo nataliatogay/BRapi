@@ -15,6 +15,13 @@ namespace BR.Models
         public string Title { get; set; }
 
         public bool Editable { get; set; }
+
+        public virtual ICollection<ClientFeature> ClientFeatures{ get; set; }
+
+        public Feature()
+        {
+            ClientFeatures = new HashSet<ClientFeature>();
+        }
     }
 }
 

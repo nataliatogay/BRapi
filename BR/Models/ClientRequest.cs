@@ -24,6 +24,8 @@ namespace BR.Models
 
         public string Comments { get; set; }
 
+        public bool IsDone { get; set; }
+
         public DateTime RegisteredDate { get; set; }
 
         public int? OwnerId { get; set; }

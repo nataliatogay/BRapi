@@ -95,6 +95,10 @@ namespace BR.EF
 
         public DbSet<Organization> Organizations { get; set; }
 
+        public DbSet<Privilege> Privileges { get; set; }
+
+        public DbSet<UserPrivileges> UserPrivileges { get; set; }
+
 
 
         public BRDbContext(DbContextOptions options)
@@ -129,6 +133,12 @@ namespace BR.EF
 
             modelBuilder.Entity<ClientRating>().HasKey(u => new { u.UserId, u.ClientId });
 
+            modelBuilder.Entity<UserPrivileges>().HasKey(u => new { u.PrivilegeId, u.IdentityId });
+
+            modelBuilder.Entity<SocialLink>().HasKey(u => new { u.ClientId, u.Link });
+
+            modelBuilder.Entity<ClientPhone>().HasKey(u => new { u.ClientId, u.Number});
+
             modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ClientCuisine>().HasOne(c => c.Cuisine).WithMany(c => c.ClientCuisines).OnDelete(DeleteBehavior.Restrict);
@@ -142,6 +152,22 @@ namespace BR.EF
             modelBuilder.Entity<Client>().HasOne(r => r.Organization).WithMany(c => c.Clients).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Owner>().HasOne(r => r.Organization).WithMany(c => c.Owners).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Reservation>().HasOne(r => r.Client).WithMany(c => c.Reservations).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Cuisine>().HasIndex(u => u.Title).IsUnique();
+
+            modelBuilder.Entity<MealType>().HasIndex(t => t.Title).IsUnique();
+
+            modelBuilder.Entity<ClientType>().HasIndex(t => t.Title).IsUnique();
+
+            modelBuilder.Entity<GoodFor>().HasIndex(g => g.Title).IsUnique();
+
+            modelBuilder.Entity<Feature>().HasIndex(f => f.Title).IsUnique();
+
+            modelBuilder.Entity<SpecialDiet>().HasIndex(d => d.Title).IsUnique();
+
+            modelBuilder.Entity<Dish>().HasIndex(d => d.Title).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

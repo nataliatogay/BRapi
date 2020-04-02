@@ -13,5 +13,12 @@ namespace BR.Models
 
         [Required]
         public string Title { get; set; }
+
+        public virtual ICollection<ClientDish> ClientDishes { get; set; }
+
+        public Dish()
+        {
+            ClientDishes = new HashSet<ClientDish>();
+        }
     }
 }

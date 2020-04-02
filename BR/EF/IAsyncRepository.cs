@@ -15,36 +15,61 @@ namespace BR.EF
         Task<bool> DeleteClient(Client client);
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
-        Task<Client> GetClientByTableId(int tableId);
-        Task<Client> GetClientByBarId(int barId);
         Task<IEnumerable<Client>> GetClients();
         Task<ClientFavourite> GetFavourite(int clientId, int userId);
-        Task<IEnumerable<ClientFavourite>> GetFavourites(int userId);
         Task<ClientFavourite> AddFavourite(ClientFavourite clientFav);
         Task<bool> DeleteFavourite(ClientFavourite clientFav);
         Task<ClientImage> GetClientImage(int id);
         Task<ClientImage> AddClientImage(ClientImage image);
+        Task AddClientImages(ICollection<ClientImage> images);
         Task<bool> DeleteClientImage(ClientImage image);
         Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
         Task<IEnumerable<Client>> GetClientsByName(string title);
         Task<Client> UpdateClient(Client client);
+
         Task AddClientClientType(ClientClientType clientClientType);
         Task AddClientMealType(ClientMealType clientMealType);
         Task AddClientCuisine(ClientCuisine clientCuisine);
+        Task AddClientDish(ClientDish clientDish);
+        Task AddClientGoodFor(ClientGoodFor clientGoodFor);
+        Task AddClientFeature(ClientFeature clientFeature);
+        Task AddClientSpecialDiet(ClientSpecialDiet clientSpecialDiet);
         Task AddClientSocialLink(SocialLink socialLink);
         Task AddClientPhone(ClientPhone clientPhone);
+
+        Task RemoveClientClientType(IEnumerable<ClientClientType> clientClientType);
+        Task RemoveClientMealType(IEnumerable<ClientMealType> clientMealType);
+        Task RemoveClientCuisine(IEnumerable<ClientCuisine> clientCuisine);
+        Task RemoveClientDish(IEnumerable<ClientDish> clientDish);
+        Task RemoveClientGoodFor(IEnumerable<ClientGoodFor> clientGoodFor);
+        Task RemoveClientFeature(IEnumerable<ClientFeature> clientFeature);
+        Task RemoveClientSpecialDiet(IEnumerable<ClientSpecialDiet> clientSpecialDiet);
+        Task RemoveClientSocialLink(IEnumerable<SocialLink> socialLink);
+        Task RemoveClientPhone(IEnumerable<ClientPhone> clientPhone);
 
 
         // Admins
 
         Task<Admin> AddAdmin(Admin admin);
-        Task<Admin> GetAdminByIdentityId(string identityId);
+        Task<Admin> GetAdmin(string identityId);
         Task<Admin> GetAdminByIdentityName(string identityName);
+        Task<ICollection<Admin>> GetAdmins();
 
 
         // Owners
 
         Task<Owner> AddOwner(Owner owner);
+        Task<Owner> GetOwner(string identityId);
+        Task<Owner> GetOwner(int id);
+
+
+        // Organizations
+
+        Task<ICollection<Organization>> GetOrganizations();
+        Task<Organization> GetOrganization(int id);
+        Task<Organization> AddOrganization(Organization organization);
+        Task<Organization> UpdateOrganization(Organization organization);
+
 
         // Roles
 
@@ -62,29 +87,66 @@ namespace BR.EF
         // Tokens
 
         Task<IEnumerable<AccountToken>> GetTokens(string identityId);
-        Task<IEnumerable<AccountToken>> GetTokens(int id);
         Task<AccountToken> GetToken(string refreshToken);
         Task<AccountToken> GetTokenByTag(string notificationTag);
         Task AddToken(AccountToken refreshToken);
         Task RemoveToken(AccountToken refreshToken);
 
 
+        // Privileges
+
+        Task<IEnumerable<UserPrivileges>> GetUserPrivileges(string identityId);
+        Task<UserPrivileges> AddUserPrivilage(UserPrivileges userPrivileges);
+        Task<Privilege> GetPrivilege(int id);
+
+
 
         // Parameters
 
-        Task<IEnumerable<MealType>> GetAllMealTypes();
-        Task<IEnumerable<Cuisine>> GetAllCuisines();
-        Task<IEnumerable<ClientType>> GetAllClientTypes();
+        Task<ICollection<MealType>> GetAllMealTypes();
+
+        Task<ICollection<Cuisine>> GetAllCuisines();
         Task<Cuisine> AddCuisine(Cuisine cuisine);
-        Task<Cuisine> GetCuisine(int id);
         Task<Cuisine> GetCuisine(string cuisineTitle);
+        Task<Cuisine> GetCuisine(int id);
         Task<Cuisine> UpdateCuisine(Cuisine cuisine);
-        Task<bool> DeleteCuisine(Cuisine cuisine);
-        Task<ClientType> AddClientType(ClientType clientType);
+        Task DeleteCuisine(Cuisine cuisine);
+
+        Task<ICollection<ClientType>> GetAllClientTypes();
         Task<ClientType> GetClientType(int id);
         Task<ClientType> GetClientType(string clientTypeTitle);
+        Task<ClientType> AddClientType(ClientType clientType);
         Task<ClientType> UpdateClientType(ClientType clientType);
-        Task<bool> DeleteClientType(ClientType clientType);
+        Task DeleteClientType(ClientType clientType);
+
+        Task<ICollection<GoodFor>> GetAllGoodFors();
+        Task<GoodFor> GetGoodFor(int id);
+        Task<GoodFor> GetGoodFor(string title);
+        Task<GoodFor> AddGoodFor(GoodFor goodFor);
+        Task<GoodFor> UpdateGoodFor(GoodFor goodFor);
+        Task DeleteGoodFor(GoodFor goodFor);
+
+        Task<ICollection<Feature>> GetAllFeatures();
+        Task<Feature> GetFeature(int id);
+        Task<Feature> GetFeature(string title);
+        Task<Feature> AddFeature(Feature feature);
+        Task<Feature> UpdateFeature(Feature feature);
+        Task DeleteFeature(Feature feature);
+
+        Task<ICollection<SpecialDiet>> GetAllSpecialDiets();
+        Task<SpecialDiet> GetSpecialDiet(int id);
+        Task<SpecialDiet> GetSpecialDiet(string title);
+        Task<SpecialDiet> AddSpecialDiet(SpecialDiet specialDiet);
+        Task<SpecialDiet> UpdateSpecialDiet(SpecialDiet specialDiet);
+        Task DeleteSpecialDiet(SpecialDiet specialDiet);
+
+        Task<ICollection<Dish>> GetAllDishes();
+        Task<Dish> GetDish(int id);
+        Task<Dish> GetDish(string dish);
+        Task<Dish> AddDish(Dish dish);
+        Task<Dish> UpdateDish(Dish dish);
+        Task DeleteDish(Dish dish);
+
 
 
 
@@ -94,13 +156,12 @@ namespace BR.EF
         Task<User> GetUser(string identityId);
         Task<User> AddUser(User user);
         Task<User> UpdateUser(User user);
-        Task<IEnumerable<User>> GetUsers();
+        Task<ICollection<User>> GetUsers();
         Task<bool> DeleteUser(User user);
 
 
         // Waiters
 
-        Task<IEnumerable<Waiter>> GetWaitersByClientId(int clientId);
         Task<IEnumerable<Waiter>> GetWaiters();
         Task<Waiter> GetWaiter(int id);
         Task<Waiter> GetWaiter(string identityId);
@@ -111,15 +172,15 @@ namespace BR.EF
 
         // Reservations
 
+        Task<Reservation> GetReservation(int id);
         Task<Reservation> AddReservation(Reservation reservation);
         Task<Reservation> UpdateReservation(Reservation reservation);
-        Task<Reservation> GetReservation(int id);
-        Task<ICollection<Reservation>> GetReservations(int userId);
         Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId);
         Task<TableReservation> AddTableReservation(TableReservation tableReservation);
         Task DeleteTableReservations(int reservationId);
         Task<ReservationState> GetReservationState(string title);
         Task<CancelReason> GetCancelReason(int id);
+        Task<CancelReason> GetCancelReason(string title);
 
 
         // Tables

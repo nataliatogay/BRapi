@@ -13,5 +13,12 @@ namespace BR.Models
 
         [Required]
         public string Title { get; set; }
+
+        public virtual ICollection<ClientSpecialDiet> ClientSpecialDiets{ get; set; }
+
+        public SpecialDiet()
+        {
+            ClientSpecialDiets = new HashSet<ClientSpecialDiet>();
+        }
     }
 }

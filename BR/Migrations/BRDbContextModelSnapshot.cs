@@ -123,7 +123,7 @@ namespace BR.Migrations
 
                     b.Property<int>("OpenTime");
 
-                    b.Property<int?>("OrganizationId");
+                    b.Property<int>("OrganizationId");
 
                     b.Property<int>("PriceCategory");
 
@@ -253,20 +253,13 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.ClientPhone", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
                     b.Property<int>("ClientId");
+
+                    b.Property<string>("Number");
 
                     b.Property<bool>("IsWhatsApp");
 
-                    b.Property<string>("Number")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
+                    b.HasKey("ClientId", "Number");
 
                     b.ToTable("ClientPhones");
                 });
@@ -296,6 +289,8 @@ namespace BR.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired();
+
+                    b.Property<bool>("IsDone");
 
                     b.Property<string>("OrganizationName")
                         .IsRequired();
@@ -343,6 +338,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("ClientTypes");
                 });
 
@@ -357,6 +355,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Cuisines");
                 });
 
@@ -370,6 +371,9 @@ namespace BR.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("Dishes");
                 });
@@ -427,6 +431,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Features");
                 });
 
@@ -457,6 +464,9 @@ namespace BR.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("GoodFors");
                 });
@@ -506,6 +516,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("MealTypes");
                 });
 
@@ -552,9 +565,7 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("IdentityId");
-
-                    b.Property<string>("IdentityIdS");
+                    b.Property<string>("IdentityId");
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -563,7 +574,7 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdentityIdS");
+                    b.HasIndex("IdentityId");
 
                     b.HasIndex("OrganizationId");
 
@@ -592,6 +603,23 @@ namespace BR.Migrations
                     b.ToTable("PhotoPoints");
                 });
 
+            modelBuilder.Entity("BR.Models.Privilege", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("IdentityRoleId");
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdentityRoleId");
+
+                    b.ToTable("Privileges");
+                });
+
             modelBuilder.Entity("BR.Models.Reservation", b =>
                 {
                     b.Property<int>("Id")
@@ -608,11 +636,17 @@ namespace BR.Migrations
 
                     b.Property<bool>("ChildFree");
 
+                    b.Property<int>("ClientId");
+
                     b.Property<string>("Comments");
 
                     b.Property<int>("Duration");
 
                     b.Property<int>("GuestCount");
+
+                    b.Property<bool>("Invalids");
+
+                    b.Property<bool>("PetsFree");
 
                     b.Property<DateTime>("ReservationDate");
 
@@ -627,6 +661,8 @@ namespace BR.Migrations
                     b.HasIndex("CancelReasonId");
 
                     b.HasIndex("CancelledByIdentityUserId");
+
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("ReservationStateId");
 
@@ -651,18 +687,11 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.SocialLink", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
                     b.Property<int>("ClientId");
 
-                    b.Property<string>("Link")
-                        .IsRequired();
+                    b.Property<string>("Link");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
+                    b.HasKey("ClientId", "Link");
 
                     b.ToTable("SocialLinks");
                 });
@@ -677,6 +706,9 @@ namespace BR.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
 
                     b.ToTable("SpecialDiets");
                 });
@@ -723,6 +755,10 @@ namespace BR.Migrations
 
                     b.Property<DateTime?>("BirthDate");
 
+                    b.Property<DateTime?>("Blocked");
+
+                    b.Property<DateTime?>("Deleted");
+
                     b.Property<string>("FirstName")
                         .IsRequired();
 
@@ -731,8 +767,6 @@ namespace BR.Migrations
                     b.Property<string>("IdentityId");
 
                     b.Property<string>("ImagePath");
-
-                    b.Property<bool>("IsBlocked");
 
                     b.Property<string>("LastName")
                         .IsRequired();
@@ -759,6 +793,19 @@ namespace BR.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserPhones");
+                });
+
+            modelBuilder.Entity("BR.Models.UserPrivileges", b =>
+                {
+                    b.Property<int>("PrivilegeId");
+
+                    b.Property<string>("IdentityId");
+
+                    b.HasKey("PrivilegeId", "IdentityId");
+
+                    b.HasAlternateKey("IdentityId", "PrivilegeId");
+
+                    b.ToTable("UserPrivileges");
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>
@@ -1037,7 +1084,7 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.Dish", "Dish")
-                        .WithMany()
+                        .WithMany("ClientDishes")
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1063,7 +1110,7 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.Feature", "Feature")
-                        .WithMany()
+                        .WithMany("ClientFeatures")
                         .HasForeignKey("FeatureId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1076,7 +1123,7 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.GoodFor", "GoodFor")
-                        .WithMany()
+                        .WithMany("ClientGoodFors")
                         .HasForeignKey("GoodForId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1138,7 +1185,7 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.SpecialDiet", "SpecialDiet")
-                        .WithMany()
+                        .WithMany("ClientSpecialDiets")
                         .HasForeignKey("SpecialDietId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1197,7 +1244,7 @@ namespace BR.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
-                        .HasForeignKey("IdentityIdS");
+                        .HasForeignKey("IdentityId");
 
                     b.HasOne("BR.Models.Organization", "Organization")
                         .WithMany("Owners")
@@ -1211,6 +1258,13 @@ namespace BR.Migrations
                         .WithMany("PhotoPoints")
                         .HasForeignKey("HallId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.Privilege", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", "IdentityRole")
+                        .WithMany()
+                        .HasForeignKey("IdentityRoleId");
                 });
 
             modelBuilder.Entity("BR.Models.Reservation", b =>
@@ -1227,6 +1281,11 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CancelledByIdentityUser")
                         .WithMany()
                         .HasForeignKey("CancelledByIdentityUserId");
+
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("Reservations")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BR.Models.ReservationState", "ReservationState")
                         .WithMany("Reservations")
@@ -1271,6 +1330,19 @@ namespace BR.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
                         .HasForeignKey("IdentityId");
+                });
+
+            modelBuilder.Entity("BR.Models.UserPrivileges", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.Privilege", "Privilege")
+                        .WithMany("UserPrivileges")
+                        .HasForeignKey("PrivilegeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.UserUserPhone", b =>

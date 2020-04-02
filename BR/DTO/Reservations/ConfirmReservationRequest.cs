@@ -12,6 +12,8 @@ namespace BR.DTO.Reservations
         public string Code { get; set; }
         public bool Acceptance { get; set; }
         public bool IsChildFree { get; set; }
+        public bool IsPetsFree { get; set; }
+        public bool Invalids { get; set; }
         public int UserId { get; set; }
         [Required]
         public string StartDateTime { get; set; } // dd/MM/yyyy HH:mm

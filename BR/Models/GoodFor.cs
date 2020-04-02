@@ -13,5 +13,12 @@ namespace BR.Models
         
         [Required]
         public string Title { get; set; }
+
+        public virtual ICollection<ClientGoodFor> ClientGoodFors{ get; set; }
+
+        public GoodFor()
+        {
+            ClientGoodFors= new HashSet<ClientGoodFor>();
+        }
     }
 }

@@ -1,8 +1,9 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO;
+using BR.DTO.Privileges;
 using BR.DTO.Waiters;
 using BR.Models;
 using BR.Services;
@@ -68,7 +69,7 @@ namespace BR.Controllers
             var identityUserClient = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUserClient is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.ClientNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             var password = _waiterService.GeneratePassword();
             string login = null;
@@ -100,6 +101,13 @@ namespace BR.Controllers
             */
 
             return new JsonResult(await _waiterService.AddNewWaiter(newWaiter, identityUserWaiter.Id, identityUserClient.Id));
+        }
+
+
+        [HttpPost("AssignPrivilege")]
+        public async Task<ActionResult<ServerResponse>> AssignPrivilege([FromBody]AssignPrivilegeRequest assignmentRequest)
+        {
+            return new JsonResult(await _waiterService.AssignPrivilege(assignmentRequest));
         }
     }
 }

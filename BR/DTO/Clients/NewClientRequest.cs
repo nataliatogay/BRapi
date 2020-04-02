@@ -8,6 +8,8 @@ namespace BR.DTO.Clients
 {
     public class NewClientRequest
     {
+        public int? OrganizationId { get; set; }
+
         [Required]
         public string RestaurantName { get; set; }
 
@@ -20,16 +22,20 @@ namespace BR.DTO.Clients
         public int OpenTime { get; set; }
 
         public int CloseTime { get; set; }
-
-
+        
         public string Description { get; set; }
-
-        [Required]
+        
         public string MainImage { get; set; }
-
+        
         public int MaxReserveDays { get; set; }
+        
         public int ReserveDurationAvg { get; set; }
+
+        public int? BarReserveDurationAvg { get; set; }
+
         public int ConfirmationDuration { get; set; }
+
+        public int PriceCategory { get; set; }
 
         public ICollection<string> SocialLinks { get; set; }
 
@@ -39,9 +45,15 @@ namespace BR.DTO.Clients
 
         public ICollection<int> CuisineIds { get; set; }
 
+        public ICollection<int> DishIds { get; set; }
+
+        public ICollection<int> GoodForIds { get; set; }
+
+        public ICollection<int> SpecialDietIds { get; set; }
+
+        public ICollection<int> FeatureIds { get; set; }
+
         public ICollection<ClientPhoneInfo> Phones { get; set; }
 
     }
-
-    
 }

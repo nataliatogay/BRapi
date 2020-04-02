@@ -21,13 +21,16 @@ namespace BR.Services
         private readonly IAsyncRepository _repository;
         private readonly IBlobService _blobService;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IReservationService _reservationService;
 
         public UserAccountService(IAsyncRepository repository,
             IAuthenticationService authenticationService,
+            IReservationService reservationService,
             IBlobService blobService)
         {
             _repository = repository;
             _authenticationService = authenticationService;
+            _reservationService = reservationService;
             _blobService = blobService;
         }
 
@@ -42,7 +45,7 @@ namespace BR.Services
             return password.ToString();
         }
 
-        public async Task<UserInfoResponse> GetInfo(string identityId)
+        public async Task<UserInfoForUsersResponse> GetInfo(string identityId)
         {
             var user = await _repository.GetUser(identityId);
             if (user != null)
@@ -55,7 +58,7 @@ namespace BR.Services
         public async Task<ServerResponse<LogInUserResponse>> LogIn(string userName, string identityId, string notificationTag)
         {
             var resp = await _authenticationService.Authentication(userName, notificationTag);
-            if(resp.StatusCode == StatusCode.Ok)
+            if (resp.StatusCode == StatusCode.Ok)
             {
                 User user = await _repository.GetUser(identityId);
                 var res = new LogInUserResponse()
@@ -66,7 +69,7 @@ namespace BR.Services
                 };
                 return new ServerResponse<LogInUserResponse>(res);
             }
-            
+
             return new ServerResponse<LogInUserResponse>(resp.StatusCode, null);
         }
 
@@ -79,20 +82,32 @@ namespace BR.Services
             }
         }
 
-        public async Task<UserInfoResponse> Register(User user)
+        public async Task<ServerResponse<UserInfoForUsersResponse>> Register(NewUserRequest newUserRequest, string identityUserId)
         {
-            user.IsBlocked = false;
-            user.RegistrationDate = DateTime.Now;
-            if (user.ImagePath is null)
+            User user = new User()
             {
-                user.ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png";
-            }
-            var userAdded = await _repository.AddUser(user);
-            if (userAdded != null)
+                IdentityId = identityUserId,
+                FirstName = newUserRequest.FirstName,
+                LastName = newUserRequest.LastName,
+                Gender = newUserRequest.Gender,
+                BirthDate = null,
+                RegistrationDate = DateTime.Now,
+                ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png"
+            };
+            if (newUserRequest.BirthDate != null)
             {
-                return this.UserToUserInfoResponse(userAdded);
+                user.BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             }
-            return null;
+            try
+            {
+
+                var userAdded = await _repository.AddUser(user);
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, this.UserToUserInfoResponse(userAdded));
+            }
+            catch
+            {
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
+            }
         }
 
         public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
@@ -101,29 +116,89 @@ namespace BR.Services
         }
 
 
-        public async Task<bool> UserIsBlocked(string identityId)
+        public async Task<ServerResponse<bool>> UserIsBlocked(string identityId)
         {
             var user = await _repository.GetUser(identityId);
-            if (user != null && user.IsBlocked)
+            if (user is null)
             {
-                return true;
+                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
             }
-            return false;
+            if (user.Blocked is null)
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, false);
+            }
+            else
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, true);
+            }
         }
 
-
-        public async Task<string> UploadImage(string identityId, string imageString)
+        public async Task<ServerResponse<bool>> UserIsDeleted(string identityId)
         {
             var user = await _repository.GetUser(identityId);
-            var path = await _blobService.UploadImage(imageString);
-            user.ImagePath = path;
-            await _repository.UpdateUser(user);
-            return path;
+            if (user is null)
+            {
+                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+            }
+            if (user.Deleted is null)
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, false);
+            }
+            else
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, true);
+            }
         }
 
-        public async Task<UserInfoResponse> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
+        public async Task<ServerResponse<bool>> UserIsRegistered(string identityId)
+        {
+            User user;
+            try
+            {
+                user = await _repository.GetUser(identityId);
+                if (user is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.Ok, false);
+                }
+                else
+                {
+                    return new ServerResponse<bool>(StatusCode.Ok, true);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
+            }
+        }
+
+
+        public async Task<ServerResponse<string>> UploadImage(string identityId, string imageString)
+        {
+            var user = await _repository.GetUser(identityId);
+            if (user is null)
+            {
+                return new ServerResponse<string>(StatusCode.UserNotFound, null);
+            }
+            try
+            {
+                var path = await _blobService.UploadImage(imageString);
+                user.ImagePath = path;
+                await _repository.UpdateUser(user);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.Error, null);
+            }
+        }
+
+        public async Task<ServerResponse<UserInfoForUsersResponse>> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
         {
             var userToUpdate = await _repository.GetUser(identityId);
+            if (userToUpdate is null)
+            {
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.UserNotFound, null);
+            }
             userToUpdate.FirstName = updateUserRequest.FirstName;
             userToUpdate.LastName = updateUserRequest.LastName;
             userToUpdate.Gender = updateUserRequest.Gender;
@@ -138,31 +213,110 @@ namespace BR.Services
             try
             {
                 var user = await _repository.UpdateUser(userToUpdate);
-                if (user is null)
-                {
-                    return null;
-                }
-                return this.UserToUserInfoResponse(user);
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, this.UserToUserInfoResponse(user));
 
             }
             catch
             {
-                return null;
+                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
             }
         }
 
-        public async Task<bool> DeleteUser(string identityId)
+
+        // send notification to clients
+        public async Task<ServerResponse> DeleteUser(string identityId)
         {
             var user = await _repository.GetUser(identityId);
             if (user != null)
             {
-                return await _repository.DeleteUser(user);
+                user.Deleted = DateTime.Now;
+                try
+                {
+                    await _repository.UpdateUser(user);
 
+                    // delete tokens
+                    var tokens = await _repository.GetTokens(user.IdentityId);
+                    if (tokens != null)
+                    {
+                        foreach (var item in tokens)
+                        {
+                            await _repository.RemoveToken(item);
+                        }
+                    }
+
+                    // cancel upcoming reservations
+                    var reservations = user.Reservations;
+                    var cancelReason = await _repository.GetCancelReason("UserDeleted");
+                    var admin = (await _repository.GetAdmins()).FirstOrDefault();
+                    if (cancelReason != null && reservations != null && admin != null)
+                    {
+                        foreach (var item in reservations)
+                        {
+                            if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
+                            {
+                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, admin.IdentityId);
+                            }
+                        }
+                    }
+
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.Error);
+                }
             }
-            return false;
+            return new ServerResponse(StatusCode.UserNotFound);
         }
 
-        private UserInfoResponse UserToUserInfoResponse(User user)
+        public async Task<ServerResponse> RestoreUser(string identityId)
+        {
+            var user = await _repository.GetUser(identityId);
+            if (user is null)
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+            user.Deleted = null;
+            try
+            {
+                await _repository.UpdateUser(user);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+        }
+
+        public async Task<ServerResponse> FinallyDelete(string notificationTag)
+        {
+            AccountToken token;
+            try
+            {
+                token = await _repository.GetTokenByTag(notificationTag);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            if (token != null)
+            {
+                try
+                {
+                    await _repository.RemoveToken(token);
+                    return new ServerResponse(StatusCode.Ok);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.DbConnectionError);
+                }
+            }
+            return new ServerResponse(StatusCode.Error);
+        }
+
+
+
+        private UserInfoForUsersResponse UserToUserInfoResponse(User user)
         {
             if (user is null)
             {
@@ -191,7 +345,7 @@ namespace BR.Services
                         Id = res.Id,
                         Date = res.ReservationDate,
                         ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
-                        ChildFree = res.ChildFree,
+                        //ChildFree = res.ChildFree,
                         ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
                         Floor = res.TableReservations.First().Table.Hall.Floor.Number,
                         HallTitle = res.TableReservations.First().Table.Hall.Title,
@@ -210,7 +364,6 @@ namespace BR.Services
                 Gender = user.Gender,
                 ImagePath = user.ImagePath,
                 Email = user.Identity.Email,
-                Reservations = reservations
 
             };
         }

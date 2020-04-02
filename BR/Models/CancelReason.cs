@@ -22,3 +22,10 @@ namespace BR.Models
         }
     }
 }
+
+// cancelled by:
+//  1. user
+//  2. client
+//  3. admin
+//     - UserDeleted
+//     - ClientDeleted

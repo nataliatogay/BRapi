@@ -1,8 +1,11 @@
 ﻿using BR.DTO;
+using BR.DTO.Privileges;
 using BR.DTO.Waiters;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
+using BR.Utils;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,12 +26,12 @@ namespace BR.Services
 
         public async Task<IEnumerable<Waiter>> GetAllWaiters(string clientIdentityId)
         {
-            var client = _repository.GetClient(clientIdentityId);
-            if(client is null)
+            var client = await _repository.GetClient(clientIdentityId);
+            if (client is null)
             {
                 return null;
             }
-            return await _repository.GetWaitersByClientId(client.Id);
+            return client.Waiters;
         }
         public async Task<Waiter> GetWaiter(int id)
         {
@@ -37,20 +40,20 @@ namespace BR.Services
         public async Task<Waiter> AddNewWaiter(NewWaiterRequest newWaiterRequest, string identityId, string clientIdentityId)
         {
             var client = await _repository.GetClient(clientIdentityId);
-            if(client != null)
+            if (client != null)
             {
                 Waiter waiter = new Waiter()
                 {
                     FirstName = newWaiterRequest.FirstName,
                     LastName = newWaiterRequest.LastName,
-                 //   Gender = newWaiterRequest.Gender,
-                 //   BirthDate = null,
+                    //   Gender = newWaiterRequest.Gender,
+                    //   BirthDate = null,
                     ClientId = client.Id,
                     IdentityId = identityId
                 };
                 if (newWaiterRequest.BirthDate != null)
                 {
-                  //  waiter.BirthDate = DateTime.ParseExact(newWaiterRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    //  waiter.BirthDate = DateTime.ParseExact(newWaiterRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                 }
                 return await _repository.AddWaiter(waiter);
 
@@ -78,6 +81,41 @@ namespace BR.Services
             }
             return await _repository.DeleteWaiter(waiter);
 
+        }
+
+
+        public async Task<ServerResponse> AssignPrivilege(AssignPrivilegeRequest assignmentRequest)
+        {
+            Waiter waiter;
+            try
+            {
+                waiter = await _repository.GetWaiter(assignmentRequest.UserId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            if (waiter is null)
+            {
+                return new ServerResponse(StatusCode.UserNotFound);
+            }
+            try
+            {
+                var res = _repository.AddUserPrivilage(new UserPrivileges()
+                {
+                    IdentityId = waiter.IdentityId,
+                    PrivilegeId = assignmentRequest.PrivilegeId
+                });
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch (DbUpdateException)
+            {
+                return new ServerResponse(StatusCode.Duplicate);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
         }
 
         public string GenerateLogin(string lastName)

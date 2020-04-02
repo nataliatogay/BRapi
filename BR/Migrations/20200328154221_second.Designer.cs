@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    [Migration("20200323124436_change_client")]
-    partial class change_client
+    [Migration("20200328154221_second")]
+    partial class second
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -125,7 +125,7 @@ namespace BR.Migrations
 
                     b.Property<int>("OpenTime");
 
-                    b.Property<int?>("OrganizationId");
+                    b.Property<int>("OrganizationId");
 
                     b.Property<int>("PriceCategory");
 
@@ -359,6 +359,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Cuisines");
                 });
 
@@ -554,9 +557,7 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("IdentityId");
-
-                    b.Property<string>("IdentityIdS");
+                    b.Property<string>("IdentityId");
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -565,7 +566,7 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdentityIdS");
+                    b.HasIndex("IdentityId");
 
                     b.HasIndex("OrganizationId");
 
@@ -615,6 +616,10 @@ namespace BR.Migrations
                     b.Property<int>("Duration");
 
                     b.Property<int>("GuestCount");
+
+                    b.Property<bool>("Invalids");
+
+                    b.Property<bool>("PetsFree");
 
                     b.Property<DateTime>("ReservationDate");
 
@@ -725,6 +730,10 @@ namespace BR.Migrations
 
                     b.Property<DateTime?>("BirthDate");
 
+                    b.Property<DateTime?>("Blocked");
+
+                    b.Property<DateTime?>("Deleted");
+
                     b.Property<string>("FirstName")
                         .IsRequired();
 
@@ -733,8 +742,6 @@ namespace BR.Migrations
                     b.Property<string>("IdentityId");
 
                     b.Property<string>("ImagePath");
-
-                    b.Property<bool>("IsBlocked");
 
                     b.Property<string>("LastName")
                         .IsRequired();
@@ -1199,7 +1206,7 @@ namespace BR.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Identity")
                         .WithMany()
-                        .HasForeignKey("IdentityIdS");
+                        .HasForeignKey("IdentityId");
 
                     b.HasOne("BR.Models.Organization", "Organization")
                         .WithMany("Owners")

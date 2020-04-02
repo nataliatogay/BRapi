@@ -25,7 +25,8 @@ namespace BR.Models
 
         public bool? Gender { get; set; }
 
-        public bool IsBlocked { get; set; }
+        public DateTime? Blocked { get; set; }
+        public DateTime? Deleted { get; set; }
         public DateTime? BirthDate { get; set; }
 
         public int NotificationTime { get; set; } // minutes

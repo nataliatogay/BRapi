@@ -40,12 +40,12 @@ namespace BR.Services
 
         public async Task<ICollection<Reservation>> GetReservations(string identityUserId)
         {
-            var user = _repository.GetUser(identityUserId);
+            var user = await _repository.GetUser(identityUserId);
             if (user is null)
             {
                 return null;
             }
-            return await _repository.GetReservations(user.Id);
+            return user.Reservations;
         }
 
         public async Task<Reservation> GetReservation(int id)
@@ -110,7 +110,12 @@ namespace BR.Services
                 if (tableState != null)
                 {
                     var user = await _repository.GetUser(identityId);
-                    var client = await _repository.GetClientByTableId(tableState.TableIds.First());
+                    var table = await _repository.GetTable(tableState.TableIds.FirstOrDefault());
+                    if (table is null)
+                    {
+                        return new ServerResponse<Reservation>(StatusCode.Error, null);
+                    }
+                    var client = table.Hall.Floor.Client;
                     var resDate = DateTime.ParseExact(tableState.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
 
@@ -129,7 +134,9 @@ namespace BR.Services
                             Comments = newReservationRequest.Comments,
                             ReservationDate = resDate,
                             Duration = tableState.Duration,
-                            ReservationStateId = null
+                            ReservationStateId = null,
+                            PetsFree = newReservationRequest.IsPetsFree,
+                            Invalids = newReservationRequest.Invalids
                         };
                         try
                         {
@@ -159,7 +166,7 @@ namespace BR.Services
 
                         if (client != null)
                         {
-                            var waiters = await _repository.GetWaitersByClientId(client.Id);
+                            var waiters = client.Waiters;
                             if (waiters != null)
                             {
                                 List<string> tags = new List<string>();
@@ -229,20 +236,25 @@ namespace BR.Services
                     }
                     catch { }
                 }
-                List<string> userTags = new List<string>();
-                var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
-                if (accountTokens != null)
+                var user = await _repository.GetUser(confirmRequest.UserId);
+                if (user != null)
                 {
-                    foreach (var token in accountTokens)
+                    List<string> userTags = new List<string>();
+                    var accountTokens = await _repository.GetTokens(user.IdentityId);
+                    if (accountTokens != null)
                     {
-                        userTags.Add(token.NotificationTag);
+                        foreach (var token in accountTokens)
+                        {
+                            userTags.Add(token.NotificationTag);
+                        }
+                        try
+                        {
+                            _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", userTags.ToArray());
+                        }
+                        catch { }
                     }
-                    try
-                    {
-                        _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", userTags.ToArray());
-                    }
-                    catch { }
                 }
+
             }
 
             _cacheMemory.Remove(key);
@@ -254,7 +266,7 @@ namespace BR.Services
 
             var key = Guid.NewGuid().ToString();
             var closeToday = DateTime.Today.AddMinutes(client.CloseTime);
-            var waiters = await _repository.GetWaitersByClientId(client.Id);
+            var waiters = client.Waiters;
             DateTime timerTime;
             // а если до конца рабочего дня осталось меньше 15 мин?
             if (closeToday > DateTime.Now)
@@ -275,6 +287,8 @@ namespace BR.Services
                 StartDateTime = tableStateRequest.StartDateTime,
                 TableIds = tableStateRequest.TableIds,
                 IsChildFree = reservationRequest.IsChildFree,
+                IsPetsFree = reservationRequest.IsPetsFree,
+                Invalids = reservationRequest.Invalids,
                 UserId = userId,
                 Comments = reservationRequest.Comments,
                 GuestCount = reservationRequest.GuestCount
@@ -325,16 +339,22 @@ namespace BR.Services
             {
                 return new ServerResponse(StatusCode.Error);
             }
-            List<string> userTags = new List<string>();
-            var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
-            if (accountTokens != null)
-            {
-                foreach (var token in accountTokens)
-                {
-                    userTags.Add(token.NotificationTag);
-                }
+            var user = await _repository.GetUser(confirmRequest.UserId);
 
+            List<string> userTags = new List<string>();
+            if (user != null)
+            {
+                var accountTokens = await _repository.GetTokens(user.IdentityId);
+                if (accountTokens != null)
+                {
+                    foreach (var token in accountTokens)
+                    {
+                        userTags.Add(token.NotificationTag);
+                    }
+
+                }
             }
+
             var resDate = DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
             if (confirmRequest.Acceptance)
@@ -352,7 +372,10 @@ namespace BR.Services
                     GuestCount = confirmRequest.GuestCount,
                     ReservationDate = resDate,
                     ReservationStateId = null,
-                    UserId = confirmRequest.UserId
+                    UserId = confirmRequest.UserId,
+                    PetsFree = confirmRequest.IsPetsFree,
+                    Invalids = confirmRequest.Invalids
+
                 };
                 try
                 {
@@ -420,6 +443,8 @@ namespace BR.Services
                 ReservationStateId = null,
                 AdditionalInfo = reservationRequest.PhoneNumber + " " + reservationRequest.UserName,
                 Comments = reservationRequest.Comments,
+                PetsFree = reservationRequest.IsPetsFree,
+                Invalids = reservationRequest.Invalids
             };
             try
             {
@@ -486,6 +511,32 @@ namespace BR.Services
             try
             {
                 await _repository.UpdateReservation(reservation);
+                List<string> notificationTags = new List<string>();
+                if (cancelReason.IdentityRole.NormalizedName.Equals("USER"))
+                {
+                    var waiters = reservation.Client.Waiters;
+                    foreach (var item in waiters)
+                    {
+                        // найти старшего официанта
+                    }
+                }
+                else if (cancelReason.IdentityRole.NormalizedName.Equals("CLIENT"))
+                {
+                    var user = reservation.User;
+                    if (user != null)
+                    {
+                        var tokens = await _repository.GetTokens(user.IdentityId);
+                        foreach (var item in tokens)
+                        {
+                            notificationTags.Add(item.NotificationTag);
+                        }
+                    }
+                }
+
+                _notificationService.SendNotification("New reservation", MobilePlatform.gcm, "string", notificationTags.ToArray());
+
+
+
                 return new ServerResponse(StatusCode.Ok);
             }
             catch
@@ -855,10 +906,14 @@ namespace BR.Services
                 if (barState != null)
                 {
                     var user = await _repository.GetUser(identityId);
-                    var client = await _repository.GetClientByBarId(barState.BarId);
                     var barTable = await _repository.GetBarTable(barState.BarId);
-                    var resDate = DateTime.ParseExact(barState.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+                    if (barState is null)
+                    {
+                        return new ServerResponse<Reservation>(StatusCode.Error, null);
+                    }
 
+                    var client = barTable.Hall.Floor.Client;
+                    var resDate = DateTime.ParseExact(barState.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
 
                     if (client.BarReserveDurationAvg >= barState.Duration)
@@ -878,7 +933,9 @@ namespace BR.Services
                             ReservationDate = resDate,
                             Duration = barState.Duration,
                             ReservationStateId = null,
-                            BarTableId = barState.BarId
+                            BarTableId = barState.BarId,
+                            PetsFree = true,
+                            Invalids = false
                         };
                         try
                         {
@@ -892,7 +949,7 @@ namespace BR.Services
 
                         if (client != null)
                         {
-                            var waiters = await _repository.GetWaitersByClientId(client.Id);
+                            var waiters = client.Waiters;
                             if (waiters != null)
                             {
                                 List<string> tags = new List<string>();
@@ -971,20 +1028,25 @@ namespace BR.Services
                     }
                     catch { }
                 }
-                List<string> userTags = new List<string>();
-                var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
-                if (accountTokens != null)
+                var user = await _repository.GetUser(confirmRequest.UserId);
+                if (user != null)
                 {
-                    foreach (var token in accountTokens)
+                    List<string> userTags = new List<string>();
+                    var accountTokens = await _repository.GetTokens(user.IdentityId);
+                    if (accountTokens != null)
                     {
-                        userTags.Add(token.NotificationTag);
+                        foreach (var token in accountTokens)
+                        {
+                            userTags.Add(token.NotificationTag);
+                        }
+                        try
+                        {
+                            _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", userTags.ToArray());
+                        }
+                        catch { }
                     }
-                    try
-                    {
-                        _notificationService.SendNotification("Expired", MobilePlatform.gcm, "string", userTags.ToArray());
-                    }
-                    catch { }
                 }
+
             }
 
 
@@ -1068,16 +1130,21 @@ namespace BR.Services
             {
                 return new ServerResponse(StatusCode.Error);
             }
+            var user = await _repository.GetUser(confirmRequest.UserId);
             List<string> userTags = new List<string>();
-            var accountTokens = await _repository.GetTokens(confirmRequest.UserId);
-            if (accountTokens != null)
+            if (user != null)
             {
-                foreach (var token in accountTokens)
+                var accountTokens = await _repository.GetTokens(user.IdentityId);
+                if (accountTokens != null)
                 {
-                    userTags.Add(token.NotificationTag);
-                }
+                    foreach (var token in accountTokens)
+                    {
+                        userTags.Add(token.NotificationTag);
+                    }
 
+                }
             }
+
             var resDate = DateTime.ParseExact(confirmRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
             if (confirmRequest.Acceptance)
@@ -1103,7 +1170,9 @@ namespace BR.Services
                     ReservationDate = resDate,
                     ReservationStateId = null,
                     UserId = confirmRequest.UserId,
-                    BarTableId = confirmRequest.BarId
+                    BarTableId = confirmRequest.BarId,
+                    PetsFree = true,
+                    Invalids = false
                 };
                 try
                 {
@@ -1157,12 +1226,15 @@ namespace BR.Services
             {
                 BarTableId = reservationRequest.BarId,
                 ChildFree = true,
+                PetsFree = true,
+                Invalids = false,
                 Duration = reservationRequest.Duration,
                 GuestCount = reservationRequest.GuestCount,
                 ReservationDate = resDate,
                 ReservationStateId = null,
                 AdditionalInfo = reservationRequest.PhoneNumber + " " + reservationRequest.UserName,
                 Comments = reservationRequest.Comments
+
             };
             try
             {

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BR.DTO;
 using BR.DTO.Account;
+using BR.DTO.Admin;
 using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
@@ -46,7 +47,7 @@ namespace BR.Controllers
             _userManager = userManager;
             _emailService = emailService;
             _cache = cache;
-            _roleManager = roleManager;_roleManager = roleManager;
+            _roleManager = roleManager; _roleManager = roleManager;
         }
 
 
@@ -64,21 +65,35 @@ namespace BR.Controllers
             IdentityUser identityUser = await _userManager.FindByNameAsync(model.Email);
             if (identityUser != null)
             {
+                var roles = await _userManager.GetRolesAsync(identityUser);
+                if (!roles.Contains("Admin"))
+                {
+                    return new JsonResult(Response(Utils.StatusCode.InvalidRole));
+                }
                 bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
                 bool emailConfirm = await _userManager.IsEmailConfirmedAsync(identityUser);
                 if (!emailConfirm)
                 {
-                    return new JsonResult("Email is not confirmed");
+                    return new JsonResult(Response(Utils.StatusCode.EmailNotConfirmed));
                 }
                 if (checkPassword)
                 {
+
                     var resp = await _adminAccountService.LogIn(identityUser.UserName, model.NotificationTag);
-                    
-                        return new JsonResult(Response(resp));
+
+                    return new JsonResult(resp);
+                }
+                else
+                {
+                    return new JsonResult(Response(Utils.StatusCode.IncorrectLoginOrPassword));
                 }
             }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
 
-            return new JsonResult(null);
+            }
+
         }
 
         [HttpPost("Token")] //api/account/token
@@ -89,23 +104,18 @@ namespace BR.Controllers
 
         [Authorize]
         [HttpGet("Info")]
-        public async Task<IActionResult> GetInfo()
+        public async Task<ActionResult<ServerResponse<AdminInfoResponse>>> GetInfo()
         { // claim based policy               
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser == null)
+            if (identityUser is null)
             {
-                return new JsonResult(null);
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
-            Admin adminAccount = await _adminAccountService.GetAdmin(identityUser.Id);
-            if (adminAccount is null)
-            {
-                return new JsonResult(null);
-            }
-            return new JsonResult(adminAccount);
+            return new JsonResult(await _adminAccountService.GetAdminInfo(identityUser.Id));
         }
 
-        
+
 
 
         //[HttpPost("LogOut")]
@@ -118,7 +128,7 @@ namespace BR.Controllers
         [HttpPost("AddRole")]
         public async Task<IActionResult> AddRole([FromBody]string role)
         {
-            var res =    await _roleManager.CreateAsync(new IdentityRole(role));
+            var res = await _roleManager.CreateAsync(new IdentityRole(role));
             return new JsonResult(res);
         }
 
@@ -377,7 +387,7 @@ namespace BR.Controllers
                 await _emailService.SendAsync(email, "Password reset", msgBody);
                 return new JsonResult(Response(Utils.StatusCode.Ok));
             }
-            catch (Exception ex)
+            catch
             {
                 return new JsonResult(Response(Utils.StatusCode.Error));
 

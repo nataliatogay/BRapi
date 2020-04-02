@@ -16,7 +16,7 @@ namespace BR.Models
         public float Lat { get; set; }
 
         public float Long { get; set; }
-        
+
         public int OpenTime { get; set; } //  the number of minutes past midnight
 
         public int CloseTime { get; set; } //  the number of minutes past midnight
@@ -24,9 +24,9 @@ namespace BR.Models
         public int PriceCategory { get; set; }
 
         public int MaxReserveDays { get; set; }
-        
+
         public int ReserveDurationAvg { get; set; } // in mins
-        
+
         public int? BarReserveDurationAvg { get; set; } // in mins
 
         public int ConfirmationDuration { get; set; } // in mins
@@ -57,11 +57,11 @@ namespace BR.Models
         public virtual ICollection<ClientPhone> ClientPhones { get; set; }
 
         public virtual ICollection<Floor> Floors { get; set; }
-        
+
         public virtual ICollection<ClientMealType> ClientMealTypes { get; set; }
-        
+
         public virtual ICollection<ClientClientType> ClientClientTypes { get; set; }
-        
+
         public virtual ICollection<ClientCuisine> ClientCuisines { get; set; }
 
         public virtual ICollection<ClientSpecialDiet> ClientSpecialDiets { get; set; }
@@ -73,16 +73,18 @@ namespace BR.Models
         public virtual ICollection<ClientDish> ClientDishes { get; set; }
 
         public virtual ICollection<News> News { get; set; }
-        
+
         public virtual ICollection<Waiter> Waiters { get; set; }
-        
+
         public virtual ICollection<Event> Events { get; set; }
-        
+
         public virtual ICollection<ClientImage> ClientImages { get; set; }
-        
-        public virtual ICollection<ClientFavourite> ClientFavourites{ get; set; }
-        
+
+        public virtual ICollection<ClientFavourite> ClientFavourites { get; set; }
+
         public virtual ICollection<ClientRating> ClientRatings { get; set; }
+
+        public virtual ICollection<Reservation> Reservations { get; set; }
 
 
 
@@ -104,6 +106,7 @@ namespace BR.Models
             ClientDishes = new HashSet<ClientDish>();
             ClientGoodFors = new HashSet<ClientGoodFor>();
             ClientFeatures = new HashSet<ClientFeature>();
+            Reservations = new HashSet<Reservation>();
         }
     }
 }
