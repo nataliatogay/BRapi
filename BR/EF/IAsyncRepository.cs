@@ -79,6 +79,8 @@ namespace BR.EF
         // Requests
 
         Task<ICollection<ClientRequest>> GetClientRequests();
+        Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip);
+        Task<ICollection<ClientRequest>> GetUndoneClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task UpdateClientRequest(ClientRequest clientRequest);
         Task AddClientRequest(ClientRequest clientRequest);
@@ -183,6 +185,14 @@ namespace BR.EF
         Task<CancelReason> GetCancelReason(string title);
 
 
+        // Visitors
+
+        Task<Visitor> AddVisitor(Visitor visitor);
+        Task<Visitor> GetVisitor(int id);
+        Task<Visitor> UpdateVisitor(Visitor visitor);
+
+
+
         // Tables
 
         Task<Table> GetTable(int id);
@@ -219,6 +229,10 @@ namespace BR.EF
         Task<Event> GetEvent(int id);
         Task<Event> AddEvent(Event clientEvent);
         Task<Event> UpdateEvent(Event clientEvent);
+
+        Task<EventMark> GetEventMark(int eventId, int userId);
+        Task<EventMark> AddEventMark(EventMark eventMark);
+        Task RemoveEventMark(EventMark eventMark);
 
     }
 }

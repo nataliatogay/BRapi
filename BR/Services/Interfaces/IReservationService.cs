@@ -42,8 +42,12 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> AddBarConfirmedReservation(ConfirmBarReservationRequest confirmRequest);
 
-        Task<ServerResponse> AddBarReservationByPhone(NewBarReservationByPhoneRequest reservationRequest, string waiterIdentityId);
+        Task<ServerResponse> AddBarReservationByPhone(NewBarReservationByPhoneRequest reservationRequest);
 
         Task<ICollection<BarCurrentStateCacheData>> GetBarTablesStates(BarStatesRequest getStateRequest);
+
+        Task<ServerResponse> AddNewVisitor(NewVisitRequest visitRequest, string addedByIdentityId);
+
+        Task<ServerResponse> CompleteVisit(int visitId);
     }
 }

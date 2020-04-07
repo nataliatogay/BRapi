@@ -32,18 +32,21 @@ namespace BR.Controllers
     public class AdminAccountController : ResponseController
     {
         private readonly IAdminAccountService _adminAccountService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IMemoryCache _cache;
 
         public AdminAccountController(IAdminAccountService adminAccountService,
+            IAuthenticationService authenticationService,
             UserManager<IdentityUser> userManager,
             IEmailService emailService,
             RoleManager<IdentityRole> roleManager,
             IMemoryCache cache)
         {
             _adminAccountService = adminAccountService;
+            _authenticationService = authenticationService;
             _userManager = userManager;
             _emailService = emailService;
             _cache = cache;
@@ -291,17 +294,6 @@ namespace BR.Controllers
         }
 
 
-        /*
-         * class Response {
-         *    int statusCode;
-         *    string message;
-         *    string data;
-         * }
-         * 
-         * 
-         */
-
-
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
@@ -358,58 +350,118 @@ namespace BR.Controllers
         }
 
 
+        //[HttpPost("ForgotPassword1")]
+        //[AllowAnonymous]
+        //public async Task<ActionResult<ServerResponse>> ForgotPassword1([FromBody]string email)
+        //{
+        //    var body = new StreamReader(Request.Body);
+        //    //The modelbinder has already read the stream and need to reset the stream index
+        //    body.BaseStream.Seek(0, SeekOrigin.Begin);
+        //    var requestBody = body.ReadToEnd();
+
+        //    //string email = "ui";
+        //    var user = await _userManager.FindByNameAsync(email);
+
+        //    if (user == null)
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+        //    }
+
+        //    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //    var callbackUrl = Url.Action("ResetPassword",
+        //        "ClientAccount",
+        //        new { userId = user.Id, code = code },
+        //        protocol: HttpContext.Request.Scheme);
+        //    try
+        //    {
+        //        string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+        //        await _emailService.SendAsync(email, "Password reset", msgBody);
+        //        return new JsonResult(Response(Utils.StatusCode.Ok));
+        //    }
+        //    catch
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.Error));
+
+        //    }
+        //}
+
+
+
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
         public async Task<ActionResult<ServerResponse>> ForgotPassword([FromBody]string email)
         {
-            var body = new StreamReader(Request.Body);
-            //The modelbinder has already read the stream and need to reset the stream index
-            body.BaseStream.Seek(0, SeekOrigin.Begin);
-            var requestBody = body.ReadToEnd();
 
-            //string email = "ui";
-            var user = await _userManager.FindByNameAsync(email);
-
-            if (user == null)
+            if (!_cache.TryGetValue(email, out _))
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                var user = await _userManager.FindByNameAsync(email);
+                if (user == null)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                }
+                //var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var code = _authenticationService.GenerateCode();
+                _cache.Set(email, code, TimeSpan.FromMinutes(5));
+
+                try
+                {
+                    string msgBody = $"Code: {code}";
+
+                    await _emailService.SendAsync(email, "Password reset", msgBody);
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
+                }
+                catch
+                {
+                    _cache.Remove(email);
+                    return new JsonResult(Response(Utils.StatusCode.SendingMailError));
+                }
+
             }
-
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.Action("ResetPassword",
-                "ClientAccount",
-                new { userId = user.Id, code = code },
-                protocol: HttpContext.Request.Scheme);
-            try
+            else
             {
-                string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
-                await _emailService.SendAsync(email, "Password reset", msgBody);
-                return new JsonResult(Response(Utils.StatusCode.Ok));
-            }
-            catch
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-
+                return new JsonResult(Response(Utils.StatusCode.CodeHasAlreadyBeenSent));
             }
         }
+
 
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
         //   [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
+        public async Task<ActionResult<ServerResponse>> ResetPassword(ResetPasswordRequest resetRequest)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
-            if (user == null)
+
+            string code;
+            _cache.TryGetValue(resetRequest.Email, out code);
+            if (code != null)
             {
-                return new JsonResult("Error");
+                _cache.Remove(resetRequest.Email);
+
+                if (resetRequest.Code.Equals(code)) {
+                    var user = await _userManager.FindByNameAsync(resetRequest.Email);
+                    if (user == null)
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                    }
+                    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var result = await _userManager.ResetPasswordAsync(user, resetToken, resetRequest.Password);
+                    if (result.Succeeded)
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
+                    }
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                else
+                {
+                    return new JsonResult(Response(Utils.StatusCode.IncorrectVerificationCode));
+                }
             }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
+            else
             {
-                return Ok();
+                return new JsonResult(Response(Utils.StatusCode.Expired));
             }
-            return new JsonResult("Error");
+
+
         }
     }
 }

@@ -6,6 +6,7 @@ using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
 using BR.Utils;
+using BR.Utils.Notification;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -22,27 +23,21 @@ namespace BR.Services
         private readonly IBlobService _blobService;
         private readonly IAuthenticationService _authenticationService;
         private readonly IReservationService _reservationService;
+        private readonly INotificationService _notificationService;
+
 
         public UserAccountService(IAsyncRepository repository,
             IAuthenticationService authenticationService,
             IReservationService reservationService,
+            INotificationService notificationService,
             IBlobService blobService)
         {
             _repository = repository;
             _authenticationService = authenticationService;
             _reservationService = reservationService;
             _blobService = blobService;
-        }
+            _notificationService = notificationService;
 
-        public string GenerateCode()
-        {
-            Random random = new Random();
-            StringBuilder password = new StringBuilder();
-            for (int i = 0; i < 6; ++i)
-            {
-                password.Append(random.Next(0, 10).ToString());
-            }
-            return password.ToString();
         }
 
         public async Task<UserInfoForUsersResponse> GetInfo(string identityId)
@@ -90,14 +85,11 @@ namespace BR.Services
                 FirstName = newUserRequest.FirstName,
                 LastName = newUserRequest.LastName,
                 Gender = newUserRequest.Gender,
-                BirthDate = null,
+                BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture),
                 RegistrationDate = DateTime.Now,
                 ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png"
             };
-            if (newUserRequest.BirthDate != null)
-            {
-                user.BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-            }
+
             try
             {
 
@@ -202,14 +194,8 @@ namespace BR.Services
             userToUpdate.FirstName = updateUserRequest.FirstName;
             userToUpdate.LastName = updateUserRequest.LastName;
             userToUpdate.Gender = updateUserRequest.Gender;
-            if (updateUserRequest.BirthDate != null)
-            {
-                userToUpdate.BirthDate = DateTime.ParseExact(updateUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                userToUpdate.BirthDate = null;
-            }
+            userToUpdate.BirthDate = DateTime.ParseExact(updateUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+
             try
             {
                 var user = await _repository.UpdateUser(userToUpdate);
@@ -247,14 +233,16 @@ namespace BR.Services
                     // cancel upcoming reservations
                     var reservations = user.Reservations;
                     var cancelReason = await _repository.GetCancelReason("UserDeleted");
-                    var admin = (await _repository.GetAdmins()).FirstOrDefault();
-                    if (cancelReason != null && reservations != null && admin != null)
+
+                    // if closes admin
+                    //var admin = (await _repository.GetAdmins()).FirstOrDefault();
+                    if (cancelReason != null && reservations != null)
                     {
                         foreach (var item in reservations)
                         {
                             if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
                             {
-                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, admin.IdentityId);
+                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
                             }
                         }
                     }
@@ -313,7 +301,7 @@ namespace BR.Services
             }
             return new ServerResponse(StatusCode.Error);
         }
-
+        
 
 
         private UserInfoForUsersResponse UserToUserInfoResponse(User user)

@@ -13,5 +13,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
 
         string GeneratePassword();
+
+        string GenerateCode();
     }
 }

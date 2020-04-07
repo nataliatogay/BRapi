@@ -58,7 +58,7 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.SetPendingTableState(stateRequest));
         }
 
-        [HttpPost("barpending")]
+        [HttpPost("BarPending")]
         public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetBarPendingState(BarStatesRequest stateRequest)
         {
             return new JsonResult(await _reservationService.SetBarPendingTableState(stateRequest));
@@ -66,7 +66,7 @@ namespace BR.Controllers
 
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<int>>> Post([FromBody]NewReservationRequest newReservation)
+        public async Task<ActionResult<ServerResponse<int>>> NewReservation([FromBody]NewReservationRequest newReservation)
         {
             // add notification to waiters
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -88,7 +88,7 @@ namespace BR.Controllers
 
 
         [HttpPost("bar")]
-        public async Task<ActionResult<ServerResponse<int>>> NewBarReservation([FromBody]NewReservationRequest newReservation)
+        public async Task<ActionResult<ServerResponse<int>>> NewBarReservation([FromBody]NewBarReservationRequest newBarReservation)
         {
             // add notification to waiters
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -97,7 +97,7 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
-            var result = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
+            var result = await _reservationService.AddNewBarReservation(newBarReservation, identityUser.Id);
             if (result.Data is null)
             {
                 return new JsonResult(Response(result.StatusCode));
@@ -117,11 +117,26 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.AddConfirmedReservation(confirmRequest));
         }
 
+
+        [HttpPost("BarConfirm")]
+        public async Task<ActionResult<ServerResponse>> BarConfirmReservation([FromBody]ConfirmBarReservationRequest confirmRequest)
+        {
+            return new JsonResult(await _reservationService.AddBarConfirmedReservation(confirmRequest));
+        }
+
         [HttpGet("TableStates")]
         public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableStatesRequest tableStatesRequests)
         {
             return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
         }
+
+
+        [HttpGet("BarTableStates")]
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetBarTableStates(BarStatesRequest barStatesRequests)
+        {
+            return new JsonResult(await _reservationService.GetBarTablesStates(barStatesRequests));
+        }
+
 
         [HttpPost("ByPhone")]
         public async Task<ActionResult<ServerResponse>> NewReservationByPhone(NewReservationByPhoneRequest reservationRequest)
@@ -133,6 +148,19 @@ namespace BR.Controllers
             }
 
             return new JsonResult(await _reservationService.AddReservationByPhone(reservationRequest, identityUser.Id));
+        }
+
+
+        [HttpPost("BarByPhone")]
+        public async Task<ActionResult<ServerResponse>> NewBarReservationByPhone(NewBarReservationByPhoneRequest reservationRequest)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _reservationService.AddBarReservationByPhone(reservationRequest));
         }
 
 
@@ -165,7 +193,7 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _reservationService.CancelReservation(cancelRequest.ReservationId, cancelRequest.CancelReasonId, identityUser.Id));
-                
+
         }
 
         [HttpPut("ChangeTable")]
@@ -179,6 +207,29 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.Error));
             }
+        }
+
+
+
+        // by client, head waiter
+        [HttpPost("Visitor")]
+        public async Task<ActionResult<ServerResponse>> NewVisitor([FromBody]NewVisitRequest visitRequest)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _reservationService.AddNewVisitor(visitRequest, identityUser.Id));
+        }
+
+
+        [HttpPost("CompleteVisit")]
+        public async Task<ActionResult<ServerResponse>> CompleteVisit([FromBody]int visitId)
+        {
+
+            return new JsonResult(await _reservationService.CompleteVisit(visitId));
         }
     }
 }

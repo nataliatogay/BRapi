@@ -11,12 +11,16 @@ namespace BR.Services.Interfaces
 {
     public interface IClientRequestService
     {
-        Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests();
-        Task<IEnumerable<RequestInfoResponse>> GetNewClientRequests();
-        Task<RequestInfoResponse> GetClientRequest(int id);
-        Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest);
-        Task<int> NewClientRequestCount();
-        
+        Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests();
 
+        Task<ServerResponse<ICollection<RequestInfoResponse>>> GetAllClientRequests(int take, int skip);
+
+        
+        Task<ServerResponse<RequestInfoResponse>> GetClientRequest(int id);
+        
+        Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest);
+        
+        Task<ServerResponse<int>> UndoneClientRequestCount();
+        
     }
 }

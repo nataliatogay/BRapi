@@ -120,5 +120,16 @@ namespace BR.Services
             }
             return password.ToString();
         }
+
+        public string GenerateCode()
+        {
+            Random random = new Random();
+            StringBuilder password = new StringBuilder();
+            for (int i = 0; i < 6; ++i)
+            {
+                password.Append(random.Next(0, 10).ToString());
+            }
+            return password.ToString();
+        }
     }
 }

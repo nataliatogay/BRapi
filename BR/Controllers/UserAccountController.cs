@@ -31,6 +31,7 @@ namespace BR.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserAccountService _userAccountService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IEmailService _emailService;
         private readonly ISMSConfiguration _smsConfiguration;
         private readonly IMemoryCache _cache;
@@ -39,6 +40,7 @@ namespace BR.Controllers
         public UserAccountController(UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IUserAccountService userAccountService,
+            IAuthenticationService authenticationService,
             IEmailService emailService,
             ISMSConfiguration smsConfiguration,
             IMemoryCache cache)
@@ -46,6 +48,7 @@ namespace BR.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
             _userAccountService = userAccountService;
+            _authenticationService = authenticationService;
             _emailService = emailService;
             _smsConfiguration = smsConfiguration;
             _cache = cache;
@@ -58,7 +61,7 @@ namespace BR.Controllers
         {
             if (!_cache.TryGetValue(phoneNumber, out _))
             {
-                string code = _userAccountService.GenerateCode();
+                string code = _authenticationService.GenerateCode();
                 _cache.Set(phoneNumber, code, TimeSpan.FromMinutes(3));
 
                 try
@@ -130,6 +133,7 @@ namespace BR.Controllers
                     }
                     else
                     {
+
                         var blockedRes = await _userAccountService.UserIsBlocked(identityUser.Id);
                         if (blockedRes.StatusCode == Utils.StatusCode.Ok && blockedRes.Data)
                         {
@@ -249,29 +253,31 @@ namespace BR.Controllers
                             return new JsonResult(Response(userResponse.StatusCode));
                         }
 
-                        if (newUserRequest.Email != null)
-                        {
-                            _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
+                        //if (newUserRequest.Email != null)
+                        //{
+                        //    _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
 
 
-                            var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                            var callbackUrl = Url.Action(
-                                        "ConfirmEmail",
-                                        "UserAccount",
-                                        new { userId = identityUser.Id, code = emailConfirmationCode },
-                                        protocol: HttpContext.Request.Scheme);
+                        //    var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+                        //    var callbackUrl = Url.Action(
+                        //                "ConfirmEmail",
+                        //                "UserAccount",
+                        //                new { userId = identityUser.Id, code = emailConfirmationCode },
+                        //                protocol: HttpContext.Request.Scheme);
 
-                            try
-                            {
-                                string msgBody = $"<a href='{callbackUrl}'>link</a>";
-                                await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
-                            }
-                            catch
-                            {
-                                _cache.Remove(identityUser.Id);
-                                return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
-                            }
-                        }
+                        //    try
+                        //    {
+                        //        string msgBody = $"<a href='{callbackUrl}'>link</a>";
+                        //        await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
+                        //    }
+                        //    catch
+                        //    {
+                        //        _cache.Remove(identityUser.Id);
+                        //        return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
+                        //    }
+                        //}
+                        
+                        
                         return new JsonResult(Response(userResponse));
 
                     }
@@ -364,6 +370,7 @@ namespace BR.Controllers
                         if (res.Succeeded)
                         {
                             _cache.Remove(identityUser.Id);
+                            
                             return new JsonResult(Response(Utils.StatusCode.Ok));
                         }
                     }

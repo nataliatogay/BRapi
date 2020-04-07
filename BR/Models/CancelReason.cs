@@ -25,7 +25,12 @@ namespace BR.Models
 
 // cancelled by:
 //  1. user
+//      - UserDeleted
+//      - UserBlocked
+
 //  2. client
+//      - ClientDeleted
+//      - ClientBlocked
+
 //  3. admin
-//     - UserDeleted
-//     - ClientDeleted
+//     

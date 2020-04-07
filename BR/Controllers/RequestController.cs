@@ -30,28 +30,24 @@ namespace BR.Controllers
             return new JsonResult(await _clientRequestService.AddNewClientRequest(newClientRequest));
         }
 
-        [HttpGet("new")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> GetNew()
-        {
-            return new JsonResult(Response((await _clientRequestService.GetNewClientRequests()).ToList()));
-        }
+        
 
         [HttpGet("")]
         public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> Get()
         {
-            return new JsonResult(Response((await _clientRequestService.GetAllClientRequests()).ToList()));
+            return new JsonResult(await _clientRequestService.GetAllClientRequests());
         }
 
-        [HttpGet("count")]
-        public async Task<ActionResult<ServerResponse<int>>> GetCount()
+        [HttpGet("UndoneCount")]
+        public async Task<ActionResult<ServerResponse<int>>> GetUndoneCount()
         {
-            return new JsonResult(Response(await _clientRequestService.NewClientRequestCount()));
+            return new JsonResult(await _clientRequestService.UndoneClientRequestCount());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<ClientRequest>>> Get(int id)
         {
-            return new JsonResult(Response(await _clientRequestService.GetClientRequest(id)));
+            return new JsonResult(await _clientRequestService.GetClientRequest(id));
         }
 
         

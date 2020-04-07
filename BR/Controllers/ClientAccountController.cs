@@ -22,16 +22,19 @@ namespace BR.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IClientAccountService _clientAccountService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IEmailService _emailService;
         private readonly IMemoryCache _cache;
 
         public ClientAccountController(UserManager<IdentityUser> userManager,
             IClientAccountService clientAccountService,
+            IAuthenticationService authenticationService,
             IEmailService emailService,
             IMemoryCache cache)
         {
             _userManager = userManager;
             _clientAccountService = clientAccountService;
+            _authenticationService = authenticationService;
             _emailService = emailService;
             _cache = cache;
         }
@@ -245,100 +248,84 @@ namespace BR.Controllers
             return new JsonResult("Error");
         }
 
+
+
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
-        //  [ValidateAntiForgeryToken] -> BadRequest
         public async Task<ActionResult<ServerResponse>> ForgotPassword([FromBody]string email)
         {
-            var user = await _userManager.FindByNameAsync(email);
-            if (user == null)
+
+            if (!_cache.TryGetValue(email, out _))
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-
-            var blockedRes = await _clientAccountService.ClientIsBlocked(user.Id);
-            if (blockedRes.StatusCode == Utils.StatusCode.Ok)
-            {
-                if (!blockedRes.Data)
+                var user = await _userManager.FindByNameAsync(email);
+                if (user == null)
                 {
-                    var deletedRes = await _clientAccountService.ClientIsDeleted(user.Id);
-                    if (deletedRes.StatusCode == Utils.StatusCode.Ok)
-                    {
-                        if (!deletedRes.Data)
-                        {
-                            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                            var callbackUrl = Url.Action("ResetPassword",
-                                "ClientAccount",
-                                new { userId = user.Id, code = code },
-                                protocol: HttpContext.Request.Scheme);
-                            try
-                            {
-                                string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
-                                await _emailService.SendAsync(email, "Password reset", msgBody);
-                                return new JsonResult(Response(Utils.StatusCode.Ok));
-                            }
-                            catch 
-                            {
-                                return new JsonResult(Response(Utils.StatusCode.Error));
-                            }
-                        }
-                        else
-                        {
-                            return new JsonResult(Response(Utils.StatusCode.UserDeleted));
-                        }
-                    }
-                    else
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-                    }
-
-
-                    
+                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
-                else
+
+                var code = _authenticationService.GenerateCode();
+                _cache.Set(email, code, TimeSpan.FromMinutes(5));
+
+                try
                 {
-                    return new JsonResult(Response(Utils.StatusCode.UserBlocked));
+                    string msgBody = $"Code: {code}";
+
+                    await _emailService.SendAsync(email, "Password reset", msgBody);
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
+                catch
+                {
+                    _cache.Remove(email);
+                    return new JsonResult(Response(Utils.StatusCode.SendingMailError));
+                }
+
             }
             else
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-
-
-        }
-
-        [HttpGet("ResetPassword")]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            if (code is null)
-            {
-                return new JsonResult("Error");
-            }
-            else
-            {
-                return new JsonResult(code);
+                return new JsonResult(Response(Utils.StatusCode.CodeHasAlreadyBeenSent));
             }
         }
+
+
 
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
         //   [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
+        public async Task<ActionResult<ServerResponse>> ResetPassword(ResetPasswordRequest resetRequest)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
-            if (user == null)
+
+            string code;
+            _cache.TryGetValue(resetRequest.Email, out code);
+            if (code != null)
             {
-                return new JsonResult("Error");
+                _cache.Remove(resetRequest.Email);
+
+                if (resetRequest.Code.Equals(code))
+                {
+                    var user = await _userManager.FindByNameAsync(resetRequest.Email);
+                    if (user == null)
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                    }
+                    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var result = await _userManager.ResetPasswordAsync(user, resetToken, resetRequest.Password);
+                    if (result.Succeeded)
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
+                    }
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                else
+                {
+                    return new JsonResult(Response(Utils.StatusCode.IncorrectVerificationCode));
+                }
             }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
+            else
             {
-                return Ok();
+                return new JsonResult(Response(Utils.StatusCode.Expired));
             }
-            return new JsonResult("Error");
+
+
         }
 
 

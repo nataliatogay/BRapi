@@ -235,11 +235,13 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
-        public async Task RemoveClientSocialLink(IEnumerable<SocialLink> socialLink) {
+        public async Task RemoveClientSocialLink(IEnumerable<SocialLink> socialLink)
+        {
             _db.SocialLinks.RemoveRange(socialLink);
             await _db.SaveChangesAsync();
         }
-        public async Task RemoveClientPhone(IEnumerable<ClientPhone> clientPhone) {
+        public async Task RemoveClientPhone(IEnumerable<ClientPhone> clientPhone)
+        {
             _db.ClientPhones.RemoveRange(clientPhone);
             await _db.SaveChangesAsync();
         }
@@ -337,6 +339,16 @@ namespace BR.EF
         public async Task<ICollection<ClientRequest>> GetClientRequests()
         {
             return await _db.ClientRequests.ToListAsync();
+        }
+
+        public async Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip)
+        {
+            return await _db.ClientRequests.Skip(skip).Take(take).ToListAsync();
+        }
+
+        public async Task<ICollection<ClientRequest>> GetUndoneClientRequests()
+        {
+            return await _db.ClientRequests.Where(r => !r.IsDone).ToListAsync();
         }
 
         public async Task<ClientRequest> GetClientRequest(int id)
@@ -789,6 +801,30 @@ namespace BR.EF
             return await _db.CancelReasons.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
         }
 
+
+        // Visitors
+
+        public async Task<Visitor> AddVisitor(Visitor visitor)
+        {
+            var res = _db.Visitors.Add(visitor);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<Visitor> GetVisitor(int id)
+        {
+            return await _db.Visitors.FindAsync(id);
+        }
+
+        public async Task<Visitor> UpdateVisitor(Visitor visitor)
+        {
+            var res = _db.Visitors.Update(visitor);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+
+
         // Tables
 
         public async Task<Table> GetTable(int id)
@@ -892,12 +928,14 @@ namespace BR.EF
         {
             return await _db.Events.FindAsync(id);
         }
+
         public async Task<Event> AddEvent(Event clientEvent)
         {
             var eventAdded = await _db.Events.AddAsync(clientEvent);
             await _db.SaveChangesAsync();
             return eventAdded.Entity;
         }
+
         public async Task<Event> UpdateEvent(Event clientEvent)
         {
             var eventUpdated = _db.Events.Update(clientEvent);
@@ -905,7 +943,23 @@ namespace BR.EF
             return eventUpdated.Entity;
         }
 
+        public async Task<EventMark> GetEventMark(int eventId, int userId)
+        {
+            return await _db.EventMarks.FirstOrDefaultAsync(m => m.EventId == eventId && m.UserId == userId);
+        }
 
+        public async Task<EventMark> AddEventMark(EventMark eventMark)
+        {
+            var res = _db.EventMarks.Add(eventMark);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task RemoveEventMark(EventMark eventMark)
+        {
+            _db.EventMarks.Remove(eventMark);
+            await _db.SaveChangesAsync();
+        }
 
     }
 }

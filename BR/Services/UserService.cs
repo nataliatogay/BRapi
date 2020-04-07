@@ -16,10 +16,13 @@ namespace BR.Services
     public class UserService : IUserService
     {
         private readonly IAsyncRepository _repository;
+        private readonly IReservationService _reservationService;
 
-        public UserService(IAsyncRepository repository)
+        public UserService(IAsyncRepository repository,
+            IReservationService reservationService)
         {
             _repository = repository;
+            _reservationService = reservationService;
 
         }
         public async Task<ServerResponse<ICollection<UserInfoForAdminResponse>>> GetUsers()
@@ -135,6 +138,33 @@ namespace BR.Services
                 try
                 {
                     await _repository.UpdateUser(user);
+
+                    // delete tokens
+                    var tokens = await _repository.GetTokens(user.IdentityId);
+                    if (tokens != null)
+                    {
+                        foreach (var item in tokens)
+                        {
+                            await _repository.RemoveToken(item);
+                        }
+                    }
+
+                    // cancel upcoming reservations
+                    var reservations = user.Reservations;
+                    var cancelReason = await _repository.GetCancelReason("UserDeleted");
+
+                    // if closes admin
+                    //var admin = (await _repository.GetAdmins()).FirstOrDefault();
+                    if (cancelReason != null && reservations != null)
+                    {
+                        foreach (var item in reservations)
+                        {
+                            if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
+                            {
+                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
+                            }
+                        }
+                    }
                     return new ServerResponse(StatusCode.Ok);
                 }
                 catch

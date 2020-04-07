@@ -3,6 +3,8 @@ using BR.DTO.Events;
 using BR.EF;
 using BR.Models;
 using BR.Services.Interfaces;
+using BR.Utils;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,12 +28,12 @@ namespace BR.Services
         public async Task<ICollection<EventInfoShort>> GetAllEventsShortInfo()
         {
             var events = await _repository.GetEvents();
-            if(events is null)
+            if (events is null)
             {
                 return null;
             }
             var res = new List<EventInfoShort>();
-            foreach(var item in events)
+            foreach (var item in events)
             {
                 res.Add(this.ToShortEventInfo(item));
             }
@@ -71,61 +73,247 @@ namespace BR.Services
             return this.ToEventInfo(clientEvent);
         }
 
-        public async Task<Event> AddEvent(NewEventRequest newEventRequest, string clientIdentityId)
+
+
+        public async Task<ServerResponse<Event>> AddEvent(NewEventRequest newEventRequest, string addedByUserIdentityId, string role)
         {
-            //var client = await _repository.GetClient(clientIdentityId);
-            //if (client is null)
-            //{
-            //    return null;
-            //}
+            if (role is null)
+            {
+                return new ServerResponse<Event>(StatusCode.RoleNotFound, null);
+            }
+            if (role.Equals("OWNER") && newEventRequest.ClientId is null)
+            {
+                return new ServerResponse<Event>(StatusCode.Error, null);
+            }
+            try
+            {
+                if (role.Equals("WAITER"))
+                {
+                    var waiter = await _repository.GetWaiter(addedByUserIdentityId);
+                    if (waiter is null)
+                    {
+                        return new ServerResponse<Event>(StatusCode.UserNotFound, null);
+                    }
+                    newEventRequest.ClientId = waiter.ClientId;
+                }
+                else if (role.Equals("CLIENT"))
+                {
+                    var client = await _repository.GetClient(addedByUserIdentityId);
+                    if (client is null)
+                    {
+                        return new ServerResponse<Event>(StatusCode.UserNotFound, null);
+                    }
+                    newEventRequest.ClientId = client.Id;
+                }
+            }
+            catch
+            {
+                return new ServerResponse<Event>(StatusCode.DbConnectionError, null);
+            }
+
+
             Event clientEvent = new Event()
             {
                 Title = newEventRequest.Title,
                 Description = newEventRequest.Description,
                 Date = DateTime.ParseExact(newEventRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
                 //ClientId = client.Id,
-                ClientId=3,
-                EventTypeId = newEventRequest.EventTypeId
+                ClientId = newEventRequest.ClientId ?? default,
+                Duration = newEventRequest.Duration,
+                EntranceFee = newEventRequest.EntranceFee,
+                AddedByIdentityId = addedByUserIdentityId
+
             };
             string imagePath;
             if (!String.IsNullOrEmpty(newEventRequest.Image))
             {
-                imagePath = await _blobService.UploadImage(newEventRequest.Image);
+                try
+                {
+
+                    imagePath = await _blobService.UploadImage(newEventRequest.Image);
+                }
+                catch
+                {
+                    return new ServerResponse<Event>(StatusCode.BlobError, null);
+                }
             }
             else
             {
                 imagePath = "https://rb2020storage.blob.core.windows.net/photos/default-event.png";
             }
             clientEvent.ImagePath = imagePath;
-            return await _repository.AddEvent(clientEvent);
-        }
-
-        public async Task<string> UpdateEventImage(UpdateEventImageRequest updateRequest)
-        {
-            var clientEvent = await _repository.GetEvent(updateRequest.EventId);
-            if (clientEvent is null)
+            try
             {
-                return null;
+                var newEvent = await _repository.AddEvent(clientEvent);
+                return new ServerResponse<Event>(StatusCode.Ok, newEvent);
             }
-            var path = await _blobService.UploadImage(updateRequest.ImageString);
-            await _blobService.DeleteImage(clientEvent.ImagePath);
-            clientEvent.ImagePath = path;
-            await _repository.UpdateEvent(clientEvent);
-            return path;
+            catch
+            {
+                return new ServerResponse<Event>(StatusCode.Error, null);
+            }
         }
 
-        public async Task<Event> UpdateEvent(UpdateEventRequest updateRequest)
+        public async Task<ServerResponse<string>> UpdateEventImage(UpdateEventImageRequest updateRequest)
         {
-            var clientEvent = await _repository.GetEvent(updateRequest.EventId);
+            Event clientEvent;
+            try
+            {
+
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
             if (clientEvent is null)
             {
-                return null;
+                return new ServerResponse<string>(StatusCode.NotFound, null);
+            }
+            string path;
+            try
+            {
+                path = await _blobService.UploadImage(updateRequest.ImageString);
+
+                await _blobService.DeleteImage(clientEvent.ImagePath);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            clientEvent.ImagePath = path;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+        public async Task<ServerResponse> UpdateEvent(UpdateEventRequest updateRequest)
+        {
+            Event clientEvent;
+            try
+            {
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            if (clientEvent is null)
+            {
+                return new ServerResponse(StatusCode.NotFound);
             }
             clientEvent.Date = DateTime.ParseExact(updateRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-            clientEvent.Description = updateRequest.Description;
-            clientEvent.Title = updateRequest.Title;
-            return await _repository.UpdateEvent(clientEvent);
+            clientEvent.Description = updateRequest.Description.Trim();
+            clientEvent.Title = updateRequest.Title.Trim();
+            clientEvent.Duration = updateRequest.Duration;
+            clientEvent.EntranceFee = updateRequest.EntranceFee;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
         }
+
+
+        public async Task<ServerResponse> AddMark(int eventId, string identityUserId)
+        {
+            User user;
+            try
+            {
+
+                user = await _repository.GetUser(identityUserId);
+                if (user is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+                var clientEvent = await _repository.GetEvent(eventId);
+                if (clientEvent is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+                if (clientEvent.Date < DateTime.Now)
+                {
+                    return new ServerResponse(StatusCode.Expired);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+
+            var eventMark = new EventMark()
+            {
+                EventId = eventId,
+                UserId = user.Id
+            };
+
+            try
+            {
+                var res = await _repository.AddEventMark(eventMark);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch (DbUpdateException)
+            {
+                return new ServerResponse(StatusCode.Duplicate);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+
+        }
+
+        public async Task<ServerResponse> DeleteMark(int eventId, string identityUserId)
+        {
+            User user;
+            EventMark eventMark;
+            try
+            {
+
+                user = await _repository.GetUser(identityUserId);
+                if (user is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+                eventMark = await _repository.GetEventMark(eventId, user.Id);
+                if (eventMark is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+
+            
+            if (eventMark.Event.Date < DateTime.Now)
+            {
+                return new ServerResponse(StatusCode.Expired);
+            }
+
+            try
+            {
+                await _repository.RemoveEventMark(eventMark);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+        }
+
+
+
 
         private EventInfoShort ToShortEventInfo(Event clientEvent)
         {
@@ -155,7 +343,6 @@ namespace BR.Services
                 Description = clientEvent.Description,
                 ImgPath = clientEvent.ImagePath,
                 Title = clientEvent.Title,
-                Type = clientEvent.EventType.Title,
                 ClientId = clientEvent.Client.Id,
                 ClientName = clientEvent.Client.RestaurantName
             };

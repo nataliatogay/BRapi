@@ -136,7 +136,8 @@ namespace BR.Services
                             Duration = tableState.Duration,
                             ReservationStateId = null,
                             PetsFree = newReservationRequest.IsPetsFree,
-                            Invalids = newReservationRequest.Invalids
+                            Invalids = newReservationRequest.Invalids,
+                            ClientId = client.Id
                         };
                         try
                         {
@@ -364,6 +365,12 @@ namespace BR.Services
                 {
                     return new ServerResponse(StatusCode.NotAvailable);
                 }
+                var table = await _repository.GetTable(confirmRequest.TableIds.FirstOrDefault());
+                if (table is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+                var client = table.Hall.Floor.Client;
                 var reservation = new Reservation()
                 {
                     ChildFree = confirmRequest.IsChildFree,
@@ -374,7 +381,8 @@ namespace BR.Services
                     ReservationStateId = null,
                     UserId = confirmRequest.UserId,
                     PetsFree = confirmRequest.IsPetsFree,
-                    Invalids = confirmRequest.Invalids
+                    Invalids = confirmRequest.Invalids,
+                    ClientId = client.Id
 
                 };
                 try
@@ -429,11 +437,22 @@ namespace BR.Services
             //var user = await _repository.GetWaiter(waiterIdentityId);
             var resDate = DateTime.ParseExact(reservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
+            if (resDate < DateTime.Now)
+            {
+                return new ServerResponse(StatusCode.Expired);
+            }
+
             var res = await this.AddTableStateCacheData(resDate, reservationRequest.Duration, reservationRequest.TableIds, true);
             if (!res)
             {
                 return new ServerResponse(StatusCode.NotAvailable);
             }
+            var table = await _repository.GetTable(reservationRequest.TableIds.FirstOrDefault());
+            if (table is null)
+            {
+                return new ServerResponse(StatusCode.NotFound);
+            }
+            var client = table.Hall.Floor.Client;
             var reservation = new Reservation()
             {
                 ChildFree = reservationRequest.IsChildFree,
@@ -444,7 +463,8 @@ namespace BR.Services
                 AdditionalInfo = reservationRequest.PhoneNumber + " " + reservationRequest.UserName,
                 Comments = reservationRequest.Comments,
                 PetsFree = reservationRequest.IsPetsFree,
-                Invalids = reservationRequest.Invalids
+                Invalids = reservationRequest.Invalids,
+                ClientId = client.Id
             };
             try
             {
@@ -492,7 +512,7 @@ namespace BR.Services
             }
             reservation.ReservationStateId = resState.Id;
             reservation.CancelReasonId = reasonId;
-            reservation.CancelledByIdentityUserId = cancelledByIdentityUserId;
+            reservation.CancelledByIdentityId = cancelledByIdentityUserId;
             if (reservation.BarTableId is null)
             {
                 ICollection<int> tableIds = new List<int>();
@@ -532,8 +552,12 @@ namespace BR.Services
                         }
                     }
                 }
+                else if (cancelReason.IdentityRole.NormalizedName.Equals("ADMIN"))
+                {
 
-                _notificationService.SendNotification("New reservation", MobilePlatform.gcm, "string", notificationTags.ToArray());
+                }
+
+                _notificationService.SendNotification("Cancel reservation", MobilePlatform.gcm, "string", notificationTags.ToArray());
 
 
 
@@ -648,6 +672,9 @@ namespace BR.Services
 
             return res;
         }
+
+
+
 
 
         private async Task<bool> AddTableStateCacheData(DateTime timeStart, int duration, ICollection<int> tableIds, bool isConfirmed)
@@ -935,7 +962,8 @@ namespace BR.Services
                             ReservationStateId = null,
                             BarTableId = barState.BarId,
                             PetsFree = true,
-                            Invalids = false
+                            Invalids = false,
+                            ClientId = client.Id
                         };
                         try
                         {
@@ -976,13 +1004,10 @@ namespace BR.Services
                     else
                     {
 
-                        // TODO
 
-                        //var result = await SendReservationOnConfirmation(barState, newReservationRequest, user.Id, client);
-                        //return new ServerResponse<Reservation>(result.StatusCode, null);
+                        var result = await SendBarReservationOnConfirmation(barState, newReservationRequest, user.Id, client);
+                        return new ServerResponse<Reservation>(result.StatusCode, null);
 
-                        // to delete
-                        return new ServerResponse<Reservation>(StatusCode.Error, null);
                     }
                 }
                 else
@@ -1161,6 +1186,9 @@ namespace BR.Services
                 {
                     return new ServerResponse(StatusCode.NotAvailable);
                 }
+
+                var client = barTable.Hall.Floor.Client;
+
                 var reservation = new Reservation()
                 {
                     ChildFree = true,
@@ -1172,7 +1200,8 @@ namespace BR.Services
                     UserId = confirmRequest.UserId,
                     BarTableId = confirmRequest.BarId,
                     PetsFree = true,
-                    Invalids = false
+                    Invalids = false,
+                    ClientId = client.Id
                 };
                 try
                 {
@@ -1206,16 +1235,21 @@ namespace BR.Services
             return new ServerResponse(StatusCode.Ok);
         }
 
-        public async Task<ServerResponse> AddBarReservationByPhone(NewBarReservationByPhoneRequest reservationRequest, string waiterIdentityId)
+        public async Task<ServerResponse> AddBarReservationByPhone(NewBarReservationByPhoneRequest reservationRequest)
         {
             //var user = await _repository.GetWaiter(waiterIdentityId);
+
+            var resDate = DateTime.ParseExact(reservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            if (resDate < DateTime.Now)
+            {
+                return new ServerResponse(StatusCode.Expired);
+            }
             var barTable = await _repository.GetBarTable(reservationRequest.BarId);
             if (barTable is null)
             {
                 return new ServerResponse(StatusCode.Error);
             }
             var client = barTable.Hall.Floor.Client;
-            var resDate = DateTime.ParseExact(reservationRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
 
             var res = await this.AddBarStateCacheData(resDate, reservationRequest.Duration, reservationRequest.BarId, reservationRequest.GuestCount, true, barTable.MaxGuestCount);
             if (!res)
@@ -1233,8 +1267,8 @@ namespace BR.Services
                 ReservationDate = resDate,
                 ReservationStateId = null,
                 AdditionalInfo = reservationRequest.PhoneNumber + " " + reservationRequest.UserName,
-                Comments = reservationRequest.Comments
-
+                Comments = reservationRequest.Comments,
+                ClientId = client.Id
             };
             try
             {
@@ -1428,16 +1462,117 @@ namespace BR.Services
 
             await _cacheDistributed.SetStringAsync("barStates", json);
         }
+
+
+
+        // Visitors
+
+
+        public async Task<ServerResponse> AddNewVisitor(NewVisitRequest visitRequest, string addedByIdentityId)
+        {
+            if (visitRequest.TableId is null && visitRequest.BarTableId is null)
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+
+            var resDate = DateTime.ParseExact(visitRequest.StartDateTime, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+
+            bool res;
+            if (visitRequest.BarTableId is null)
+            {
+                res = await this.AddTableStateCacheData(resDate, visitRequest.Duration, new List<int>() { visitRequest.TableId ?? default }, true);
+            }
+            else
+            {
+                BarTable barTable;
+                try
+                {
+                    barTable = await _repository.GetBarTable(visitRequest.BarTableId ?? default);
+                    if (barTable is null)
+                    {
+                        return new ServerResponse(StatusCode.NotFound);
+                    }
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.DbConnectionError);
+                }
+
+                res = await this.AddBarStateCacheData(resDate, visitRequest.Duration, visitRequest.BarTableId ?? default, visitRequest.GuestCount, true, barTable.MaxGuestCount);
+            }
+
+            if (!res)
+            {
+                return new ServerResponse(StatusCode.NotAvailable);
+            }
+
+            Visitor visitor = new Visitor()
+            {
+                AddedByIdentityId = addedByIdentityId,
+                BarTableId = visitRequest.BarTableId,
+                TableId = visitRequest.TableId,
+                Duration = visitRequest.Duration,
+                GuestCount = visitRequest.GuestCount,
+                StartDateTime = resDate,
+                IsCompleted = false
+            };
+
+            try
+            {
+                await _repository.AddVisitor(visitor);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+        }
+
+
+        public async Task<ServerResponse> CompleteVisit(int visitId)
+        {
+            Visitor visitor;
+            try
+            {
+                visitor = await _repository.GetVisitor(visitId);
+                if (visitor is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            if (visitor.TableId != null)
+            {
+                await this.RemoveTableStateCacheData(visitor.StartDateTime, visitor.Duration, new List<int>() { visitor.TableId ?? default }, true);
+            }
+            else if (visitor.BarTableId != null)
+            {
+                await this.RemoveBarStateCacheData(visitor.StartDateTime, visitor.Duration, visitor.BarTableId ?? default, true, visitor.GuestCount);
+            }
+
+            visitor.IsCompleted = true;
+
+            try
+            {
+                await _repository.UpdateVisitor(visitor);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+        }
+
     }
-
-
 
 
 
 }
 
 //Reservation state:
-//-idle; - addNew
 //-cancelled; - user, waiter
 //-completed; - waiter
 //-missed; - timer; 

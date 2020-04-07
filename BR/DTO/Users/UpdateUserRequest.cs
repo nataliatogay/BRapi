@@ -8,7 +8,8 @@ namespace BR.DTO.Users
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
-        public bool? Gender { get; set; }
+        public bool Gender { get; set; }
+        [Required]
         public string BirthDate { get; set; }
     }
 }

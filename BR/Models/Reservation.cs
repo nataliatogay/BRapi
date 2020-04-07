@@ -37,8 +37,12 @@ namespace BR.Models
 
         // [Required]
         public int? ReservationStateId { get; set; }
+        
         public int? CancelReasonId { get; set; }
-        public string CancelledByIdentityUserId { get; set; }
+        
+        public string CancelledByIdentityId { get; set; }
+
+        public string AddedByIdentityId { get; set; }
         public string AdditionalInfo { get; set; } //phoneNumber + " " + userName (reservation by phone)
 
         public virtual User User { get; set; }
@@ -51,10 +55,17 @@ namespace BR.Models
         [ForeignKey("ReservationStateId")]
         public virtual ReservationState ReservationState { get; set; }
         [ForeignKey("CancelReasonId")]
+        
         public virtual CancelReason CancelReason { get; set; }
-        [ForeignKey("CancelledByIdentityUserId")]
-        public virtual IdentityUser CancelledByIdentityUser { get; set; }
+        
+        [ForeignKey("CancelledByIdentityId")]
+        public virtual IdentityUser CancelledByIdentity { get; set; }
+
+        [ForeignKey("AddedByIdentityId")]
+        public virtual IdentityUser AddedByIdentity { get; set; }
+
         public virtual ICollection<Invitee> Invitees { get; set; }
+        
         public virtual ICollection<TableReservation> TableReservations { get; set; }
 
         public Reservation()

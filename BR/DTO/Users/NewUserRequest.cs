@@ -10,11 +10,15 @@ namespace BR.DTO.Users
     {
         [Required]
         public string FirstName { get; set; }        
+        
         [Required]
         public string LastName { get; set; }
-        public bool? Gender { get; set; }
+        
+        public bool Gender { get; set; }
 
+        [Required]
         public string BirthDate { get; set; }
-        public string Email { get; set; }
+        
+        //public string Email { get; set; }
     }
 }

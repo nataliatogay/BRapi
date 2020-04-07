@@ -35,6 +35,8 @@ namespace BR.Models
 
         public DateTime RegistrationDate { get; set; }
 
+        public bool IsConfirmedByAdmin { get; set; }
+
         public DateTime? Blocked { get; set; }
 
         public DateTime? Deleted { get; set; }

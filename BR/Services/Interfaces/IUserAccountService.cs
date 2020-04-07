@@ -21,7 +21,6 @@ namespace BR.Services.Interfaces
         
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
         
-
         Task<ServerResponse<bool>> UserIsBlocked(string identityId);
         
         Task<ServerResponse<bool>> UserIsDeleted(string identityId);
@@ -38,7 +37,5 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> FinallyDelete(string notificationTag);
 
-
-        string GenerateCode();
     }
 }

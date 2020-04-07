@@ -19,23 +19,9 @@ namespace BR.Services
         {
             _repository = repository;
         }
-        
+
         public async Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest)
         {
-            //  перенести в добавление клиента
-
-            //string imagePath;
-
-            //if (!String.IsNullOrEmpty(newClientRequest.MainImage))
-            //{
-
-            //    imagePath = await _blobService.UploadImage(newClientRequest.MainImage);
-            //}
-            //else
-            //{
-            //    newClientRequest.MainImage = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
-
-            //}
 
             ClientRequest clientRequest = new ClientRequest()
             {
@@ -58,35 +44,19 @@ namespace BR.Services
             }
         }
 
-        public async Task<IEnumerable<RequestInfoResponse>> GetAllClientRequests()
+        public async Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests()
         {
-            var requests = await _repository.GetClientRequests();
-            var requestsInfo = new List<RequestInfoResponse>();
-            foreach (var item in requests)
+            IEnumerable<ClientRequest> requests;
+            try
             {
-                requestsInfo.Add(new RequestInfoResponse()
+
+                requests = await _repository.GetClientRequests();
+                var requestsInfo = new List<RequestInfoResponse>();
+                if (requests is null)
                 {
-                    Id = item.Id,
-                    OwnerName = item.OwnerName,
-                    OrganizationName = item.OrganizationName,
-                    OwnerPhoneNumber = item.OwnerPhoneNumber,
-                    Email = item.Email,
-                    Comments = item.Comments,
-                    RegisteredDate = item.RegisteredDate,
-                    IsDone = item.IsDone
-                });
-            }
-            return requestsInfo;
-        }
-
-
-        public async Task<IEnumerable<RequestInfoResponse>> GetNewClientRequests()
-        {
-            var requests = await _repository.GetClientRequests();
-            var requestsInfo = new List<RequestInfoResponse>();
-            foreach (var item in requests)
-            {
-                if (item.OwnerId is null)
+                    requestsInfo = null;
+                }
+                foreach (var item in requests)
                 {
                     requestsInfo.Add(new RequestInfoResponse()
                     {
@@ -97,37 +67,103 @@ namespace BR.Services
                         Email = item.Email,
                         Comments = item.Comments,
                         RegisteredDate = item.RegisteredDate,
-                        IsDone = item.IsDone
+                        IsDone = item.IsDone,
+                        OwnerId = item.OwnerId
                     });
                 }
+                return new ServerResponse<IEnumerable<RequestInfoResponse>>(StatusCode.Ok, requestsInfo);
             }
-            return requestsInfo;
+            catch
+            {
+                return new ServerResponse<IEnumerable<RequestInfoResponse>>(StatusCode.DbConnectionError, null);
+            }
         }
 
-        public async Task<RequestInfoResponse> GetClientRequest(int id)
+
+        public async Task<ServerResponse<ICollection<RequestInfoResponse>>> GetAllClientRequests(int take, int skip)
         {
-            var req = await _repository.GetClientRequest(id);
-            return new RequestInfoResponse()
+            ICollection<ClientRequest> requests;
+
+            try
             {
-                Id = req.Id,
-                OwnerName = req.OwnerName,
-                OrganizationName = req.OrganizationName,
-                OwnerPhoneNumber = req.OwnerPhoneNumber,
-                Email = req.Email,
-                Comments = req.Comments,
-                RegisteredDate = req.RegisteredDate,
-                IsDone = req.IsDone
-            };
+                requests = await _repository.GetClientRequests(take, skip);
+                var requestsInfo = new List<RequestInfoResponse>();
+                if (requests is null)
+                {
+                    requestsInfo = null;
+                }
+                foreach (var item in requests)
+                {
+                    requestsInfo.Add(new RequestInfoResponse()
+                    {
+                        Id = item.Id,
+                        OwnerName = item.OwnerName,
+                        OrganizationName = item.OrganizationName,
+                        OwnerPhoneNumber = item.OwnerPhoneNumber,
+                        Email = item.Email,
+                        Comments = item.Comments,
+                        RegisteredDate = item.RegisteredDate,
+                        IsDone = item.IsDone,
+                        OwnerId = item.OwnerId
+                    });
+                }
+                return new ServerResponse<ICollection<RequestInfoResponse>>(StatusCode.Ok, requestsInfo);
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<RequestInfoResponse>>(StatusCode.DbConnectionError, null);
+            }
         }
 
-        public async Task<int> NewClientRequestCount()
+        public async Task<ServerResponse<RequestInfoResponse>> GetClientRequest(int id)
         {
-            var res = await this.GetNewClientRequests();
-            if(res is null)
+            ClientRequest request;
+
+            try
             {
-                return 0;
+                request = await _repository.GetClientRequest(id);
+                if (request is null)
+                {
+                    return new ServerResponse<RequestInfoResponse>(StatusCode.NotFound, null);
+                }
+                return new ServerResponse<RequestInfoResponse>(StatusCode.Ok,
+                new RequestInfoResponse()
+                {
+                    Id = request.Id,
+                    OwnerName = request.OwnerName,
+                    OrganizationName = request.OrganizationName,
+                    OwnerPhoneNumber = request.OwnerPhoneNumber,
+                    Email = request.Email,
+                    Comments = request.Comments,
+                    RegisteredDate = request.RegisteredDate,
+                    IsDone = request.IsDone,
+                    OwnerId = request.OwnerId
+                });
             }
-            return res.Count();
+            catch
+            {
+                return new ServerResponse<RequestInfoResponse>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+        public async Task<ServerResponse<int>> UndoneClientRequestCount()
+        {
+            IEnumerable<ClientRequest> requests;
+
+            try
+            {
+                requests = await _repository.GetUndoneClientRequests();
+                int count = 0;
+                if (requests != null)
+                {
+                    count = requests.Count();
+                }
+                return new ServerResponse<int>(StatusCode.Ok, count);
+            }
+            catch
+            {
+                return new ServerResponse<int>(StatusCode.DbConnectionError, 0);
+            }
         }
     }
 }

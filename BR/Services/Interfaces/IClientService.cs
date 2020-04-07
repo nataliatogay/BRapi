@@ -14,7 +14,7 @@ namespace BR.Services.Interfaces
 {
     public interface IClientService
     {
-        Task<ServerResponse> AddNewClient(NewClientRequest newClientRequest, string identityId, string identityUserOwnerId = null);
+        Task<ServerResponse> AddNewClient(NewClientRequest newRequest, string clientIdentityId, string addedByIdentityId, string role);
         
         Task<ICollection<ClientShortInfoForUsersResponse>> GetShortClientInfoForUsers();
         
@@ -28,9 +28,9 @@ namespace BR.Services.Interfaces
         
         Task<ICollection<ClientShortInfoForUsersResponse>> GetFavourites(string identityUserId);
         
-        Task<bool> AddFavourite(int clientId, string identityUserId);
+        Task<ServerResponse> AddFavourite(int clientId, string identityUserId);
         
-        Task<bool> DeleteFavourite(int clientId, string identityUserId);
+        Task<ServerResponse> DeleteFavourite(int clientId, string identityUserId);
         
         Task<ICollection<ClientFullInfoForUsersResponse>> GetClientsByMeal(string mealType);
         
@@ -42,9 +42,20 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest);
 
+        Task<ServerResponse<string>> UploadMainImage(UploadMainImageRequest uploadRequest);
+
+        Task<ServerResponse> SetAsMainImage(int imageId);
+
+
+        Task<ServerResponse> UploadImages(UploadImagesRequest uploadRequest);
+
+        Task<ServerResponse> DeleteImage(int imageId);
+
         Task<ServerResponse> BlockClient(int clientId);
         
         Task<ServerResponse> UnblockClient(int clientId);
+
+        Task<ServerResponse> ConfirmClient(int clientId);
 
         Task<ServerResponse> DeleteClient(int clientId);
     }

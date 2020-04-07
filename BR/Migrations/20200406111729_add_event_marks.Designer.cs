@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200406111729_add_event_marks")]
+    partial class add_event_marks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,8 +113,6 @@ namespace BR.Migrations
                     b.Property<string>("Description");
 
                     b.Property<string>("IdentityId");
-
-                    b.Property<bool>("IsConfirmedByAdmin");
 
                     b.Property<float>("Lat");
 
@@ -634,15 +634,13 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("AddedByIdentityId");
-
                     b.Property<string>("AdditionalInfo");
 
                     b.Property<int?>("BarTableId");
 
                     b.Property<int?>("CancelReasonId");
 
-                    b.Property<string>("CancelledByIdentityId");
+                    b.Property<string>("CancelledByIdentityUserId");
 
                     b.Property<bool>("ChildFree");
 
@@ -666,13 +664,11 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddedByIdentityId");
-
                     b.HasIndex("BarTableId");
 
                     b.HasIndex("CancelReasonId");
 
-                    b.HasIndex("CancelledByIdentityId");
+                    b.HasIndex("CancelledByIdentityUserId");
 
                     b.HasIndex("ClientId");
 
@@ -831,37 +827,6 @@ namespace BR.Migrations
                     b.HasIndex("UserPhoneId");
 
                     b.ToTable("UserUserPhones");
-                });
-
-            modelBuilder.Entity("BR.Models.Visitor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AddedByIdentityId");
-
-                    b.Property<int?>("BarTableId");
-
-                    b.Property<int>("Duration");
-
-                    b.Property<int>("GuestCount");
-
-                    b.Property<bool>("IsCompleted");
-
-                    b.Property<DateTime>("StartDateTime");
-
-                    b.Property<int?>("TableId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddedByIdentityId");
-
-                    b.HasIndex("BarTableId");
-
-                    b.HasIndex("TableId");
-
-                    b.ToTable("Visitors");
                 });
 
             modelBuilder.Entity("BR.Models.Waiter", b =>
@@ -1324,10 +1289,6 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.Reservation", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "AddedByIdentity")
-                        .WithMany()
-                        .HasForeignKey("AddedByIdentityId");
-
                     b.HasOne("BR.Models.BarTable", "BarTable")
                         .WithMany("Reservations")
                         .HasForeignKey("BarTableId")
@@ -1337,9 +1298,9 @@ namespace BR.Migrations
                         .WithMany("Reservations")
                         .HasForeignKey("CancelReasonId");
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CancelledByIdentity")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CancelledByIdentityUser")
                         .WithMany()
-                        .HasForeignKey("CancelledByIdentityId");
+                        .HasForeignKey("CancelledByIdentityUserId");
 
                     b.HasOne("BR.Models.Client", "Client")
                         .WithMany("Reservations")
@@ -1415,21 +1376,6 @@ namespace BR.Migrations
                         .WithMany("UserUserPhones")
                         .HasForeignKey("UserPhoneId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.Visitor", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "AddedByIdentity")
-                        .WithMany()
-                        .HasForeignKey("AddedByIdentityId");
-
-                    b.HasOne("BR.Models.BarTable", "BarTable")
-                        .WithMany()
-                        .HasForeignKey("BarTableId");
-
-                    b.HasOne("BR.Models.Table", "Table")
-                        .WithMany()
-                        .HasForeignKey("TableId");
                 });
 
             modelBuilder.Entity("BR.Models.Waiter", b =>

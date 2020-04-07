@@ -110,24 +110,11 @@ namespace BR.Services
             {
                 return new ServerResponse<string>(StatusCode.DbConnectionError, null);
             }
-            try
+            return await _clientService.UploadMainImage(new UploadMainImageRequest()
             {
-                client.MainImagePath = await _blobService.UploadImage(imageString);
-
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.BlobError, null);
-            }
-            try
-            {
-                await _repository.UpdateClient(client);
-                return new ServerResponse<string>(StatusCode.Ok, client.MainImagePath);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
+                ClientId = client.Id,
+                ImageString = imageString
+            });
         }
 
         public async Task<ServerResponse> UploadImages(string identityId, ICollection<string> imagesString)
@@ -146,58 +133,17 @@ namespace BR.Services
                 return new ServerResponse<string>(StatusCode.DbConnectionError, null);
             }
 
-            ICollection<ClientImage> clientImages = new List<ClientImage>();
-            try
+            return await _clientService.UploadImages(new UploadImagesRequest()
             {
-                foreach (var item in imagesString)
-                {
-                    clientImages.Add(new ClientImage()
-                    {
-                        ClientId = client.Id,
-                        ImagePath = await _blobService.UploadImage(item)
-                    });
-                }
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.BlobError);
-            }
-            try
-            {
-                await _repository.AddClientImages(clientImages);
-                return new ServerResponse(StatusCode.Ok);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
+                ClientId = client.Id,
+                ImageStrings = imagesString
+            });
         }
-
 
         public async Task<ServerResponse> DeleteImage(int imageId)
         {
-            ClientImage clientImage;
-            try
-            {
-                clientImage = await _repository.GetClientImage(imageId);
-                if (clientImage is null)
-                {
-                    return new ServerResponse(StatusCode.NotFound);
-                }
-                await _repository.DeleteClientImage(clientImage);
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.DbConnectionError);
-            }
-            try
-            {
-                await _blobService.DeleteImage(clientImage.ImagePath);
-            }
-            catch { }
-            return new ServerResponse(StatusCode.Ok);
+            return await _clientService.DeleteImage(imageId);
         }
-
 
         public async Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient)
         {
@@ -220,7 +166,6 @@ namespace BR.Services
             return await _clientService.UpdateClient(updateRequest);
 
         }
-
 
     }
 }

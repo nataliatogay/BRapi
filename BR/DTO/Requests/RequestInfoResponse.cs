@@ -22,5 +22,7 @@ namespace BR.DTO.Requests
         public bool IsDone { get; set; }
 
         public DateTime RegisteredDate { get; set; }
+
+        public int? OwnerId { get; set; }
     }
 }

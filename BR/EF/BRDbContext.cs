@@ -81,8 +81,6 @@ namespace BR.EF
 
         public DbSet<ClientImage> ClientImages { get; set; }
 
-        public DbSet<EventType> EventTypes { get; set; }
-
         public DbSet<ClientFavourite> Favourites { get; set; }
 
         public DbSet<UserPhone> UserPhones { get; set; }
@@ -98,6 +96,10 @@ namespace BR.EF
         public DbSet<Privilege> Privileges { get; set; }
 
         public DbSet<UserPrivileges> UserPrivileges { get; set; }
+
+        public DbSet<EventMark> EventMarks { get; set; }
+
+        public DbSet<Visitor> Visitors { get; set; }
 
 
 
@@ -137,7 +139,9 @@ namespace BR.EF
 
             modelBuilder.Entity<SocialLink>().HasKey(u => new { u.ClientId, u.Link });
 
-            modelBuilder.Entity<ClientPhone>().HasKey(u => new { u.ClientId, u.Number});
+            modelBuilder.Entity<ClientPhone>().HasKey(u => new { u.ClientId, u.Number });
+
+            modelBuilder.Entity<EventMark>().HasKey(m => new { m.UserId, m.EventId });
 
             modelBuilder.Entity<Invitee>().HasOne(i => i.User).WithMany(a => a.Invitees).OnDelete(DeleteBehavior.Restrict);
 
