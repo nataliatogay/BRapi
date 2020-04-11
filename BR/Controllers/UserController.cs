@@ -58,5 +58,6 @@ namespace BR.Controllers
         {
             return new JsonResult(await _userService.UnblockUser(userId));
         }
+
     }
 }

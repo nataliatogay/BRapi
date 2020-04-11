@@ -60,10 +60,10 @@ namespace BR.Utils
     {
         private readonly IServiceProvider _provider;
         private readonly ILogger<DailyReservationReminderJob> _logger;
-        private INotificationService _notificationService;
+        private IPushNotificationService _notificationService;
         public DailyReservationReminderJob(IServiceProvider provider,
             ILogger<DailyReservationReminderJob> logger,
-            INotificationService notificationService)
+            IPushNotificationService notificationService)
         {
             _provider = provider;
             _logger = logger;

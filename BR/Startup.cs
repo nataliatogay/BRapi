@@ -85,6 +85,7 @@ namespace BR
             services.AddScoped<IClientAccountService, ClientAccountService>();
             services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddScoped<IWaiterAccountService, WaiterAccountService>();
+            services.AddScoped<IOwnerService, OwnerService>();
             services.AddScoped<IClientRequestService, ClientRequestService>();
             services.AddScoped<IParameterService, ParameterService>();
             services.AddScoped<IBlobService, BlobService>();
@@ -93,6 +94,8 @@ namespace BR
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<ISchemaService, SchemeService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IPushNotificationService, PushNotificationService>();
             
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 

@@ -23,7 +23,7 @@ namespace BR.Services
             _blobService = blobService;
         }
 
-        public async Task<ServerResponse<Organization>> AddNewOrganization(string title)
+        public async Task<ServerResponse<OrganizationInfoResponse>> AddNewOrganization(string title)
         {
             try
             {
@@ -32,15 +32,20 @@ namespace BR.Services
                     Title = title,
                     LogoPath = "https://rb2020storage.blob.core.windows.net/photos/default-logo.png"
                 });
-                return new ServerResponse<Organization>(StatusCode.Ok, org);
+                return new ServerResponse<OrganizationInfoResponse>(StatusCode.Ok, new OrganizationInfoResponse()
+                {
+                    Id = org.Id,
+                    LogoPath = org.LogoPath,
+                    Title = org.Title
+                });
             }
             catch (DbUpdateException)
             {
-                return new ServerResponse<Organization>(StatusCode.Duplicate, null);
+                return new ServerResponse<OrganizationInfoResponse>(StatusCode.Duplicate, null);
             }
             catch
             {
-                return new ServerResponse<Organization>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<OrganizationInfoResponse>(StatusCode.DbConnectionError, null);
             }
         }
 
@@ -59,7 +64,8 @@ namespace BR.Services
                 {
                     res.Add(new OrganizationInfoResponse()
                     {
-                        OrganizationTitle = item.Title,
+                        Id = item.Id,
+                        Title = item.Title,
                         LogoPath = item.LogoPath
                     });
                 }
@@ -83,7 +89,8 @@ namespace BR.Services
                 }
                 return new ServerResponse<OrganizationInfoResponse>(StatusCode.Ok, new OrganizationInfoResponse()
                 {
-                    OrganizationTitle = organization.Title,
+                    Id = organization.Id,
+                    Title = organization.Title,
                     LogoPath = organization.LogoPath
                 });
             }

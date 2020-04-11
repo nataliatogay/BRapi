@@ -80,10 +80,10 @@ namespace BR.EF
 
         Task<ICollection<ClientRequest>> GetClientRequests();
         Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip);
-        Task<ICollection<ClientRequest>> GetUndoneClientRequests();
+      //  Task<ICollection<ClientRequest>> GetUndoneClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task UpdateClientRequest(ClientRequest clientRequest);
-        Task AddClientRequest(ClientRequest clientRequest);
+        Task<ClientRequest> AddClientRequest(ClientRequest clientRequest);
 
 
         // Tokens
@@ -227,12 +227,29 @@ namespace BR.EF
         Task<ICollection<Event>> GetEventsByClient(int clientId);
         Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId);
         Task<Event> GetEvent(int id);
+        Task<IEnumerable<Event>> GetEventsByName(string title);
+        Task<IEnumerable<Event>> GetEventsByNameAndDescription(string text);
         Task<Event> AddEvent(Event clientEvent);
         Task<Event> UpdateEvent(Event clientEvent);
 
         Task<EventMark> GetEventMark(int eventId, int userId);
         Task<EventMark> AddEventMark(EventMark eventMark);
         Task RemoveEventMark(EventMark eventMark);
+
+
+        // Notifications
+
+        Task<NotificationType> GetNotificationType(string title);
+        Task<NotificationType> GetNotificationType(int id);
+        Task<AdminNotification> AddAdminNotification(AdminNotification adminNotification);
+        Task<ICollection<AdminNotification>> GetAdminNotifications();
+        Task<ICollection<AdminNotification>> GetUndoneAdminNotifications();
+        Task<ICollection<AdminNotification>> GetAdminNotifications(int take, int skip);
+        Task<AdminNotification> GetAdminNotification(int id);
+        Task<AdminNotification> UpdateAdminNotification(AdminNotification adminNotification);
+
+
+
 
     }
 }

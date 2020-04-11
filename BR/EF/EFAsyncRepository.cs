@@ -91,7 +91,6 @@ namespace BR.EF
         public async Task<IEnumerable<Client>> GetClientsByName(string title)
         {
             return await _db.Clients.Where(c => c.RestaurantName.ToUpper().Contains(title.ToUpper())).ToListAsync();
-
         }
 
         public async Task<Client> UpdateClient(Client client)
@@ -346,10 +345,10 @@ namespace BR.EF
             return await _db.ClientRequests.Skip(skip).Take(take).ToListAsync();
         }
 
-        public async Task<ICollection<ClientRequest>> GetUndoneClientRequests()
-        {
-            return await _db.ClientRequests.Where(r => !r.IsDone).ToListAsync();
-        }
+        //public async Task<ICollection<ClientRequest>> GetUndoneClientRequests()
+        //{
+        //    return await _db.ClientRequests.Where(r => !r.IsDone).ToListAsync();
+        //}
 
         public async Task<ClientRequest> GetClientRequest(int id)
         {
@@ -363,10 +362,11 @@ namespace BR.EF
             await _db.SaveChangesAsync();
         }
 
-        public async Task AddClientRequest(ClientRequest clientRequest)
+        public async Task<ClientRequest> AddClientRequest(ClientRequest clientRequest)
         {
-            await _db.ClientRequests.AddAsync(clientRequest);
+            var res = await _db.ClientRequests.AddAsync(clientRequest);
             await _db.SaveChangesAsync();
+            return res.Entity;
         }
 
 
@@ -929,6 +929,20 @@ namespace BR.EF
             return await _db.Events.FindAsync(id);
         }
 
+
+        public async Task<IEnumerable<Event>> GetEventsByName(string title)
+        {
+            return await _db.Events.Where(e => e.Title.ToUpper().Contains(title.ToUpper())).ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<Event>> GetEventsByNameAndDescription(string text)
+        {
+            return await _db.Events.Where(e => e.Title.ToUpper().Contains(text.ToUpper()) || e.Description.ToUpper().Contains(text.ToUpper())).ToListAsync();
+        }
+
+
+
         public async Task<Event> AddEvent(Event clientEvent)
         {
             var eventAdded = await _db.Events.AddAsync(clientEvent);
@@ -942,6 +956,9 @@ namespace BR.EF
             await _db.SaveChangesAsync();
             return eventUpdated.Entity;
         }
+
+
+
 
         public async Task<EventMark> GetEventMark(int eventId, int userId)
         {
@@ -959,6 +976,54 @@ namespace BR.EF
         {
             _db.EventMarks.Remove(eventMark);
             await _db.SaveChangesAsync();
+        }
+
+
+        // Notifications
+
+        public async Task<NotificationType> GetNotificationType(string title)
+        {
+            return await _db.NotificationTypes.FirstOrDefaultAsync(n => n.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+        public async Task<NotificationType> GetNotificationType(int id)
+        {
+            return await _db.NotificationTypes.FindAsync(id);
+        }
+
+        public async Task<AdminNotification> AddAdminNotification(AdminNotification adminNotification)
+        {
+            var res = _db.AdminNotifications.Add(adminNotification);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task<ICollection<AdminNotification>> GetAdminNotifications()
+        {
+            return await _db.AdminNotifications.ToListAsync();
+        }
+
+
+        public async Task<ICollection<AdminNotification>> GetUndoneAdminNotifications()
+        {
+            return await _db.AdminNotifications.Where(n => n.Done == null).ToListAsync();
+        }
+
+        public async Task<ICollection<AdminNotification>> GetAdminNotifications(int take, int skip)
+        {
+            return await _db.AdminNotifications.OrderByDescending(n => n.DateTime).Skip(skip).Take(take).ToListAsync();
+        }
+
+        public async Task<AdminNotification> GetAdminNotification(int id)
+        {
+            return await _db.AdminNotifications.FindAsync(id);
+        }
+
+        public async Task<AdminNotification> UpdateAdminNotification(AdminNotification adminNotification)
+        {
+            var res = _db.AdminNotifications.Update(adminNotification);
+            await _db.SaveChangesAsync();
+            return res.Entity;
         }
 
     }

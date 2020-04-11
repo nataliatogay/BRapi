@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BR.Models
 {
-    public class ClientRequest  
+    public class ClientRequest
     {
+
+
         [Key]
         public int Id { get; set; }
 
@@ -24,16 +27,16 @@ namespace BR.Models
 
         public string Comments { get; set; }
 
-        public bool IsDone { get; set; }
-
         public DateTime RegisteredDate { get; set; }
 
         public int? OwnerId { get; set; }
 
         [ForeignKey("OwnerId")]
-        public virtual Owner Owner{ get; set; }    
+        public virtual Owner Owner { get; set; }
+
+        public virtual AdminNotification AdminNotification { get; set; }
     }
 }
 
-        //[Required]
-        //public string JsonInfo { get; set; }
+//[Required]
+//public string JsonInfo { get; set; }

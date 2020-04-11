@@ -23,11 +23,11 @@ namespace BR.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IReservationService _reservationService;
-        private readonly INotificationService _notificationService;
+        private readonly IPushNotificationService _notificationService;
 
         public ReservationController(UserManager<IdentityUser> userManager,
             IReservationService reservationService,
-            INotificationService notificationService)
+            IPushNotificationService notificationService)
         {
             _userManager = userManager;
             _reservationService = reservationService;

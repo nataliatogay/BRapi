@@ -101,6 +101,10 @@ namespace BR.EF
 
         public DbSet<Visitor> Visitors { get; set; }
 
+        public DbSet<AdminNotification> AdminNotifications { get; set; }
+
+        public DbSet<NotificationType> NotificationTypes { get; set; }
+
 
 
         public BRDbContext(DbContextOptions options)
@@ -172,6 +176,10 @@ namespace BR.EF
             modelBuilder.Entity<SpecialDiet>().HasIndex(d => d.Title).IsUnique();
 
             modelBuilder.Entity<Dish>().HasIndex(d => d.Title).IsUnique();
+
+            modelBuilder.Entity<NotificationType>().HasIndex(t => t.Title).IsUnique();
+
+            modelBuilder.Entity<Organization>().HasIndex(o => o.Title).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

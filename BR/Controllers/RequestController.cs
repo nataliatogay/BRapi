@@ -30,7 +30,7 @@ namespace BR.Controllers
             return new JsonResult(await _clientRequestService.AddNewClientRequest(newClientRequest));
         }
 
-        
+
 
         [HttpGet("")]
         public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> Get()
@@ -38,18 +38,36 @@ namespace BR.Controllers
             return new JsonResult(await _clientRequestService.GetAllClientRequests());
         }
 
-        [HttpGet("UndoneCount")]
-        public async Task<ActionResult<ServerResponse<int>>> GetUndoneCount()
+
+
+        //[HttpGet("UndoneCount")]
+        //public async Task<ActionResult<ServerResponse<int>>> GetUndoneCount()
+        //{
+        //    return new JsonResult(await _clientRequestService.UndoneClientRequestCount());
+        //}
+
+        [HttpGet("Count")]
+        public async Task<ActionResult<ServerResponse<int>>> GetCount()
         {
-            return new JsonResult(await _clientRequestService.UndoneClientRequestCount());
+            return new JsonResult(await _clientRequestService.ClientRequestCount());
         }
 
+
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<ClientRequest>>> Get(int id)
         {
             return new JsonResult(await _clientRequestService.GetClientRequest(id));
         }
 
-        
+
+
+        [HttpPut("Decline")]
+        public async Task<ActionResult<ServerResponse<ClientRequest>>> DeclineRequest([FromBody]int id)
+        {
+            return new JsonResult(await _clientRequestService.DeclineRequest(id));
+        }
+
+
     }
 }

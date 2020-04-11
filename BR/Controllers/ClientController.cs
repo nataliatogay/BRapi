@@ -46,6 +46,89 @@ namespace BR.Controllers
 
         }
 
+
+
+        // by owner and admin
+        [HttpPost("")]
+        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
+        {
+
+
+
+            string password = _authenticationService.GeneratePassword();
+            if (await _userManager.FindByNameAsync(newClient.Email) is null)
+            {
+                IdentityUser clientIdentity = new IdentityUser()
+                {
+                    Email = newClient.Email,
+                    UserName = newClient.Email
+                };
+
+                IdentityResult res = await _userManager.CreateAsync(clientIdentity, password);
+                if (res.Succeeded)
+                {
+                    clientIdentity = await _userManager.FindByNameAsync(newClient.Email);
+                    var role = await _roleManager.FindByNameAsync("Client");
+                    if (role != null)
+                    {
+                        var resp = await _userManager.AddToRoleAsync(clientIdentity, "Client");
+                        if (!resp.Succeeded)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.Error));
+                        }
+                    }
+                    try
+                    {
+                        var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                        if (identityUser is null)
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                        }
+
+                        var identityRole = await _userManager.GetRolesAsync(identityUser);
+                        ServerResponse clientAddResponse = await _clientService.AddNewClient(newClient, clientIdentity.Id, identityUser.Id, identityRole.FirstOrDefault());
+
+                        if (clientAddResponse.StatusCode != Utils.StatusCode.Ok)
+                        {
+                            return new JsonResult(clientAddResponse);
+                        }
+                    }
+                    catch
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.Error));
+                    }
+                    try
+                    {
+                        string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
+
+                        await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
+                    }
+                    catch
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.Error));
+                    }
+                }
+                else
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
+            }
+
+
+        }
+
+
+
+
+
+
+
+
         [HttpGet("ShortForUsers")]
         public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> ShortForUsers()
         {
@@ -133,79 +216,7 @@ namespace BR.Controllers
 
 
 
-        // by owner and admin
-        [HttpPost("")]
-        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequest newClient)
-        {
-
-
-
-            string password = _authenticationService.GeneratePassword();
-            if (await _userManager.FindByNameAsync(newClient.Email) is null)
-            {
-                IdentityUser clientIdentity = new IdentityUser()
-                {
-                    Email = newClient.Email,
-                    UserName = newClient.Email
-                };
-
-                IdentityResult res = await _userManager.CreateAsync(clientIdentity, password);
-                if (res.Succeeded)
-                {
-                    clientIdentity = await _userManager.FindByNameAsync(newClient.Email);
-                    var role = await _roleManager.FindByNameAsync("Client");
-                    if (role != null)
-                    {
-                        var resp = await _userManager.AddToRoleAsync(clientIdentity, "Client");
-                        if (!resp.Succeeded)
-                        {
-                            return new JsonResult(Response(Utils.StatusCode.Error));
-                        }
-                    }
-                    try
-                    {
-                        var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-                        if (identityUser is null)
-                        {
-                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-                        }
-
-                        var identityRole = await _userManager.GetRolesAsync(identityUser);
-                        ServerResponse clientAddResponse = await _clientService.AddNewClient(newClient, clientIdentity.Id, identityUser.Id, identityRole.FirstOrDefault());
-                        
-                        if(clientAddResponse.StatusCode != Utils.StatusCode.Ok)
-                        {
-                            return new JsonResult(clientAddResponse);
-                        }
-                    }
-                    catch
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.Error));
-                    }
-                    try
-                    {
-                        string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
-
-                        await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
-                        return new JsonResult(Response(Utils.StatusCode.Ok));
-                    }
-                    catch
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.Error));
-                    }
-                }
-                else
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-            }
-            else
-            {
-                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
-            }
-
-
-        }
+        
 
 
 
@@ -229,12 +240,26 @@ namespace BR.Controllers
         // by owner, admin
         // [Authorize]
         [HttpPut("SetAsMainImage")]
-        public async Task<ActionResult<ServerResponse<string>>> SetAsMainImage([FromBody]int imageId)
+        public async Task<ActionResult<ServerResponse>> SetAsMainImage([FromBody]int imageId)
         {
             return new JsonResult(await _clientService.SetAsMainImage(imageId));
         }
 
 
+        // by owner, admin
+        [HttpPut("UploadImages")]
+        public async Task<ActionResult<ServerResponse>> UploadImages([FromBody]UploadImagesRequest uploadRequest)
+        {
+            return new JsonResult(await _clientService.UploadImages(uploadRequest));
+        }
+
+
+        // by owner, admin
+        [HttpDelete("DeleteImage/{id}")]
+        public async Task<ActionResult<ServerResponse>> DeleteImage(int id)
+        {
+            return new JsonResult(await _clientService.DeleteImage(id));
+        }
 
 
         // by admin

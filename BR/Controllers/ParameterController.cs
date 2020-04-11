@@ -42,7 +42,7 @@ namespace BR.Controllers
         }
 
 
-        [Authorize(Policy = "Headwaiter")]
+        //[Authorize(Policy = "Headwaiter")]
         [HttpGet("cuisine")]
         public async Task<ActionResult<ServerResponse<ICollection<ParameterInfo>>>> GetCuisines()
         {
@@ -58,7 +58,7 @@ namespace BR.Controllers
 
 
         [HttpPut("cuisine")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateCuisine([FromBody]Cuisine cuisine)
+        public async Task<ActionResult<ServerResponse>> UpdateCuisine([FromBody]ParameterInfo cuisine)
         {
             return new JsonResult(await _parameterService.UpdateCuisine(cuisine));
         }
@@ -86,7 +86,7 @@ namespace BR.Controllers
 
 
         [HttpPut("clientType")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateClientType([FromBody]ClientType clientType)
+        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateClientType([FromBody]ParameterInfo clientType)
         {
             return new JsonResult(await _parameterService.UpdateClientType(clientType));
         }
@@ -115,7 +115,7 @@ namespace BR.Controllers
 
 
         [HttpPut("goodFor")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateGoodFor([FromBody]GoodFor goodFor)
+        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateGoodFor([FromBody]ParameterInfo goodFor)
         {
             return new JsonResult(await _parameterService.UpdateGoodFor(goodFor));
         }
@@ -143,7 +143,7 @@ namespace BR.Controllers
 
 
         [HttpPut("feature")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateFeature([FromBody]Feature feature)
+        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateFeature([FromBody]ParameterInfo feature)
         {
             return new JsonResult(await _parameterService.UpdateFeature(feature));
         }
@@ -171,7 +171,7 @@ namespace BR.Controllers
 
 
         [HttpPut("dish")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateDish([FromBody]Dish dish)
+        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateDish([FromBody]ParameterInfo dish)
         {
             return new JsonResult(await _parameterService.UpdateDish(dish));
         }
@@ -199,7 +199,7 @@ namespace BR.Controllers
 
 
         [HttpPut("specialDiet")]
-        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateSpecialDiet([FromBody]SpecialDiet specialDiet)
+        public async Task<ActionResult<ServerResponse<ParameterInfo>>> UpdateSpecialDiet([FromBody]ParameterInfo specialDiet)
         {
             return new JsonResult(await _parameterService.UpdateSpecialDiet(specialDiet));
         }

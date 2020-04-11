@@ -355,9 +355,18 @@ namespace BR.Controllers
             return new JsonResult(await _clientAccountService.UploadMainImage(identityUser.Id, imageString));
         }
 
+
+        // by client
+        [HttpPut("SetAsMainImage")]
+        public async Task<ActionResult<ServerResponse>> SetAsMainImage([FromBody]int imageId)
+        {
+            return new JsonResult(await _clientAccountService.SetAsMainImage(imageId));
+        }
+
+
         // [Authorize]
         [HttpPut("UploadImages")]
-        public async Task<ActionResult<ServerResponse<string>>> UploadImages([FromBody]ICollection<string> imagesString)
+        public async Task<ActionResult<ServerResponse>> UploadImages([FromBody]ICollection<string> imagesString)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)

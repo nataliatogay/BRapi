@@ -41,17 +41,17 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<ParameterInfo>> AddSpecialDiet(string title);
 
 
-        Task<ServerResponse<ParameterInfo>> UpdateCuisine(Cuisine cuisine);
+        Task<ServerResponse> UpdateCuisine(ParameterInfo cuisine);
 
-        Task<ServerResponse<ParameterInfo>> UpdateClientType(ClientType clientType);
+        Task<ServerResponse> UpdateClientType(ParameterInfo clientType);
 
-        Task<ServerResponse<ParameterInfo>> UpdateGoodFor(GoodFor goodFor);
+        Task<ServerResponse> UpdateGoodFor(ParameterInfo goodFor);
 
-        Task<ServerResponse<ParameterInfo>> UpdateSpecialDiet(SpecialDiet diet);
+        Task<ServerResponse> UpdateSpecialDiet(ParameterInfo diet);
 
-        Task<ServerResponse<ParameterInfo>> UpdateDish(Dish dish);
+        Task<ServerResponse> UpdateDish(ParameterInfo dish);
 
-        Task<ServerResponse<ParameterInfo>> UpdateFeature(Feature feature);
+        Task<ServerResponse> UpdateFeature(ParameterInfo feature);
 
 
         Task<ServerResponse> DeleteCuisine(int id);

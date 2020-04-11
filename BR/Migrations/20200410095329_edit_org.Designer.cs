@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200410095329_edit_org")]
+    partial class edit_org
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +70,7 @@ namespace BR.Migrations
 
                     b.Property<DateTime>("DateTime");
 
-                    b.Property<bool?>("Done");
+                    b.Property<bool>("IsDone");
 
                     b.Property<int>("NotificationTypeId");
 
@@ -79,15 +81,11 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId")
-                        .IsUnique()
-                        .HasFilter("[ClientId] IS NOT NULL");
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("NotificationTypeId");
 
-                    b.HasIndex("RequestId")
-                        .IsUnique()
-                        .HasFilter("[RequestId] IS NOT NULL");
+                    b.HasIndex("RequestId");
 
                     b.ToTable("AdminNotifications");
                 });
@@ -1121,8 +1119,8 @@ namespace BR.Migrations
             modelBuilder.Entity("BR.Models.AdminNotification", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
-                        .WithOne("AdminNotification")
-                        .HasForeignKey("BR.Models.AdminNotification", "ClientId");
+                        .WithMany("AdminNotifications")
+                        .HasForeignKey("ClientId");
 
                     b.HasOne("BR.Models.NotificationType", "NotificationType")
                         .WithMany("AdminNotifications")
@@ -1130,8 +1128,8 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.ClientRequest", "Request")
-                        .WithOne("AdminNotification")
-                        .HasForeignKey("BR.Models.AdminNotification", "RequestId");
+                        .WithMany("AdminNotifications")
+                        .HasForeignKey("RequestId");
                 });
 
             modelBuilder.Entity("BR.Models.BarTable", b =>

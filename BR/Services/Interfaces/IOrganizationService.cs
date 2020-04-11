@@ -10,7 +10,7 @@ namespace BR.Services.Interfaces
 {
     public interface IOrganizationService
     {
-        Task<ServerResponse<Organization>> AddNewOrganization(string title);
+        Task<ServerResponse<OrganizationInfoResponse>> AddNewOrganization(string title);
         
         Task<ServerResponse<ICollection<OrganizationInfoResponse>>> GetOrganizations();
 

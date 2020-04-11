@@ -9,6 +9,6 @@ namespace BR.Services.Interfaces
 {
     public interface IOwnerService
     {
-        Task AddNewOwner(NewOwnerRequest newOwnerRequest, string identityId);
+        Task<ServerResponse> AddNewOwner(NewOwnerRequest newOwnerRequest, string identityId);
     }
 }

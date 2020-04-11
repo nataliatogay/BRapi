@@ -27,7 +27,7 @@ namespace BR.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<Organization>>> Post([FromBody]string title)
+        public async Task<ActionResult<ServerResponse<OrganizationInfoResponse>>> Post([FromBody]string title)
         {
             return new JsonResult(await _organizationService.AddNewOrganization(title));
         }

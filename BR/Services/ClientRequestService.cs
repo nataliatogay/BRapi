@@ -30,17 +30,32 @@ namespace BR.Services
                 OwnerPhoneNumber = newClientRequest.OwnerPhoneNumber,
                 Email = newClientRequest.Email,
                 Comments = newClientRequest.Comments,
-                RegisteredDate = DateTime.Now,
-                IsDone = false
+                RegisteredDate = DateTime.Now
             };
             try
             {
-                await _repository.AddClientRequest(clientRequest);
+                var request = await _repository.AddClientRequest(clientRequest);
+
+                var notificationType = await _repository.GetNotificationType("request");
+                if (notificationType is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+
+
+                await _repository.AddAdminNotification(new AdminNotification()
+                {
+                    DateTime = request.RegisteredDate,
+                    NotificationTypeId = notificationType.Id,
+                    RequestId = request.Id,
+                    Title = request.OrganizationName
+                });
+
                 return new ServerResponse(StatusCode.Ok);
             }
             catch
             {
-                return new ServerResponse(StatusCode.Error);
+                return new ServerResponse(StatusCode.DbConnectionError);
             }
         }
 
@@ -67,7 +82,6 @@ namespace BR.Services
                         Email = item.Email,
                         Comments = item.Comments,
                         RegisteredDate = item.RegisteredDate,
-                        IsDone = item.IsDone,
                         OwnerId = item.OwnerId
                     });
                 }
@@ -103,7 +117,6 @@ namespace BR.Services
                         Email = item.Email,
                         Comments = item.Comments,
                         RegisteredDate = item.RegisteredDate,
-                        IsDone = item.IsDone,
                         OwnerId = item.OwnerId
                     });
                 }
@@ -136,7 +149,6 @@ namespace BR.Services
                     Email = request.Email,
                     Comments = request.Comments,
                     RegisteredDate = request.RegisteredDate,
-                    IsDone = request.IsDone,
                     OwnerId = request.OwnerId
                 });
             }
@@ -146,13 +158,34 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<int>> UndoneClientRequestCount()
+        //public async Task<ServerResponse<int>> UndoneClientRequestCount()
+        //{
+        //    IEnumerable<ClientRequest> requests;
+
+        //    try
+        //    {
+        //        requests = await _repository.GetUndoneClientRequests();
+        //        int count = 0;
+        //        if (requests != null)
+        //        {
+        //            count = requests.Count();
+        //        }
+        //        return new ServerResponse<int>(StatusCode.Ok, count);
+        //    }
+        //    catch
+        //    {
+        //        return new ServerResponse<int>(StatusCode.DbConnectionError, 0);
+        //    }
+        //}
+
+
+        public async Task<ServerResponse<int>> ClientRequestCount()
         {
             IEnumerable<ClientRequest> requests;
 
             try
             {
-                requests = await _repository.GetUndoneClientRequests();
+                requests = await _repository.GetClientRequests();
                 int count = 0;
                 if (requests != null)
                 {
@@ -163,6 +196,28 @@ namespace BR.Services
             catch
             {
                 return new ServerResponse<int>(StatusCode.DbConnectionError, 0);
+            }
+        }
+
+
+        public async Task<ServerResponse> DeclineRequest(int requestId)
+        {
+            ClientRequest request;
+            try
+            {
+                request = await _repository.GetClientRequest(requestId);
+                if (request is null || request.AdminNotification is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+                var notification = request.AdminNotification;
+                notification.Done = false;
+                await _repository.UpdateAdminNotification(notification);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
             }
         }
     }

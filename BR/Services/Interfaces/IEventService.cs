@@ -18,7 +18,11 @@ namespace BR.Services.Interfaces
         Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId);
         
         Task<EventInfo> GetEvent(int id);
-     
+
+        Task<ServerResponse<ICollection<EventInfo>>> GetEventsByName(string name);
+
+        Task<ServerResponse<ICollection<EventInfo>>> GetEventsByNameAndDescription(string name);
+
         Task<ServerResponse<Event>> AddEvent(NewEventRequest newEventRequest, string addedByUserIdentityId, string role);
 
         Task<ServerResponse<string>> UpdateEventImage(UpdateEventImageRequest updateRequest);

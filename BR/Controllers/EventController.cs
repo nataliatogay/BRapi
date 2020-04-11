@@ -104,5 +104,20 @@ namespace BR.Controllers
            
         }
 
+
+
+        [HttpGet("Search")]
+        public async Task<ActionResult<ServerResponse<IEnumerable<EventInfo>>>> Search(string name)
+        {
+            return new JsonResult(Response(await _eventService.GetEventsByName(name)));
+        }
+
+
+        [HttpGet("DescriptionSearch")]
+        public async Task<ActionResult<ServerResponse<IEnumerable<EventInfo>>>> DescriptionSearch(string text)
+        {
+            return new JsonResult(Response(await _eventService.GetEventsByNameAndDescription(text)));
+        }
+
     }
 }

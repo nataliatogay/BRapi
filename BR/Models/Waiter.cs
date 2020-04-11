@@ -11,14 +11,20 @@ namespace BR.Models
     public class Waiter
     {
         public int Id { get; set; }
-        [Required]
-        public string IdentityId { get; set; }
+        
         [Required]
         public string FirstName { get; set; }
+        
         [Required]
         public string LastName { get; set; }
+
         public int ClientId { get; set; }
+
         public virtual Client Client { get; set; }
+
+        [Required]
+        public string IdentityId { get; set; }
+
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
         // public virtual AccountToken AccountToken { get; set; }

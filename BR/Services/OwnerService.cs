@@ -20,7 +20,7 @@ namespace BR.Services
             _repository = repository;
         }
 
-        public async Task AddNewOwner(NewOwnerRequest newOwnerRequest, string identityId)
+        public async Task<ServerResponse> AddNewOwner(NewOwnerRequest newOwnerRequest, string identityId)
         {
             Owner owner = new Owner()
             {
@@ -29,17 +29,40 @@ namespace BR.Services
                 OrganizationId = newOwnerRequest.OrganizationId
             };
 
-            var ownerAdded = await _repository.AddOwner(owner);
-
-            if (newOwnerRequest.RequestId != null)
+            try
             {
-                ClientRequest clientRequest = await _repository.GetClientRequest(newOwnerRequest.RequestId ?? default(int));
-                if (clientRequest != null)
+                var ownerAdded = await _repository.AddOwner(owner);
+
+                if (newOwnerRequest.RequestId != null)
                 {
-                    clientRequest.OwnerId = ownerAdded.Id;
+                    ClientRequest clientRequest = await _repository.GetClientRequest(newOwnerRequest.RequestId ?? default(int));
+                    if (clientRequest != null)
+                    {
+
+                        clientRequest.OwnerId = ownerAdded.Id;
+                        await _repository.UpdateClientRequest(clientRequest);
+
+                        if (clientRequest.AdminNotification != null)
+                        {
+                            var adminNotification = await _repository.GetAdminNotification(clientRequest.AdminNotification.Id);
+                            if (adminNotification != null)
+                            {
+                                adminNotification.Done = true;
+                                await _repository.UpdateAdminNotification(adminNotification);
+                            }
+                        }
+
+                    }
                 }
-                await _repository.UpdateClientRequest(clientRequest);
+                return new ServerResponse(StatusCode.Ok);
+
             }
+            catch
+            {
+                return new ServerResponse(StatusCode.Error);
+            }
+
+
         }
 
     }

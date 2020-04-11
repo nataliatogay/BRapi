@@ -53,7 +53,7 @@ namespace BR.Controllers
                 if (res.Succeeded)
                 {
                     identityUser = await _userManager.FindByNameAsync(newOwnerRequest.Email);
-                     await _userManager.SetPhoneNumberAsync(identityUser, newOwnerRequest.OwnerNumber);
+                    await _userManager.SetPhoneNumberAsync(identityUser, newOwnerRequest.OwnerNumber);
                     var role = await _roleManager.FindByNameAsync("Owner");
                     if (role != null)
                     {
@@ -67,25 +67,34 @@ namespace BR.Controllers
                     {
                         return new JsonResult(Response(Utils.StatusCode.RoleNotFound));
                     }
+                    ServerResponse addResponse;
                     try
                     {
-                        await _ownerService.AddNewOwner(newOwnerRequest, identityUser.Id);
+                        addResponse = await _ownerService.AddNewOwner(newOwnerRequest, identityUser.Id);
                     }
                     catch
                     {
                         return new JsonResult(Response(Utils.StatusCode.Error));
                     }
-                    try
+                    if (addResponse.StatusCode == Utils.StatusCode.Ok)
                     {
-                        string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
+                        try
+                        {
+                            string msgBody = $"Login: {identityUser.Email}\nPassword: {password}";
 
-                        await _emailService.SendAsync(identityUser.Email, "Registration info ", msgBody);
-                        return new JsonResult(Response(Utils.StatusCode.Ok));
+                            await _emailService.SendAsync(identityUser.Email, "Registration info ", msgBody);
+                            return new JsonResult(Response(Utils.StatusCode.Ok));
+                        }
+                        catch
+                        {
+                            return new JsonResult(Response(Utils.StatusCode.SendingMailError));
+                        }
                     }
-                    catch
+                    else
                     {
-                        return new JsonResult(Response(Utils.StatusCode.SendingMailError));
+                        return new JsonResult(addResponse);
                     }
+
                 }
                 else
                 {

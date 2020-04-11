@@ -88,7 +88,7 @@ namespace BR.Controllers
                 }
                 else
                 {
-                    return new JsonResult(Response(Utils.StatusCode.IncorrectLoginOrPassword));
+                    return new JsonResult(new ServerResponse<LogInResponse>(Utils.StatusCode.IncorrectLoginOrPassword, null));
                 }
             }
             else
@@ -402,7 +402,7 @@ namespace BR.Controllers
                 }
                 //var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var code = _authenticationService.GenerateCode();
-                _cache.Set(email, code, TimeSpan.FromMinutes(5));
+                _cache.Set(email, code, TimeSpan.FromMinutes(2));
 
                 try
                 {

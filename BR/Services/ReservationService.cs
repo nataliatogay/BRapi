@@ -22,13 +22,13 @@ namespace BR.Services
     public class ReservationService : IReservationService
     {
         private readonly IAsyncRepository _repository;
-        private readonly INotificationService _notificationService;
+        private readonly IPushNotificationService _notificationService;
         private readonly IDistributedCache _cacheDistributed;
         private readonly IMemoryCache _cacheMemory;
 
 
         public ReservationService(IAsyncRepository repository,
-            INotificationService notificationService,
+            IPushNotificationService notificationService,
             IDistributedCache cacheDistributed,
             IMemoryCache cacheMemory)
         {

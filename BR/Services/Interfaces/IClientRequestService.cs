@@ -20,7 +20,12 @@ namespace BR.Services.Interfaces
         
         Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest);
         
-        Task<ServerResponse<int>> UndoneClientRequestCount();
-        
+        //Task<ServerResponse<int>> UndoneClientRequestCount();
+
+        Task<ServerResponse<int>> ClientRequestCount();
+
+        Task<ServerResponse> DeclineRequest(int requestId);
+
+
     }
 }

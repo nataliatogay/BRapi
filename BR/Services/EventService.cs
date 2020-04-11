@@ -74,6 +74,42 @@ namespace BR.Services
         }
 
 
+        public async Task<ServerResponse<ICollection<EventInfo>>> GetEventsByName(string name)
+        {
+            try
+            {
+                var events = await _repository.GetEventsByName(name);
+                var res = new List<EventInfo>();
+                foreach (var item in events)
+                {
+                    res.Add(this.ToEventInfo(item));
+                }
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.Ok, res);
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+        public async Task<ServerResponse<ICollection<EventInfo>>> GetEventsByNameAndDescription(string name)
+        {
+            try
+            {
+                var events = await _repository.GetEventsByNameAndDescription(name);
+                var res = new List<EventInfo>();
+                foreach (var item in events)
+                {
+                    res.Add(this.ToEventInfo(item));
+                }
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.Ok, res);
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.DbConnectionError, null);
+            }
+        }
+
 
         public async Task<ServerResponse<Event>> AddEvent(NewEventRequest newEventRequest, string addedByUserIdentityId, string role)
         {
@@ -295,7 +331,7 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
 
-            
+
             if (eventMark.Event.Date < DateTime.Now)
             {
                 return new ServerResponse(StatusCode.Expired);

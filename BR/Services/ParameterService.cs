@@ -355,7 +355,7 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateCuisine(Cuisine cuisine)
+        public async Task<ServerResponse> UpdateCuisine(ParameterInfo cuisine)
         {
             var cuisineToUpdate = await _repository.GetCuisine(cuisine.Id);
             if (cuisineToUpdate != null)
@@ -366,29 +366,29 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateCuisine(cuisineToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateClientType(ClientType clientType)
+        public async Task<ServerResponse> UpdateClientType(ParameterInfo clientType)
         {
             var typeToUpdate = await _repository.GetClientType(clientType.Id);
             if (typeToUpdate != null)
@@ -399,30 +399,30 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateClientType(typeToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateGoodFor(GoodFor goodFor)
+        public async Task<ServerResponse> UpdateGoodFor(ParameterInfo goodFor)
         {
             var goodForToUpdate = await _repository.GetGoodFor(goodFor.Id);
             if (goodForToUpdate != null)
@@ -433,29 +433,29 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateGoodFor(goodForToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateSpecialDiet(SpecialDiet diet)
+        public async Task<ServerResponse> UpdateSpecialDiet(ParameterInfo diet)
         {
             var dietToUpdate = await _repository.GetSpecialDiet(diet.Id);
             if (dietToUpdate != null)
@@ -466,29 +466,29 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateSpecialDiet(dietToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateDish(Dish dish)
+        public async Task<ServerResponse> UpdateDish(ParameterInfo dish)
         {
             var dishForToUpdate = await _repository.GetDish(dish.Id);
             if (dishForToUpdate != null)
@@ -499,29 +499,29 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateDish(dishForToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 
-        public async Task<ServerResponse<ParameterInfo>> UpdateFeature(Feature feature)
+        public async Task<ServerResponse> UpdateFeature(ParameterInfo feature)
         {
             var featureForToUpdate = await _repository.GetFeature(feature.Id);
             if (featureForToUpdate != null && featureForToUpdate.Editable)
@@ -532,25 +532,25 @@ namespace BR.Services
                     try
                     {
                         var res = await _repository.UpdateFeature(featureForToUpdate);
-                        return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                        return new ServerResponse(StatusCode.Ok);
                     }
                     catch (DbUpdateException)
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Duplicate, null);
+                        return new ServerResponse(StatusCode.Duplicate);
                     }
                     catch
                     {
-                        return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                        return new ServerResponse(StatusCode.Error);
                     }
                 }
                 else
                 {
-                    return new ServerResponse<ParameterInfo>(StatusCode.Error, null);
+                    return new ServerResponse(StatusCode.Error);
                 }
             }
             else
             {
-                return new ServerResponse<ParameterInfo>(StatusCode.NotFound, null);
+                return new ServerResponse(StatusCode.NotFound);
             }
         }
 

@@ -54,6 +54,8 @@ namespace BR.Models
         [ForeignKey("OrganizationId")]
         public virtual Organization Organization { get; set; }
 
+        public virtual AdminNotification AdminNotification { get; set; }
+
         public virtual ICollection<SocialLink> SocialLinks { get; set; }
 
         public virtual ICollection<ClientPhone> ClientPhones { get; set; }
@@ -87,6 +89,8 @@ namespace BR.Models
         public virtual ICollection<ClientRating> ClientRatings { get; set; }
 
         public virtual ICollection<Reservation> Reservations { get; set; }
+
+
 
 
 

@@ -23,13 +23,13 @@ namespace BR.Services
         private readonly IBlobService _blobService;
         private readonly IAuthenticationService _authenticationService;
         private readonly IReservationService _reservationService;
-        private readonly INotificationService _notificationService;
+        private readonly IPushNotificationService _notificationService;
 
 
         public UserAccountService(IAsyncRepository repository,
             IAuthenticationService authenticationService,
             IReservationService reservationService,
-            INotificationService notificationService,
+            IPushNotificationService notificationService,
             IBlobService blobService)
         {
             _repository = repository;

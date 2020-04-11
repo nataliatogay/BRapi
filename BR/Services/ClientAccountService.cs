@@ -60,7 +60,6 @@ namespace BR.Services
             return await _authenticationService.UpdateToken(refreshToken);
         }
 
-
         public async Task<ServerResponse<bool>> ClientIsBlocked(string identityId)
         {
             var client = await _repository.GetClient(identityId);
@@ -138,6 +137,11 @@ namespace BR.Services
                 ClientId = client.Id,
                 ImageStrings = imagesString
             });
+        }
+
+        public async Task<ServerResponse> SetAsMainImage(int imageId)
+        {
+            return await _clientService.SetAsMainImage(imageId);
         }
 
         public async Task<ServerResponse> DeleteImage(int imageId)

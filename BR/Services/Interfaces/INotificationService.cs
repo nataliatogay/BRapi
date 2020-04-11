@@ -1,5 +1,5 @@
-﻿using BR.Utils.Notification;
-using Microsoft.Azure.NotificationHubs;
+﻿using BR.DTO.Notifications;
+using BR.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,10 @@ namespace BR.Services.Interfaces
 {
     public interface INotificationService
     {
-        HubResponse<NotificationOutcome> SendNotification(string message, MobilePlatform mobilePlatform, string handle, string[] tags = null);
+        Task<ServerResponse<ICollection<AdminNotificationInfo>>> GetAdminNotifications(int take, int skip);
+
+        Task<ServerResponse<int>> GetAdminNotificationCount();
+
+        Task<ServerResponse<int>> GetUndoneAdminNotificationCount();
     }
 }
