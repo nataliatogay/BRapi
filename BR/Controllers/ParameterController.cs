@@ -149,7 +149,7 @@ namespace BR.Controllers
         }
 
 
-        [HttpDelete("feature /{id}")]
+        [HttpDelete("feature/{id}")]
         public async Task<ActionResult<ServerResponse>> DeleteFeature(int id)
         {
             return new JsonResult(await _parameterService.DeleteFeature(id));
@@ -177,7 +177,7 @@ namespace BR.Controllers
         }
 
 
-        [HttpDelete("dish /{id}")]
+        [HttpDelete("dish/{id}")]
         public async Task<ActionResult<ServerResponse>> DeleteDish(int id)
         {
             return new JsonResult(await _parameterService.DeleteDish(id));
@@ -205,7 +205,7 @@ namespace BR.Controllers
         }
 
 
-        [HttpDelete("specialDiet /{id}")]
+        [HttpDelete("specialDiet/{id}")]
         public async Task<ActionResult<ServerResponse>> DeleteSpecialDiet(int id)
         {
             return new JsonResult(await _parameterService.DeleteSpecialDiet(id));

@@ -25,6 +25,9 @@ namespace BR.DTO.Parameters
     public class ParameterInfo
     {
         public int Id { get; set; }
+
         public string Title { get; set; }
+
+        public bool Editable { get; set; }
     }
 }

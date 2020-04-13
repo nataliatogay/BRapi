@@ -79,7 +79,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in mealTypes)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, false));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -99,7 +99,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in types)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, true));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -119,7 +119,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in types)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, true));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -139,7 +139,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in diets)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, true));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -159,7 +159,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in dishes)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, true));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -179,7 +179,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in features)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, item.Editable));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -199,7 +199,7 @@ namespace BR.Services
             var res = new List<ParameterInfo>();
             foreach (var item in types)
             {
-                res.Add(ToParameterInfo(item.Id, item.Title));
+                res.Add(ToParameterInfo(item.Id, item.Title, true));
             }
             return new ServerResponse<ICollection<ParameterInfo>>(StatusCode.Ok, res);
         }
@@ -213,7 +213,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddCuisine(new Cuisine() { Title = title });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, true));
                 }
                 catch (DbUpdateException)
                 {
@@ -238,7 +238,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddClientType(new ClientType() { Title = title });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, true));
                 }
                 catch (DbUpdateException)
                 {
@@ -263,7 +263,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddGoodFor(new GoodFor() { Title = title });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, true));
                 }
                 catch (DbUpdateException)
                 {
@@ -288,7 +288,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddFeature(new Feature() { Title = title, Editable = true });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, res.Editable));
                 }
                 catch (DbUpdateException)
                 {
@@ -313,7 +313,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddDish(new Dish() { Title = title });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, true));
                 }
                 catch (DbUpdateException)
                 {
@@ -338,7 +338,7 @@ namespace BR.Services
                 try
                 {
                     var res = await _repository.AddSpecialDiet(new SpecialDiet() { Title = title });
-                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title));
+                    return new ServerResponse<ParameterInfo>(StatusCode.Ok, this.ToParameterInfo(res.Id, res.Title, true));
                 }
                 catch (DbUpdateException)
                 {
@@ -737,13 +737,14 @@ namespace BR.Services
 
 
 
-        private ParameterInfo ToParameterInfo(int id, string title)
+        private ParameterInfo ToParameterInfo(int id, string title, bool editable)
         {
             return new ParameterInfo()
             {
                 Id = id,
-                Title = title
-            };
+                Title = title,
+                Editable = editable
+            }; 
         }
     }
 }
