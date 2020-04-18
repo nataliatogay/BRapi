@@ -28,10 +28,10 @@ namespace BR.Controllers
         }
 
 
-        [HttpGet("")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserInfoForAdminResponse>>>> Get()
+        [HttpGet("ShortForAdmin")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForAdminResponse>>>> ShortForAdmin()
         {
-            return new JsonResult(await _userService.GetUsers());
+            return new JsonResult(await _userService.GetUserShortInfoForAdmin());
         }
 
         [HttpGet("ForUsers/{id}")]

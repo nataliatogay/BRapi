@@ -11,14 +11,18 @@ namespace BR.DTO.Clients
 
         public string ClientName { get; set; }
         
-        public string OrganizationName { get; set; }
-        
-        public string MainImage { get; set; }
-        
         public string Email { get; set; }
         
-        public DateTime RegistrationDate { get; set; }
+        public string OrganizationName { get; set; }
         
-        public bool IsBlocked { get; set; }
+        public string MainImagePath { get; set; }
+        
+        public DateTime RegistrationDate { get; set; }
+
+        public DateTime? Blocked { get; set; }
+
+        public DateTime? Deleted { get; set; }
+
+
     }
 }

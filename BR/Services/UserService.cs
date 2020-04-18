@@ -25,7 +25,7 @@ namespace BR.Services
             _reservationService = reservationService;
 
         }
-        public async Task<ServerResponse<ICollection<UserInfoForAdminResponse>>> GetUsers()
+        public async Task<ServerResponse<ICollection<UserShortInfoForAdminResponse>>> GetUserShortInfoForAdmin()
         {
             ICollection<User> users;
             try
@@ -34,20 +34,18 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Error, null);
+                return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Error, null);
             }
             if (users is null)
-                return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Ok, null);
+                return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Ok, null);
 
-            var res = new List<UserInfoForAdminResponse>();
+            var res = new List<UserShortInfoForAdminResponse>();
             foreach (var user in users)
             {
-                res.Add(new UserInfoForAdminResponse()
+                res.Add(new UserShortInfoForAdminResponse()
                 {
-                    BirthDate = user.BirthDate,
                     Email = user.Identity.Email,
                     FirstName = user.FirstName,
-                    Gender = user.Gender,
                     Id = user.Id,
                     ImagePath = user.ImagePath,
                     Blocked = user.Blocked,
@@ -57,7 +55,7 @@ namespace BR.Services
                     RegistrationDate = user.RegistrationDate
                 });
             }
-            return new ServerResponse<ICollection<UserInfoForAdminResponse>>(StatusCode.Ok, res);
+            return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Ok, res);
         }
 
         public async Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id)
@@ -132,6 +130,10 @@ namespace BR.Services
             {
                 return new ServerResponse(StatusCode.UserNotFound);
             }
+            if (user.Deleted != null)
+            {
+                return new ServerResponse(StatusCode.UserDeleted);
+            }
             if (user.Blocked is null)
             {
                 user.Blocked = DateTime.Now;
@@ -151,7 +153,7 @@ namespace BR.Services
 
                     // cancel upcoming reservations
                     var reservations = user.Reservations;
-                    var cancelReason = await _repository.GetCancelReason("UserDeleted");
+                    var cancelReason = await _repository.GetCancelReason("UserBlocked");
 
                     // if closes admin
                     //var admin = (await _repository.GetAdmins()).FirstOrDefault();
@@ -187,11 +189,15 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse(StatusCode.Error);
+                return new ServerResponse(StatusCode.Error);    
             }
             if (user is null)
             {
                 return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (user.Deleted != null)
+            {
+                return new ServerResponse(StatusCode.UserDeleted);
             }
             if (user.Blocked != null)
             {

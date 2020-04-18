@@ -18,9 +18,9 @@ namespace BR.Services.Interfaces
         
         Task<ICollection<ClientShortInfoForUsersResponse>> GetShortClientInfoForUsers();
         
-        Task<ICollection<ClientShortInfoForAdminResponse>> GetShortClientInfoForAdmin();
+        Task<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>> GetShortClientInfoForAdmin();
         
-        Task<ClientFullInfoForAdminResponse> GetFullClientInfoForAdmin(int id);
+        Task<ServerResponse<ClientFullInfoForAdminResponse>> GetFullClientInfoForAdmin(int id);
         
         Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id);
         
@@ -47,7 +47,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse> SetAsMainImage(int imageId);
 
 
-        Task<ServerResponse> UploadImages(UploadImagesRequest uploadRequest);
+        Task<ServerResponse<ICollection<ClientImageInfo>>> UploadImages(UploadImagesRequest uploadRequest);
 
         Task<ServerResponse> DeleteImage(int imageId);
 

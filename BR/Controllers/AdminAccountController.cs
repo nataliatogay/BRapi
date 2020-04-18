@@ -220,7 +220,7 @@ namespace BR.Controllers
 
         [Authorize]
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody]string newPassword)
+        public async Task<ActionResult<ServerResponse>> ChangePassword([FromBody]string newPassword)
         {
             IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser != null)
@@ -235,32 +235,30 @@ namespace BR.Controllers
                 if (result.Succeeded)
                 {
                     identityUser.PasswordHash = _passwordHasher.HashPassword(identityUser, newPassword);
-                    await _userManager.UpdateAsync(identityUser);
-                    return Ok();
-                }
-                else
-                {
-                    StringBuilder errors = new StringBuilder();
-                    foreach (var error in result.Errors)
+                    var updateResult = await _userManager.UpdateAsync(identityUser);
+                    if (updateResult.Succeeded)
                     {
-                        errors.Append(error);
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
                     }
-                    return new JsonResult(errors.ToString());
                 }
+                return new JsonResult(Response(Utils.StatusCode.Error));
             }
-            return new JsonResult("Admin not found");
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
         }
 
 
 
         [Authorize]
         [HttpPost("ChangeEmail")]
-        public async Task<IActionResult> ChangeEmail([FromBody]string newEmail)
+        public async Task<ActionResult<ServerResponse>> ChangeEmail([FromBody]string newEmail)
         {
             IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult("Admin not found");
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
 
@@ -280,16 +278,16 @@ namespace BR.Controllers
                     string msgBody = $"<a href='{callbackUrl}'>link</a>";
 
                     await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                    return Ok();
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    return new JsonResult(Response(Utils.StatusCode.Error));
                 }
             }
             else
             {
-                return new JsonResult("Email is already used");
+                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
             }
         }
 
@@ -437,7 +435,8 @@ namespace BR.Controllers
             {
                 _cache.Remove(resetRequest.Email);
 
-                if (resetRequest.Code.Equals(code)) {
+                if (resetRequest.Code.Equals(code))
+                {
                     var user = await _userManager.FindByNameAsync(resetRequest.Email);
                     if (user == null)
                     {

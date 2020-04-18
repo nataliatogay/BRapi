@@ -212,12 +212,12 @@ namespace BR
             }
             //app.Use(async (context, next) =>
             //{
-            //   // var shalom = context.Request;
-            //   // var reader = new StreamReader(shalom.Body);
-            //   // var data = reader.ReadLine();
-            //   // await next();
+            //    var shalom = context.Request;
+            //    var reader = new StreamReader(shalom.Body);
+            //    var data = reader.ReadLine();
+            //    await next();
             //});
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseStaticFiles();
 

@@ -390,70 +390,101 @@ namespace BR.Services
 
         }
 
-        public async Task<ICollection<ClientShortInfoForAdminResponse>> GetShortClientInfoForAdmin()
+        public async Task<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>> GetShortClientInfoForAdmin()
         {
-            var clients = await _repository.GetClients();
-            if (clients is null)
+            IEnumerable<Client> clients;
+            try
             {
-                return null;
+                clients = await _repository.GetClients();
+
+                if (clients is null)
+                {
+                    return new ServerResponse<ICollection<ClientShortInfoForAdminResponse>>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ClientShortInfoForAdminResponse>>(StatusCode.DbConnectionError, null);
             }
             var res = new List<ClientShortInfoForAdminResponse>();
             foreach (var client in clients)
             {
                 res.Add(new ClientShortInfoForAdminResponse()
                 {
-                    //Id = client.Id,
-                    //Name = client.RestaurantName,
-                    //MainImage = client.MainImagePath,
-                    //Address = client.Address,
-                    //Email = client.Identity.Email,
-                    //RegistrationDate = client.RegistrationDate,
-                    //IsBlocked = client.IsBlocked
+                    Id = client.Id,
+                    ClientName = client.RestaurantName,
+                    Email = client.Identity.Email,
+                    OrganizationName = client.Organization.Title,
+                    MainImagePath = client.MainImagePath,
+                    RegistrationDate = client.RegistrationDate,
+                    Blocked = client.Blocked,
+                    Deleted = client.Deleted
                 });
             }
-            return res;
+            return new ServerResponse<ICollection<ClientShortInfoForAdminResponse>>(StatusCode.Ok, res);
 
         }
 
-        public async Task<ClientFullInfoForAdminResponse> GetFullClientInfoForAdmin(int id)
+        public async Task<ServerResponse<ClientFullInfoForAdminResponse>> GetFullClientInfoForAdmin(int id)
         {
-            var client = await _repository.GetClient(id);
-            if (client is null)
+            Client client;
+            try
             {
-                return null;
+
+                client = await _repository.GetClient(id);
+                if (client is null)
+                {
+                    return new ServerResponse<ClientFullInfoForAdminResponse>(StatusCode.NotFound, null);
+                }
             }
-            return new ClientFullInfoForAdminResponse()
+            catch
             {
-                //Id = client.Id,
-                //Name = client.RestaurantName,
-                //MainImage = client.MainImagePath,
-                //Address = client.Address,
-                //Email = client.Identity.Email,
-                //RegistrationDate = client.RegistrationDate,
-                //IsBlocked = client.IsBlocked,
-                //OpenTime = client.OpenTime,
-                //CloseTime = client.CloseTime,
-                //AdditionalInfo = client.Description,
-                //IsBusinessLunch = client.IsBusinessLunch,
-                //IsChildrenZone = client.IsChildrenZone,
-                //IsLiveMusic = client.IsLiveMusic,
-                //IsOpenSpace = client.IsOpenSpace,
-                //IsParking = client.IsParking,
-                //IsWiFi = client.IsWiFi,
-                //Lat = client.Lat,
-                //Long = client.Long,
-                //MaxReserveDays = client.MaxReserveDays,
-                //IsBarReservation = client.BarReserveDurationAvg is null ? false : true,
-                //ReserveDurationAvg = client.ReserveDurationAvg,
-                //ConfirmationDuration = client.ConfirmationDuration,
-                //ClientTypes = this.ClientTypesToList(client.ClientClientTypes),
-                //Cuisines = this.CuisinesToList(client.ClientCuisines),
-                //Events = this.EventsToList(client.Events),
-                //Phones = this.PhonesToList(client.ClientPhones),
-                //SocialLinks = this.SocialLinksToList(client.SocialLinks),
-                //MealTypes = this.MealTypesToList(client.ClientMealTypes),
-                //Photos = this.ImagesToList(client.ClientImages)
+                return new ServerResponse<ClientFullInfoForAdminResponse>(StatusCode.DbConnectionError, null);
+            }
+
+            var images = new List<ClientImageInfo>();
+            foreach (var item in client.ClientImages)
+            {
+                images.Add(new ClientImageInfo()
+                {
+                    Id = item.Id,
+                    Path = item.ImagePath
+                });
+            }
+            var clientInfo = new ClientFullInfoForAdminResponse()
+            {
+                Id = client.Id,
+                ClientName = client.RestaurantName,
+                OrganizationId = client.OrganizationId,
+                OrganizationName = client.Organization.Title,
+                MainImagePath = client.MainImagePath,
+                Email = client.Identity.Email,
+                RegistrationDate = client.RegistrationDate,
+                Blocked = client.Blocked,
+                Deleted = client.Deleted,
+                OpenTime = client.OpenTime,
+                CloseTime = client.CloseTime,
+                Description = client.Description,
+                Lat = client.Lat,
+                Long = client.Long,
+                MaxReserveDays = client.MaxReserveDays,
+                ReserveDurationAvg = client.ReserveDurationAvg,
+                BarReserveDurationAvg = client.BarReserveDurationAvg,
+                PriceCategory = client.PriceCategory,
+                ConfirmationDuration = client.ConfirmationDuration,
+                ClientTypeIds = this.ClientTypesToIdsList(client.ClientClientTypes),
+                CuisineIds = this.CuisinesToIdsList(client.ClientCuisines),
+                MealTypeIds = this.MealTypesToIdsList(client.ClientMealTypes),
+                DishIds = this.DishesToIdsList(client.ClientDishes),
+                FeatureIds = this.FeaturesToIdsList(client.ClientFeatures),
+                GoodForIds = this.GoodForsToIdsList(client.ClientGoodFors),
+                SpecialDietIds = this.SpecialDietsToIdsList(client.ClientSpecialDiets),
+                Phones = this.PhonesToList(client.ClientPhones),
+                SocialLinks = this.SocialLinksToList(client.SocialLinks),
+                Images = images
             };
+
+            return new ServerResponse<ClientFullInfoForAdminResponse>(StatusCode.Ok, clientInfo);
         }
 
         public async Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id)
@@ -818,7 +849,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse> UploadImages(UploadImagesRequest uploadRequest)
+        public async Task<ServerResponse<ICollection<ClientImageInfo>>> UploadImages(UploadImagesRequest uploadRequest)
         {
             Client client;
             try
@@ -826,12 +857,12 @@ namespace BR.Services
                 client = await _repository.GetClient(uploadRequest.ClientId);
                 if (client is null)
                 {
-                    return new ServerResponse(StatusCode.UserNotFound);
+                    return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.UserNotFound, null);
                 }
             }
             catch
             {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.DbConnectionError, null);
             }
 
             ICollection<ClientImage> clientImages = new List<ClientImage>();
@@ -848,16 +879,33 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse(StatusCode.BlobError);
+                return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.BlobError, null);
             }
             try
             {
                 await _repository.AddClientImages(clientImages);
-                return new ServerResponse(StatusCode.Ok);
+                var cl = await _repository.GetClient(uploadRequest.ClientId);
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.UserNotFound, null);
+                }
+                var images = new List<ClientImageInfo>();
+                if (client != null)
+                {
+                    foreach (var item in client.ClientImages)
+                    {
+                        images.Add(new ClientImageInfo()
+                        {
+                            Id = item.Id,
+                            Path = item.ImagePath
+                        });
+                    }
+                }
+                return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.Ok, images);
             }
             catch
             {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.DbConnectionError, null);
             }
         }
 
@@ -900,6 +948,10 @@ namespace BR.Services
             if (client is null)
             {
                 return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (client.Deleted != null)
+            {
+                return new ServerResponse(StatusCode.UserDeleted);
             }
             if (client.Blocked is null)
             {
@@ -964,6 +1016,10 @@ namespace BR.Services
             if (client is null)
             {
                 return new ServerResponse(StatusCode.UserNotFound);
+            }
+            if (client.Deleted != null)
+            {
+                return new ServerResponse(StatusCode.UserDeleted);
             }
             if (client.Blocked != null)
             {
@@ -1055,6 +1111,8 @@ namespace BR.Services
             };
         }
 
+
+
         private ICollection<string> CuisinesToList(ICollection<ClientCuisine> cuisines)
         {
             if (cuisines is null)
@@ -1068,6 +1126,8 @@ namespace BR.Services
             }
             return res;
         }
+
+
 
         private ICollection<string> ClientTypesToList(ICollection<ClientClientType> clientTypes)
         {
@@ -1096,6 +1156,106 @@ namespace BR.Services
             }
             return res;
         }
+
+        private ICollection<int> CuisinesToIdsList(ICollection<ClientCuisine> cuisines)
+        {
+            if (cuisines is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in cuisines)
+            {
+                res.Add(item.CuisineId);
+            }
+            return res;
+        }
+
+        private ICollection<int> ClientTypesToIdsList(ICollection<ClientClientType> clientTypes)
+        {
+            if (clientTypes is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in clientTypes)
+            {
+                res.Add(item.ClientTypeId);
+            }
+            return res;
+        }
+
+        private ICollection<int> MealTypesToIdsList(ICollection<ClientMealType> mealTypes)
+        {
+            if (mealTypes is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in mealTypes)
+            {
+                res.Add(item.MealTypeId);
+            }
+            return res;
+        }
+
+        private ICollection<int> GoodForsToIdsList(ICollection<ClientGoodFor> goodFors)
+        {
+            if (goodFors is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in goodFors)
+            {
+                res.Add(item.GoodForId);
+            }
+            return res;
+        }
+
+        private ICollection<int> SpecialDietsToIdsList(ICollection<ClientSpecialDiet> specialDiets)
+        {
+            if (specialDiets is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in specialDiets)
+            {
+                res.Add(item.SpecialDietId);
+            }
+            return res;
+        }
+
+        private ICollection<int> DishesToIdsList(ICollection<ClientDish> dishes)
+        {
+            if (dishes is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in dishes)
+            {
+                res.Add(item.DishId);
+            }
+            return res;
+        }
+
+
+        private ICollection<int> FeaturesToIdsList(ICollection<ClientFeature> features)
+        {
+            if (features is null)
+            {
+                return null;
+            }
+            var res = new List<int>();
+            foreach (var item in features)
+            {
+                res.Add(item.FeatureId);
+            }
+            return res;
+        }
+
 
         private ICollection<string> SocialLinksToList(ICollection<SocialLink> socialLinks)
         {

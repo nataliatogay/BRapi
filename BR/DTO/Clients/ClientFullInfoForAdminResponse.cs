@@ -9,33 +9,62 @@ namespace BR.DTO.Clients
     public class ClientFullInfoForAdminResponse
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public string MainImage { get; set; }
+
+        public string ClientName { get; set; }
+
+        public string OrganizationName { get; set; }
+
+        public int OrganizationId { get; set; }
+
         public string Email { get; set; }
+
+        public string MainImagePath { get; set; }
+
+        public ICollection<ClientImageInfo> Images { get; set; }
+
         public DateTime RegistrationDate { get; set; }
-        public bool IsBlocked { get; set; }
-        public float Lat { get; set; }
-        public float Long { get; set; }
+
+        public DateTime? Blocked { get; set; }
+
+        public DateTime? Deleted { get; set; }
+
+        public double Lat { get; set; }
+
+        public double Long { get; set; }
+
         public int OpenTime { get; set; }
+
         public int CloseTime { get; set; }
-        public bool IsParking { get; set; }
-        public bool IsWiFi { get; set; }
-        public bool? IsLiveMusic { get; set; }
-        public bool IsOpenSpace { get; set; }
-        public bool IsChildrenZone { get; set; }
-        public bool IsBusinessLunch { get; set; }
-        public string AdditionalInfo { get; set; }
+
+        public int PriceCategory { get; set; }
+
         public int MaxReserveDays { get; set; }
-        public bool IsBarReservation { get; set; }
+
         public int ReserveDurationAvg { get; set; }
+
+        public int? BarReserveDurationAvg { get; set; }
+
         public int ConfirmationDuration { get; set; }
-        public ICollection<string> Photos { get; set; }
+
+        public string Description { get; set; }
+
         public ICollection<string> SocialLinks { get; set; }
-        public ICollection<string> ClientTypes { get; set; }
-        public ICollection<string> MealTypes { get; set; }
-        public ICollection<string> Cuisines { get; set; }
+
         public ICollection<ClientPhoneInfo> Phones { get; set; }
-        public ICollection<EventInfo> Events { get; set; }
+
+        public ICollection<int> MealTypeIds { get; set; }
+
+        public ICollection<int> ClientTypeIds { get; set; }
+
+        public ICollection<int> CuisineIds { get; set; }
+
+        public ICollection<int> SpecialDietIds { get; set; }
+
+        public ICollection<int> GoodForIds { get; set; }
+
+        public ICollection<int> DishIds { get; set; }
+        
+        public ICollection<int> FeatureIds { get; set; }
+
     }
 }

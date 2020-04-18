@@ -136,7 +136,7 @@ namespace BR.Controllers
         [HttpGet("ShortForAdmin")]
         public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>>> ShortForAdmin()
         {
-            return new JsonResult(Response(await _clientService.GetShortClientInfoForAdmin()));
+            return new JsonResult(await _clientService.GetShortClientInfoForAdmin());
         }
 
 
@@ -194,7 +194,7 @@ namespace BR.Controllers
         [HttpGet("ForAdmin/{id}")]
         public async Task<ActionResult<ServerResponse<ClientFullInfoForAdminResponse>>> FullInfoForAdmin(int id)
         {
-            return new JsonResult(Response(await _clientService.GetFullClientInfoForAdmin(id)));
+            return new JsonResult(await _clientService.GetFullClientInfoForAdmin(id));
         }
 
 
@@ -246,7 +246,7 @@ namespace BR.Controllers
 
         // by owner, admin
         [HttpPut("UploadImages")]
-        public async Task<ActionResult<ServerResponse>> UploadImages([FromBody]UploadImagesRequest uploadRequest)
+        public async Task<ActionResult<ServerResponse<ICollection<ClientImageInfo>>>> UploadImages([FromBody]UploadImagesRequest uploadRequest)
         {
             return new JsonResult(await _clientService.UploadImages(uploadRequest));
         }
