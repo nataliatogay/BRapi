@@ -11,8 +11,31 @@ namespace BR.Services.Interfaces
 {
     public interface IEventService
     {
-        Task<ICollection<EventInfoShort>> GetAllEventsShortInfo();
-        
+
+        Task<ServerResponse<ICollection<EventInfoShort>>> GetEventsForOwners(int clientId, string ownerIdentityId);
+
+        Task<ServerResponse<ICollection<EventInfoShort>>> GetEventsForClients(string clientIdentityId);
+
+        Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId);
+
+        Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForClients(int eventId, string clientIdentityId);
+
+        Task<ServerResponse<EventInfoShort>> AddNewEventByOwner(NewEventByOwnerRequest newRequest, string clientIdentityId);
+
+        Task<ServerResponse<EventInfoShort>> AddNewEventByClient(NewEventByClientRequest newRequest, string ownerIdentityId);
+
+        Task<ServerResponse<EventInfoShort>> UpdateEventByOwner(UpdateEventRequest updateRequest, string ownerIdentityId);
+
+        Task<ServerResponse<EventInfoShort>> UpdateEventByClient(UpdateEventRequest updateRequest, string clientIdentityId);
+
+
+
+
+        // ----------------------------------------------------------------------------
+
+
+        // Task<ICollection<EventInfoShort>> GetAllEventsShortInfo();
+
         Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo();
         
         Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId);

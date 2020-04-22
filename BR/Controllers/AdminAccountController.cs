@@ -121,12 +121,6 @@ namespace BR.Controllers
 
 
 
-        //[HttpPost("LogOut")]
-        //public async Task<IActionResult> LogOut([FromBody]string refreshToken)
-        //{
-        //    await _adminAccountService.LogOut(refreshToken);
-        //    return Ok();
-        //}
 
         [HttpPost("AddRole")]
         public async Task<IActionResult> AddRole([FromBody]string role)
@@ -218,6 +212,8 @@ namespace BR.Controllers
             }
         }
 
+
+
         [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<ActionResult<ServerResponse>> ChangePassword([FromBody]string newPassword)
@@ -260,6 +256,7 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
+            
 
 
             if (await _userManager.FindByNameAsync(newEmail) is null)
@@ -337,8 +334,6 @@ namespace BR.Controllers
         //[AllowAnonymous]
         public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
         {
-            //var data = new StreamReader(Request.Body);
-            //var res = data.ReadToEnd();
             try
             {
                 await _adminAccountService.LogOut(notificationTag);
@@ -347,42 +342,6 @@ namespace BR.Controllers
             return new JsonResult(Response(Utils.StatusCode.Ok));
         }
 
-
-        //[HttpPost("ForgotPassword1")]
-        //[AllowAnonymous]
-        //public async Task<ActionResult<ServerResponse>> ForgotPassword1([FromBody]string email)
-        //{
-        //    var body = new StreamReader(Request.Body);
-        //    //The modelbinder has already read the stream and need to reset the stream index
-        //    body.BaseStream.Seek(0, SeekOrigin.Begin);
-        //    var requestBody = body.ReadToEnd();
-
-        //    //string email = "ui";
-        //    var user = await _userManager.FindByNameAsync(email);
-
-        //    if (user == null)
-        //    {
-        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-        //    }
-
-        //    var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-        //    var callbackUrl = Url.Action("ResetPassword",
-        //        "ClientAccount",
-        //        new { userId = user.Id, code = code },
-        //        protocol: HttpContext.Request.Scheme);
-        //    try
-        //    {
-        //        string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
-        //        await _emailService.SendAsync(email, "Password reset", msgBody);
-        //        return new JsonResult(Response(Utils.StatusCode.Ok));
-        //    }
-        //    catch
-        //    {
-        //        return new JsonResult(Response(Utils.StatusCode.Error));
-
-        //    }
-        //}
 
 
 
@@ -393,12 +352,16 @@ namespace BR.Controllers
 
             if (!_cache.TryGetValue(email, out _))
             {
-                var user = await _userManager.FindByNameAsync(email);
-                if (user == null)
+                var identityUser = await _userManager.FindByNameAsync(email);
+                if (identityUser == null)
                 {
                     return new JsonResult(Response(Utils.StatusCode.UserNotFound));
                 }
-                //var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var roles = await _userManager.GetRolesAsync(identityUser);
+                if (!roles.Contains("Admin"))
+                {
+                    return new JsonResult(Response(Utils.StatusCode.InvalidRole));
+                }
                 var code = _authenticationService.GenerateCode();
                 _cache.Set(email, code, TimeSpan.FromMinutes(2));
 

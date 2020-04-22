@@ -14,14 +14,20 @@ namespace BR.Services.Interfaces
 {
     public interface IClientService
     {
-        Task<ServerResponse> AddNewClient(NewClientRequest newRequest, string clientIdentityId, string addedByIdentityId, string role);
-        
+        Task<ServerResponse> AddNewClientByAdmin(NewClientByAdminRequest newRequest, string clientIdentityId);
+
+        Task<ServerResponse<ClientShortInfoForOwnersResponse>> AddNewClientByOwner(NewClientByOwnerRequest newRequest, string clientIdentityId, string ownerIdentityId);
+
         Task<ICollection<ClientShortInfoForUsersResponse>> GetShortClientInfoForUsers();
         
         Task<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>> GetShortClientInfoForAdmin();
-        
+
+        Task<ServerResponse<ICollection<ClientShortInfoForOwnersResponse>>> GetShortClientInfoForOwners(string ownerIdentityId);
+
         Task<ServerResponse<ClientFullInfoForAdminResponse>> GetFullClientInfoForAdmin(int id);
-        
+
+        Task<ServerResponse<ClientFullInfoForOwnersResponse>> GetFullClientInfoForOwners(int clientId, string ownerIdentityId);
+
         Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id);
         
         Task<ICollection<ClientFullInfoForUsersResponse>> GetFullClientInfoForUsers();

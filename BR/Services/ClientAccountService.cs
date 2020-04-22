@@ -41,6 +41,7 @@ namespace BR.Services
         }
 
 
+
         public async Task LogOut(string notificationTag)
         {
             AccountToken accountToken = await _repository.GetTokenByTag(notificationTag);
@@ -49,6 +50,10 @@ namespace BR.Services
                 await _repository.RemoveToken(accountToken);
             }
         }
+
+
+
+
 
         public async Task<Client> GetInfo(string identityId)
         {

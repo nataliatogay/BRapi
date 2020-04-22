@@ -43,7 +43,7 @@
         UserNotFound,                   // 7
         IncorrectLoginOrPassword,       // 8
         Error,                          // 9
-        UserRegistered,                 // 10    
+        UserRegistered,                 // 10
         EmailUsed,                      // 11
         TokenError,                     // 12
         SendOnConfirmation,             // 13
@@ -56,7 +56,7 @@
         UserDeleted,                    // 20
         DbConnectionError,              // 21
         NotFound,                       // 22
-        Duplicate,                      // 23    
+        Duplicate,                      // 23
         EmailNotConfirmed,              // 24
         BlobError                       // 25
     }

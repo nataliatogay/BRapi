@@ -40,212 +40,72 @@ namespace BR.Controllers
         }
 
         [HttpPost("LogIn")]
-        public async Task<ActionResult<ServerResponse<LogInResponse>>> LogIn([FromBody]LogInRequest model)
+        public async Task<ActionResult<ServerResponse<LogInClientOwnerResponse>>> LogIn([FromBody]LogInRequest model)
         {
             var identityUser = await _userManager.FindByNameAsync(model.Email);
 
             if (identityUser != null)
             {
                 var role = await _userManager.GetRolesAsync(identityUser);
-                if (!role.Contains("Client"))
+                if (!role.Contains("Client") && !role.Contains("Owner"))
                 {
-                    return new JsonResult(Response(Utils.StatusCode.InvalidRole));
+                    return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(Utils.StatusCode.InvalidRole, null));
                 }
-                var blockedRes = await _clientAccountService.ClientIsBlocked(identityUser.Id);
-                if (blockedRes.StatusCode == Utils.StatusCode.Ok)
+                if (role.Contains("Client"))
                 {
-                    if (!blockedRes.Data)
+                    var blockedRes = await _clientAccountService.ClientIsBlocked(identityUser.Id);
+                    if (blockedRes.StatusCode != Utils.StatusCode.Ok)
                     {
-                        var deletedRes = await _clientAccountService.ClientIsDeleted(identityUser.Id);
-                        if (deletedRes.StatusCode == Utils.StatusCode.Ok)
-                        {
-                            if (!deletedRes.Data)
-                            {
-                                bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
-                                if (checkPassword)
-                                {
-                                    return new JsonResult(await _clientAccountService.LogIn(identityUser.UserName, model.NotificationTag));
-                                }
-                            }
-                            else
-                            {
-                                return new JsonResult(Response(Utils.StatusCode.UserDeleted));
-                            }
-                        }
-                        else
-                        {
-                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-                        }
-
-
-
+                        return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(blockedRes.StatusCode, null));
                     }
-                    else
+
+                    if (blockedRes.Data)
                     {
-                        return new JsonResult(Response(Utils.StatusCode.UserBlocked));
+                        return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(Utils.StatusCode.UserBlocked, null));
                     }
+
+
+                    var deletedRes = await _clientAccountService.ClientIsDeleted(identityUser.Id);
+                    if (deletedRes.StatusCode != Utils.StatusCode.Ok)
+                    {
+
+                        return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(deletedRes.StatusCode, null));
+                    }
+                    if (deletedRes.Data)
+                    {
+                        return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(Utils.StatusCode.UserDeleted, null));
+                    }
+
+
+                }
+
+                bool checkPassword = await _userManager.CheckPasswordAsync(identityUser, model.Password);
+                if (checkPassword)
+                {
+                    var loginRes = await _clientAccountService.LogIn(identityUser.UserName, model.NotificationTag);
+                    if (loginRes.StatusCode != Utils.StatusCode.Ok)
+                    {
+                        return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(loginRes.StatusCode, null));
+                    }
+                    return new JsonResult(Response(Utils.StatusCode.Ok, new LogInClientOwnerResponse()
+                    {
+                        AccessToken = loginRes.Data.AccessToken,
+                        RefreshToken = loginRes.Data.RefreshToken,
+                        Role = role[0]
+                    }));
+
                 }
                 else
                 {
-                    return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                    return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(Utils.StatusCode.IncorrectLoginOrPassword, null));
                 }
-            }
-
-            return new JsonResult(Response(Utils.StatusCode.IncorrectLoginOrPassword));
-        }
-
-        [Authorize]
-        [HttpGet("getinfo")]
-        public async Task<IActionResult> GetInfo()
-        {
-
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser == null)
-            {
-                return NotFound();
-            }
-
-            Client clientAccount = await _clientAccountService.GetInfo(identityUser.Id);
-            if (clientAccount is null)
-            {
-                return NotFound();
-            }
-            return new JsonResult(clientAccount);
-        }
-
-
-        [Authorize]
-        [HttpGet("LogOut/{notificationTag}")]
-        public async Task<IActionResult> LogOut(string notificationTag)
-        {
-            await _clientAccountService.LogOut(notificationTag);
-            return Ok();
-        }
-
-
-        
-        [Authorize]
-        [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody]string newPassword)
-        {
-            IdentityUser user = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (user != null)
-            {
-                var _passwordValidator =
-                    HttpContext.RequestServices.GetService(typeof(IPasswordValidator<IdentityUser>)) as IPasswordValidator<IdentityUser>;
-                var _passwordHasher =
-                    HttpContext.RequestServices.GetService(typeof(IPasswordHasher<IdentityUser>)) as IPasswordHasher<IdentityUser>;
-
-                IdentityResult result =
-                    await _passwordValidator.ValidateAsync(_userManager, user, newPassword);
-                if (result.Succeeded)
-                {
-                    user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
-                    await _userManager.UpdateAsync(user);
-                    return Ok();
-                }
-                else
-                {
-                    StringBuilder errors = new StringBuilder();
-                    foreach (var error in result.Errors)
-                    {
-                        errors.Append(error);
-                    }
-                }
-            }
-            return new JsonResult("Client not found");
-        }
-
-
-        [Authorize]
-        [HttpPost("ChangeEmail")]
-        public async Task<IActionResult> ChangeEmail([FromBody]string newEmail)
-        {
-            IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult("Client not found");
-            }
-
-
-            if (await _userManager.FindByNameAsync(newEmail) is null)
-            {
-                if (!_cache.TryGetValue(identityUser.Id, out _))
-                {
-                    _cache.Set(identityUser.Id, newEmail, TimeSpan.FromMinutes(3));
-
-                    var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                    var callbackUrl = Url.Action(
-                                "ConfirmEmail",
-                                "ClientAccount",
-                                new { userId = identityUser.Id, code = emailConfirmationCode },
-                                protocol: HttpContext.Request.Scheme);
-
-                    try
-                    {
-                        string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
-                        await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
-                        return Ok();
-                    }
-                    catch (Exception ex)
-                    {
-                        _cache.Remove(identityUser.Id);
-                        throw ex;
-                    }
-                }
-                else
-                {
-                    return new JsonResult("Link has already been sent");
-                }
-
 
 
             }
             else
             {
-                return new JsonResult("Email is already used");
+                return new JsonResult(new ServerResponse<LogInClientOwnerResponse>(Utils.StatusCode.UserNotFound, null));
             }
-
-        }
-
-
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
-        {
-            if (userId == null || code == null)
-            {
-                return new JsonResult("Error");
-            }
-
-            string newEmail = null;
-            _cache.TryGetValue(userId, out newEmail);
-            if (newEmail != null)
-            {
-                var identityUser = await _userManager.FindByIdAsync(userId);
-                if (identityUser == null)
-                {
-                    return new JsonResult("Error");
-                }
-                var result = await _userManager.ConfirmEmailAsync(identityUser, code);
-                if (result.Succeeded)
-                {
-                    identityUser.Email = newEmail;
-                    identityUser.UserName = newEmail;
-                    var res = await _userManager.UpdateAsync(identityUser);
-                    if (res.Succeeded)
-                    {
-                        _cache.Remove(identityUser.Id);
-                        return Ok();
-                    }
-                }
-            }
-            else
-            {
-                return new JsonResult("Expired");
-            }
-            return new JsonResult("Error");
         }
 
 
@@ -257,10 +117,15 @@ namespace BR.Controllers
 
             if (!_cache.TryGetValue(email, out _))
             {
-                var user = await _userManager.FindByNameAsync(email);
-                if (user == null)
+                var identityUser = await _userManager.FindByNameAsync(email);
+                if (identityUser is null)
                 {
                     return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                }
+                var roles = await _userManager.GetRolesAsync(identityUser);
+                if (!roles.Contains("Client") && !roles.Contains("Owner"))
+                {
+                    return new JsonResult(Response(Utils.StatusCode.InvalidRole));
                 }
 
                 var code = _authenticationService.GenerateCode();
@@ -324,9 +189,170 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.Expired));
             }
+        }
 
+
+
+        [Authorize]
+        [HttpPost("ChangePassword")]
+        public async Task<ActionResult<ServerResponse>> ChangePassword([FromBody]string newPassword)
+        {
+            IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser != null)
+            {
+                var _passwordValidator =
+                    HttpContext.RequestServices.GetService(typeof(IPasswordValidator<IdentityUser>)) as IPasswordValidator<IdentityUser>;
+                var _passwordHasher =
+                    HttpContext.RequestServices.GetService(typeof(IPasswordHasher<IdentityUser>)) as IPasswordHasher<IdentityUser>;
+
+                IdentityResult result =
+                    await _passwordValidator.ValidateAsync(_userManager, identityUser, newPassword);
+                if (result.Succeeded)
+                {
+                    identityUser.PasswordHash = _passwordHasher.HashPassword(identityUser, newPassword);
+                    var updateResult = await _userManager.UpdateAsync(identityUser);
+                    if (updateResult.Succeeded)
+                    {
+                        return new JsonResult(Response(Utils.StatusCode.Ok));
+                    }
+                }
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+        }
+
+
+
+        [Authorize]
+        [HttpPost("ChangeEmail")]
+        public async Task<ActionResult<ServerResponse>> ChangeEmail([FromBody]string newEmail)
+        {
+            IdentityUser identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            if (await _userManager.FindByNameAsync(newEmail) is null)
+            {
+                _cache.Set(identityUser.Id, newEmail, TimeSpan.FromMinutes(3));
+
+                var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+                var callbackUrl = Url.Action(
+                            "ConfirmEmail",
+                            "AdminAccount",
+                            new { userId = identityUser.Id, code = emailConfirmationCode },
+                            protocol: HttpContext.Request.Scheme);
+
+                try
+                {
+                    string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+                    await _emailService.SendAsync(newEmail, "Confirm your email", msgBody);
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
+                }
+                catch
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
+            }
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return new JsonResult("Error");
+            }
+
+            string newEmail = null;
+            _cache.TryGetValue(userId, out newEmail);
+            if (newEmail != null)
+            {
+                var identityUser = await _userManager.FindByIdAsync(userId);
+                if (identityUser == null)
+                {
+                    return new JsonResult("Error");
+                }
+                var result = await _userManager.ConfirmEmailAsync(identityUser, code);
+                if (result.Succeeded)
+                {
+                    identityUser.Email = newEmail;
+                    identityUser.UserName = newEmail;
+                    var res = await _userManager.UpdateAsync(identityUser);
+                    if (res.Succeeded)
+                    {
+                        _cache.Remove(identityUser.Id);
+                        return Ok();
+                    }
+                }
+            }
+            else
+            {
+                return new JsonResult("Expired");
+            }
+            return new JsonResult("Error");
 
         }
+
+
+
+
+
+
+        [Authorize]
+        [HttpPost("LogOut")]
+        public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
+        {
+            try
+            {
+                await _clientAccountService.LogOut(notificationTag);
+            }
+            catch { }
+            return new JsonResult(Response(Utils.StatusCode.Ok));
+        }
+
+
+
+
+
+
+
+
+
+
+
+        [Authorize]
+        [HttpGet("getinfo")]
+        public async Task<IActionResult> GetInfo()
+        {
+
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser == null)
+            {
+                return NotFound();
+            }
+
+            Client clientAccount = await _clientAccountService.GetInfo(identityUser.Id);
+            if (clientAccount is null)
+            {
+                return NotFound();
+            }
+            return new JsonResult(clientAccount);
+        }
+
+
+        
 
 
         [HttpPut("UpdateProfile")]
@@ -391,7 +417,7 @@ namespace BR.Controllers
         }
 
 
-       
+
 
 
     }

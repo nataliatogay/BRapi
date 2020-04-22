@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
-    public class NewClientRequest
+    public class NewClientByAdminRequest
     {
-        public int? OrganizationId { get; set; }
+        public int OrganizationId { get; set; }
 
         [Required]
         public string RestaurantName { get; set; }

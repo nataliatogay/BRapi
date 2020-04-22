@@ -39,38 +39,9 @@ namespace BR.Services
             _blobService = blobService;
         }
 
-        public async Task<ServerResponse> AddNewClient(NewClientRequest newRequest, string clientIdentityId, string addedByIdentityId, string role)
+        public async Task<ServerResponse> AddNewClientByAdmin(NewClientByAdminRequest newRequest, string clientIdentityId)
         {
-            if (role is null)
-            {
-                return new ServerResponse(StatusCode.RoleNotFound);
-            }
-            int organizationId;
-            if (role.ToUpper().Equals("OWNER"))
-            {
-                Owner owner;
-                try
-                {
-                    owner = await _repository.GetOwner(addedByIdentityId);
-                    if (owner is null)
-                    {
-                        return new ServerResponse(StatusCode.UserNotFound);
-                    }
-                    organizationId = owner.OrganizationId;
-                }
-                catch
-                {
-                    return new ServerResponse(StatusCode.DbConnectionError);
-                }
-            }
-            else
-            {
-                if (newRequest.OrganizationId is null)
-                {
-                    return new ServerResponse(StatusCode.Error);
-                }
-                organizationId = newRequest.OrganizationId ?? default(int);
-            }
+
 
             Client client = new Client()
             {
@@ -87,8 +58,8 @@ namespace BR.Services
                 PriceCategory = newRequest.PriceCategory,
                 IdentityId = clientIdentityId,
                 RegistrationDate = DateTime.Now,
-                OrganizationId = organizationId,
-                IsConfirmedByAdmin = role.ToUpper().Equals("ADMIN")
+                OrganizationId = newRequest.OrganizationId,
+                IsConfirmedByAdmin = true
             };
 
 
@@ -122,6 +93,86 @@ namespace BR.Services
             catch
             {
                 return new ServerResponse(StatusCode.Error);
+            }
+
+
+        }
+
+
+        public async Task<ServerResponse<ClientShortInfoForOwnersResponse>> AddNewClientByOwner(NewClientByOwnerRequest newRequest, string clientIdentityId, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<ClientShortInfoForOwnersResponse>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ClientShortInfoForOwnersResponse>(StatusCode.DbConnectionError, null);
+            }
+
+            Client client = new Client()
+            {
+                RestaurantName = newRequest.RestaurantName,
+                Lat = newRequest.Lat,
+                Long = newRequest.Long,
+                OpenTime = newRequest.OpenTime,
+                CloseTime = newRequest.CloseTime,
+                Description = newRequest.Description,
+                MaxReserveDays = newRequest.MaxReserveDays,
+                ReserveDurationAvg = newRequest.ReserveDurationAvg,
+                BarReserveDurationAvg = newRequest.BarReserveDurationAvg,
+                ConfirmationDuration = newRequest.ConfirmationDuration,
+                PriceCategory = newRequest.PriceCategory,
+                IdentityId = clientIdentityId,
+                RegistrationDate = DateTime.Now,
+                OrganizationId = owner.OrganizationId,
+                IsConfirmedByAdmin = false
+            };
+
+            if (newRequest.MainImage is null)
+            {
+                client.MainImagePath = "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg";
+            }
+            else
+            {
+                try
+                {
+                    client.MainImagePath = await _blobService.UploadImage(newRequest.MainImage);
+                }
+                catch
+                {
+                    return new ServerResponse<ClientShortInfoForOwnersResponse>(StatusCode.BlobError, null);
+                }
+            }
+
+
+
+            try
+            {
+                Client addedClient = await _repository.AddClient(client);
+
+                await this.AddClientsParameters(client.Id, newRequest.CuisineIds, newRequest.ClientTypeIds, newRequest.MealTypeIds, newRequest.DishIds, newRequest.GoodForIds, newRequest.SpecialDietIds, newRequest.FeatureIds, newRequest.Phones, newRequest.SocialLinks);
+
+
+                return new ServerResponse<ClientShortInfoForOwnersResponse>(StatusCode.Ok, new ClientShortInfoForOwnersResponse()
+                {
+                    Id = addedClient.Id,
+                    Blocked = addedClient.Blocked,
+                    Deleted = addedClient.Deleted,
+                    ClientName = addedClient.RestaurantName,
+                    Email = addedClient.Identity.Email,
+                    MainImagePath = addedClient.MainImagePath,
+                    RegistrationDate = addedClient.RegistrationDate
+                });
+            }
+            catch
+            {
+                return new ServerResponse<ClientShortInfoForOwnersResponse>(StatusCode.Error, null);
             }
 
 
@@ -425,6 +476,40 @@ namespace BR.Services
 
         }
 
+
+        public async Task<ServerResponse<ICollection<ClientShortInfoForOwnersResponse>>> GetShortClientInfoForOwners(string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null || owner.Organization.Clients is null)
+                {
+                    return new ServerResponse<ICollection<ClientShortInfoForOwnersResponse>>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ClientShortInfoForOwnersResponse>>(StatusCode.DbConnectionError, null);
+            }
+            var res = new List<ClientShortInfoForOwnersResponse>();
+            foreach (var client in owner.Organization.Clients)
+            {
+                res.Add(new ClientShortInfoForOwnersResponse()
+                {
+                    Id = client.Id,
+                    ClientName = client.RestaurantName,
+                    Email = client.Identity.Email,
+                    MainImagePath = client.MainImagePath,
+                    RegistrationDate = client.RegistrationDate,
+                    Blocked = client.Blocked,
+                    Deleted = client.Deleted
+                });
+            }
+            return new ServerResponse<ICollection<ClientShortInfoForOwnersResponse>>(StatusCode.Ok, res);
+        }
+
         public async Task<ServerResponse<ClientFullInfoForAdminResponse>> GetFullClientInfoForAdmin(int id)
         {
             Client client;
@@ -486,6 +571,77 @@ namespace BR.Services
 
             return new ServerResponse<ClientFullInfoForAdminResponse>(StatusCode.Ok, clientInfo);
         }
+
+
+        public async Task<ServerResponse<ClientFullInfoForOwnersResponse>> GetFullClientInfoForOwners(int clientId, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<ClientFullInfoForOwnersResponse>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ClientFullInfoForOwnersResponse>(StatusCode.DbConnectionError, null);
+            }
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+            if(client is null)
+            {
+                return new ServerResponse<ClientFullInfoForOwnersResponse>(StatusCode.NotFound, null);
+            }
+
+            var images = new List<ClientImageInfo>();
+            foreach (var item in client.ClientImages)
+            {
+                images.Add(new ClientImageInfo()
+                {
+                    Id = item.Id,
+                    Path = item.ImagePath
+                });
+            }
+            var clientInfo = new ClientFullInfoForOwnersResponse()
+            {
+                Id = client.Id,
+                ClientName = client.RestaurantName,
+                OrganizationId = client.OrganizationId,
+                OrganizationName = client.Organization.Title,
+                MainImagePath = client.MainImagePath,
+                Email = client.Identity.Email,
+                RegistrationDate = client.RegistrationDate,
+                Blocked = client.Blocked,
+                Deleted = client.Deleted,
+                OpenTime = client.OpenTime,
+                CloseTime = client.CloseTime,
+                Description = client.Description,
+                Lat = client.Lat,
+                Long = client.Long,
+                MaxReserveDays = client.MaxReserveDays,
+                ReserveDurationAvg = client.ReserveDurationAvg,
+                BarReserveDurationAvg = client.BarReserveDurationAvg,
+                PriceCategory = client.PriceCategory,
+                ConfirmationDuration = client.ConfirmationDuration,
+                ClientTypeIds = this.ClientTypesToIdsList(client.ClientClientTypes),
+                CuisineIds = this.CuisinesToIdsList(client.ClientCuisines),
+                MealTypeIds = this.MealTypesToIdsList(client.ClientMealTypes),
+                DishIds = this.DishesToIdsList(client.ClientDishes),
+                FeatureIds = this.FeaturesToIdsList(client.ClientFeatures),
+                GoodForIds = this.GoodForsToIdsList(client.ClientGoodFors),
+                SpecialDietIds = this.SpecialDietsToIdsList(client.ClientSpecialDiets),
+                Phones = this.PhonesToList(client.ClientPhones),
+                SocialLinks = this.SocialLinksToList(client.SocialLinks),
+                Images = images
+            };
+
+            return new ServerResponse<ClientFullInfoForOwnersResponse>(StatusCode.Ok, clientInfo);
+        }
+
+
+
 
         public async Task<ClientFullInfoForUsersResponse> GetFullClientInfoForUsers(int id)
         {

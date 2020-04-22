@@ -8,6 +8,7 @@ using BR.Models;
 using BR.Services;
 using BR.Services.Interfaces;
 using BR.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -28,11 +29,123 @@ namespace BR.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet("/all")]
-        public async Task<ActionResult<ServerResponse<EventInfoShort>>> GetAll()
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("ShortForOwners/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetEventsForOwners(int clientId)
         {
-            return new JsonResult(Response(await _eventService.GetAllEventsShortInfo()));
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _eventService.GetEventsForOwners(clientId, ownerIdentityUser.Id));
         }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("ShortForClients")]
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetEventsForClients()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _eventService.GetEventsForClients(clientIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("FullForOwners/{eventId}")]
+        public async Task<ActionResult<ServerResponse<EventFullInfoForOwners>>> GetEventForOwners(int eventId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _eventService.GetEventFullInfoForOwners(eventId, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("FullForClients/{eventId}")]
+        public async Task<ActionResult<ServerResponse<EventFullInfoForOwners>>> GetEventForClients(int eventId)
+        {
+            var clientrIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientrIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(await _eventService.GetEventFullInfoForClients(eventId, clientrIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("NewByOwner")]
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> AddNewEventByOwner([FromBody]NewEventByOwnerRequest newEventRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.AddNewEventByOwner(newEventRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpPost("NewByClient")]
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> AddNewEventByClient([FromBody]NewEventByClientRequest newEventRequest)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.AddNewEventByClient(newEventRequest, clientIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("UpdateByOwner")]
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> UpdateByOwner ([FromBody]UpdateEventRequest updateRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.UpdateEventByOwner(updateRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpPut("UpdateByClient")]
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> UpdateByClient([FromBody]UpdateEventRequest updateRequest)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.UpdateEventByClient(updateRequest, clientIdentityUser.Id));
+        }
+
+
+
+
+        // ----------------------------------------------------------------------------
+
 
 
         [HttpGet("Upcoming")]
@@ -52,18 +165,9 @@ namespace BR.Controllers
         }
 
 
-        // by client, head waiter, owner
-        [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<Event>>> Post([FromBody]NewEventRequest newEventRequest)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            var roles = await _userManager.GetRolesAsync(identityUser);
-            return new JsonResult(await _eventService.AddEvent(newEventRequest, identityUser.Id, roles.FirstOrDefault()));
-        }
+        
+
+
 
         [HttpPut("")]
         public async Task<ActionResult<Cuisine>> Put([FromBody]UpdateEventRequest updateRequest)
@@ -101,7 +205,7 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _eventService.DeleteMark(eventId, identityUser.Id));
-           
+
         }
 
 
