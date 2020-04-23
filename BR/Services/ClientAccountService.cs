@@ -54,11 +54,125 @@ namespace BR.Services
 
 
 
-
-        public async Task<Client> GetInfo(string identityId)
+        public async Task<ServerResponse<ClientFullInfoForClients>> GetProfileInfo(string clientIdentityId)
         {
-            return await _repository.GetClient(identityId);
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<ClientFullInfoForClients>(StatusCode.UserNotFound, null);
+                }
+
+                var images = new List<ClientImageInfo>();
+                foreach (var item in client.ClientImages)
+                {
+                    images.Add(new ClientImageInfo()
+                    {
+                        Id = item.Id,
+                        Path = item.ImagePath
+                    });
+                }
+
+                var cuisines = new List<int>();
+                foreach (var item in client.ClientCuisines)
+                {
+                    cuisines.Add(item.CuisineId);
+                }
+
+                var clientTypes = new List<int>();
+                foreach (var item in client.ClientClientTypes)
+                {
+                    clientTypes.Add(item.ClientTypeId);
+                }
+
+                var mealTypes = new List<int>();
+                foreach (var item in client.ClientMealTypes)
+                {
+                    mealTypes.Add(item.MealTypeId);
+                }
+
+                var goodFors = new List<int>();
+                foreach (var item in client.ClientGoodFors)
+                {
+                    goodFors.Add(item.GoodForId);
+                }
+
+                var features = new List<int>();
+                foreach (var item in client.ClientFeatures)
+                {
+                    features.Add(item.FeatureId);
+                }
+
+                var dishes = new List<int>();
+                foreach (var item in client.ClientDishes)
+                {
+                    dishes.Add(item.DishId);
+                }
+
+                var specialDiets = new List<int>();
+                foreach (var item in client.ClientSpecialDiets)
+                {
+                    specialDiets.Add(item.SpecialDietId);
+                }
+
+                var socLinks = new List<string>();
+                foreach (var item in client.SocialLinks)
+                {
+                    socLinks.Add(item.Link);
+                }
+
+                var phones = new List<ClientPhoneInfo>();
+                foreach (var item in client.ClientPhones)
+                {
+                    phones.Add(new ClientPhoneInfo()
+                    {
+                        Number = item.Number,
+                        IsWhatsApp = item.IsWhatsApp
+                    });
+                }
+
+
+                return new ServerResponse<ClientFullInfoForClients>(StatusCode.Ok,
+                    new ClientFullInfoForClients()
+                    {
+                        ClientName = client.RestaurantName,
+                        BarReserveDurationAvg = client.BarReserveDurationAvg,
+                        ReserveDurationAvg = client.ReserveDurationAvg,
+                        RegistrationDate = client.RegistrationDate,
+                        PriceCategory = client.PriceCategory,
+                        OrganizationName = client.Organization.Title,
+                        CloseTime = client.CloseTime,
+                        OpenTime = client.OpenTime,
+                        ConfirmationDuration = client.ConfirmationDuration,
+                        Description = client.Description,
+                        Email = client.Identity.Email,
+                        Images = images,
+                        Lat = client.Lat,
+                        Long = client.Long,
+                        MainImagePath = client.MainImagePath,
+                        OrganizationId = client.OrganizationId,
+                        MaxReserveDays = client.MaxReserveDays,
+                        ClientTypeIds = clientTypes,
+                        CuisineIds = cuisines,
+                        DishIds = dishes,
+                        FeatureIds = features,
+                        GoodForIds = goodFors,
+                        MealTypeIds = mealTypes,
+                        Phones = phones,
+                        SocialLinks = socLinks,
+                        SpecialDietIds = specialDiets
+                    });
+            }
+            catch
+            {
+                return new ServerResponse<ClientFullInfoForClients>(StatusCode.DbConnectionError, null);
+            }
         }
+
+
+
 
         public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
         {
@@ -99,6 +213,9 @@ namespace BR.Services
             }
         }
 
+
+
+        // change
         public async Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString)
         {
             Client client;
@@ -114,13 +231,15 @@ namespace BR.Services
             {
                 return new ServerResponse<string>(StatusCode.DbConnectionError, null);
             }
-            return await _clientService.UploadMainImage(new UploadMainImageRequest()
+            return await _clientService.UploadMainImageByAdmin(new UploadMainImageRequest()
             {
                 ClientId = client.Id,
                 ImageString = imageString
             });
         }
 
+
+        // chnage
         public async Task<ServerResponse> UploadImages(string identityId, ICollection<string> imagesString)
         {
             Client client;
@@ -137,22 +256,30 @@ namespace BR.Services
                 return new ServerResponse<string>(StatusCode.DbConnectionError, null);
             }
 
-            return await _clientService.UploadImages(new UploadImagesRequest()
+            return await _clientService.UploadImagesByAdmin(new UploadImagesRequest()
             {
                 ClientId = client.Id,
                 ImageStrings = imagesString
             });
         }
 
+
+        // change
         public async Task<ServerResponse> SetAsMainImage(int imageId)
         {
-            return await _clientService.SetAsMainImage(imageId);
+            return new ServerResponse(StatusCode.Ok);
+            //return await _clientService.SetAsMainImage(imageId);
         }
 
+
+        // change
         public async Task<ServerResponse> DeleteImage(int imageId)
         {
-            return await _clientService.DeleteImage(imageId);
+            return new ServerResponse(StatusCode.Ok); 
+            //return await _clientService.DeleteImage(imageId);
         }
+
+        // change
 
         public async Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient)
         {
@@ -172,7 +299,8 @@ namespace BR.Services
 
             updateRequest.ClientId = client.Id;
 
-            return await _clientService.UpdateClient(updateRequest);
+            return new ServerResponse(StatusCode.Ok);
+            //return await _clientService.UpdateClient(updateRequest);
 
         }
 

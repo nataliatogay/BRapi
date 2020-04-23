@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
-    public class ClientShortInfoForAdminResponse
+    public class ClientShortInfoForAdmin
     {
         public int Id { get; set; }
 

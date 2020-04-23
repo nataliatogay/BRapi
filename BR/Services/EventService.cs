@@ -152,7 +152,7 @@ namespace BR.Services
             Client client;
             try
             {
-                client= await _repository.GetClient(clientIdentityId);
+                client = await _repository.GetClient(clientIdentityId);
                 if (client is null)
                 {
                     return new ServerResponse<EventInfoShort>(StatusCode.UserNotFound, null);
@@ -204,7 +204,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId)
+        public async Task<ServerResponse<EventFullInfo>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId)
         {
 
             Owner owner;
@@ -215,17 +215,17 @@ namespace BR.Services
                 clientEvent = await _repository.GetEvent(eventId);
                 if (owner is null)
                 {
-                    return new ServerResponse<EventFullInfoForOwners>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<EventFullInfo>(StatusCode.UserNotFound, null);
                 }
                 if (owner.Organization is null
                     || owner.Organization.Clients is null
                     || clientEvent is null
                     || !owner.Organization.Clients.Contains(clientEvent.Client))
                 {
-                    return new ServerResponse<EventFullInfoForOwners>(StatusCode.NotFound, null);
+                    return new ServerResponse<EventFullInfo>(StatusCode.NotFound, null);
                 }
-                return new ServerResponse<EventFullInfoForOwners>(StatusCode.Ok,
-                    new EventFullInfoForOwners()
+                return new ServerResponse<EventFullInfo>(StatusCode.Ok,
+                    new EventFullInfo()
                     {
                         Id = clientEvent.Id,
                         Date = clientEvent.Date,
@@ -240,12 +240,12 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<EventFullInfoForOwners>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<EventFullInfo>(StatusCode.DbConnectionError, null);
             }
         }
 
 
-        public async Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForClients(int eventId, string clientIdentityId)
+        public async Task<ServerResponse<EventFullInfo>> GetEventFullInfoForClients(int eventId, string clientIdentityId)
         {
 
             Client client;
@@ -256,14 +256,14 @@ namespace BR.Services
                 clientEvent = await _repository.GetEvent(eventId);
                 if (client is null)
                 {
-                    return new ServerResponse<EventFullInfoForOwners>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<EventFullInfo>(StatusCode.UserNotFound, null);
                 }
                 if (!client.Events.Contains(clientEvent))
                 {
-                    return new ServerResponse<EventFullInfoForOwners>(StatusCode.NotFound, null);
+                    return new ServerResponse<EventFullInfo>(StatusCode.NotFound, null);
                 }
-                return new ServerResponse<EventFullInfoForOwners>(StatusCode.Ok,
-                    new EventFullInfoForOwners()
+                return new ServerResponse<EventFullInfo>(StatusCode.Ok,
+                    new EventFullInfo()
                     {
                         Id = clientEvent.Id,
                         Date = clientEvent.Date,
@@ -278,7 +278,7 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<EventFullInfoForOwners>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<EventFullInfo>(StatusCode.DbConnectionError, null);
             }
         }
 
@@ -365,6 +365,103 @@ namespace BR.Services
                 return new ServerResponse<EventInfoShort>(StatusCode.DbConnectionError, null);
             }
         }
+
+        public async Task<ServerResponse<string>> UpdateEventImageByOwner(UpdateEventImageRequest updateRequest, string ownerIdentityId)
+        {
+            Owner owner;
+            Event clientEvent;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+                if (clientEvent is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(clientEvent.Client))
+                {
+                    return new ServerResponse<string>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+            string path;
+            try
+            {
+                path = await _blobService.UploadImage(updateRequest.ImageString);
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            try
+            {
+                await _blobService.DeleteImage(clientEvent.ImagePath);
+            }
+            catch { }
+
+            clientEvent.ImagePath = path;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<string>> UpdateEventImageByClient(UpdateEventImageRequest updateRequest)
+        {
+            Event clientEvent;
+            try
+            {
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+                if (clientEvent is null)
+                {
+                    return new ServerResponse<string>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+            string path;
+            try
+            {
+                path = await _blobService.UploadImage(updateRequest.ImageString);
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            try
+            {
+                await _blobService.DeleteImage(clientEvent.ImagePath);
+            }
+            catch { }
+
+            clientEvent.ImagePath = path;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
 
 
 

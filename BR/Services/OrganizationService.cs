@@ -23,7 +23,7 @@ namespace BR.Services
             _blobService = blobService;
         }
 
-        public async Task<ServerResponse<OrganizationInfoResponse>> AddNewOrganization(string title)
+        public async Task<ServerResponse<OrganizationInfo>> AddNewOrganization(string title)
         {
             try
             {
@@ -32,7 +32,7 @@ namespace BR.Services
                     Title = title,
                     LogoPath = "https://rb2020storage.blob.core.windows.net/photos/default-logo.png"
                 });
-                return new ServerResponse<OrganizationInfoResponse>(StatusCode.Ok, new OrganizationInfoResponse()
+                return new ServerResponse<OrganizationInfo>(StatusCode.Ok, new OrganizationInfo()
                 {
                     Id = org.Id,
                     LogoPath = org.LogoPath,
@@ -41,43 +41,43 @@ namespace BR.Services
             }
             catch (DbUpdateException)
             {
-                return new ServerResponse<OrganizationInfoResponse>(StatusCode.Duplicate, null);
+                return new ServerResponse<OrganizationInfo>(StatusCode.Duplicate, null);
             }
             catch
             {
-                return new ServerResponse<OrganizationInfoResponse>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<OrganizationInfo>(StatusCode.DbConnectionError, null);
             }
         }
 
-        public async Task<ServerResponse<ICollection<OrganizationInfoResponse>>> GetOrganizations()
+        public async Task<ServerResponse<ICollection<OrganizationInfo>>> GetOrganizations()
         {
             ICollection<Organization> organizations;
             try
             {
                 organizations = await _repository.GetOrganizations();
-                ICollection<OrganizationInfoResponse> res = new List<OrganizationInfoResponse>();
+                ICollection<OrganizationInfo> res = new List<OrganizationInfo>();
                 if (organizations is null)
                 {
-                    return new ServerResponse<ICollection<OrganizationInfoResponse>>(StatusCode.NotFound, null);
+                    return new ServerResponse<ICollection<OrganizationInfo>>(StatusCode.NotFound, null);
                 }
                 foreach (var item in organizations)
                 {
-                    res.Add(new OrganizationInfoResponse()
+                    res.Add(new OrganizationInfo()
                     {
                         Id = item.Id,
                         Title = item.Title,
                         LogoPath = item.LogoPath
                     });
                 }
-                return new ServerResponse<ICollection<OrganizationInfoResponse>>(StatusCode.Ok, res);
+                return new ServerResponse<ICollection<OrganizationInfo>>(StatusCode.Ok, res);
             }
             catch
             {
-                return new ServerResponse<ICollection<OrganizationInfoResponse>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<OrganizationInfo>>(StatusCode.DbConnectionError, null);
             }
         }
 
-        public async Task<ServerResponse<OrganizationInfoResponse>> GetOrganization(int id)
+        public async Task<ServerResponse<OrganizationInfo>> GetOrganization(int id)
         {
             Organization organization;
             try
@@ -85,9 +85,9 @@ namespace BR.Services
                 organization = await _repository.GetOrganization(id);
                 if (organization is null)
                 {
-                    return new ServerResponse<OrganizationInfoResponse>(StatusCode.NotFound, null);
+                    return new ServerResponse<OrganizationInfo>(StatusCode.NotFound, null);
                 }
-                return new ServerResponse<OrganizationInfoResponse>(StatusCode.Ok, new OrganizationInfoResponse()
+                return new ServerResponse<OrganizationInfo>(StatusCode.Ok, new OrganizationInfo()
                 {
                     Id = organization.Id,
                     Title = organization.Title,
@@ -96,7 +96,7 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<OrganizationInfoResponse>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<OrganizationInfo>(StatusCode.DbConnectionError, null);
             }
         }
 

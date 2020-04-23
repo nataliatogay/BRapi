@@ -14,12 +14,13 @@ namespace BR.Services.Interfaces
     public interface IClientAccountService
     {
         Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag);
+
+        Task<ServerResponse<ClientFullInfoForClients>> GetProfileInfo(string clientIdentityId);
         
         Task LogOut(string refreshToken);
         
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
         
-        Task<Client> GetInfo(string identityId);
         
         Task<ServerResponse<bool>> ClientIsBlocked(string identityId);
         

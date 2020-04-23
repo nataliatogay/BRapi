@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Organization
 {
-    public class OrganizationInfoResponse
+    public class OrganizationInfo
     {
         public int Id { get; set; }
 

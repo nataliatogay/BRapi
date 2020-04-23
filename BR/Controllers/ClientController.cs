@@ -50,9 +50,10 @@ namespace BR.Controllers
 
         // NEW CLIENT
 
+            // change return type
         [Authorize(Roles = "Admin")]
         [HttpPost("NewByAdmin")]
-        public async Task<ActionResult<ServerResponse>> NewClientByAdmin([FromBody]NewClientByAdminRequest newClientRequest)
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForAdmin>>> NewClientByAdmin([FromBody]NewClientByAdminRequest newClientRequest)
         {
             string password = _authenticationService.GeneratePassword();
             if (await _userManager.FindByNameAsync(newClientRequest.Email) is null)
@@ -73,19 +74,20 @@ namespace BR.Controllers
                         var resp = await _userManager.AddToRoleAsync(clientIdentity, "Client");
                         if (!resp.Succeeded)
                         {
-                            return new JsonResult(Response(Utils.StatusCode.Error));
+                            return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.Error, null));
                         }
                     }
+                    ServerResponse<ClientShortInfoForAdmin> clientAddResponse;
                     try
                     {
                         var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
                         if (identityUser is null)
                         {
-                            return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                            return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.UserNotFound, null));
                         }
 
                         var identityRole = await _userManager.GetRolesAsync(identityUser);
-                        ServerResponse clientAddResponse = await _clientService.AddNewClientByAdmin(newClientRequest, clientIdentity.Id);
+                        clientAddResponse = await _clientService.AddNewClientByAdmin(newClientRequest, clientIdentity.Id);
 
                         if (clientAddResponse.StatusCode != Utils.StatusCode.Ok)
                         {
@@ -94,83 +96,7 @@ namespace BR.Controllers
                     }
                     catch
                     {
-                        return new JsonResult(Response(Utils.StatusCode.Error));
-                    }
-                    try
-                    {
-                        string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
-
-                        await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
-                        return new JsonResult(Response(Utils.StatusCode.Ok));
-                    }
-                    catch
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.Error));
-                    }
-                }
-                else
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-            }
-            else
-            {
-                return new JsonResult(Response(Utils.StatusCode.EmailUsed));
-            }
-        }
-
-
-        [Authorize(Roles = "Owner")]
-        [HttpPost("NewByOwner")]
-        public async Task<ActionResult<ServerResponse<ClientShortInfoForOwnersResponse>>> NewClientByOwner([FromBody]NewClientByOwnerRequest newClientRequest)
-        {
-            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (ownerIdentityUser is null)
-            {
-                return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.UserNotFound, null));
-            }
-            string password = _authenticationService.GeneratePassword();
-            if (await _userManager.FindByNameAsync(newClientRequest.Email) is null)
-            {
-                IdentityUser clientIdentity = new IdentityUser()
-                {
-                    Email = newClientRequest.Email,
-                    UserName = newClientRequest.Email
-                };
-
-                IdentityResult res = await _userManager.CreateAsync(clientIdentity, password);
-                if (res.Succeeded)
-                {
-                    clientIdentity = await _userManager.FindByNameAsync(newClientRequest.Email);
-                    var role = await _roleManager.FindByNameAsync("Client");
-                    if (role != null)
-                    {
-                        var resp = await _userManager.AddToRoleAsync(clientIdentity, "Client");
-                        if (!resp.Succeeded)
-                        {
-                            return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.Error, null));
-                        }
-                    }
-                    ServerResponse<ClientShortInfoForOwnersResponse> clientAddResponse;
-                    try
-                    {
-                        var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-                        if (identityUser is null)
-                        {
-                            return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.UserNotFound, null));
-                        }
-
-                        var identityRole = await _userManager.GetRolesAsync(identityUser);
-                        clientAddResponse = await _clientService.AddNewClientByOwner(newClientRequest, clientIdentity.Id, ownerIdentityUser.Id);
-
-                        if (clientAddResponse.StatusCode != Utils.StatusCode.Ok)
-                        {
-                            return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(clientAddResponse.StatusCode, null));
-                        }
-                    }
-                    catch
-                    {
-                        return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.Error, null));
+                        return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.Error, null));
                     }
                     try
                     {
@@ -181,34 +107,127 @@ namespace BR.Controllers
                     }
                     catch
                     {
-                        return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.Error, null));
+                        return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.SendingMailError, null));
                     }
                 }
                 else
                 {
-                    return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.Error, null));
+                    return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.Error, null));
                 }
             }
             else
             {
-                return new JsonResult(new ServerResponse<ClientShortInfoForOwnersResponse>(Utils.StatusCode.EmailUsed, null));
+                return new JsonResult(new ServerResponse<ClientShortInfoForAdmin>(Utils.StatusCode.EmailUsed, null));
             }
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("NewByOwner")]
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForOwners>>> NewClientByOwner([FromBody]NewClientByOwnerRequest newClientRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+            }
+            string password = _authenticationService.GeneratePassword();
+            if (await _userManager.FindByNameAsync(newClientRequest.Email) is null)
+            {
+                IdentityUser clientIdentity = new IdentityUser()
+                {
+                    Email = newClientRequest.Email,
+                    UserName = newClientRequest.Email
+                };
+
+                IdentityResult res = await _userManager.CreateAsync(clientIdentity, password);
+                if (res.Succeeded)
+                {
+                    clientIdentity = await _userManager.FindByNameAsync(newClientRequest.Email);
+                    var role = await _roleManager.FindByNameAsync("Client");
+                    if (role != null)
+                    {
+                        var resp = await _userManager.AddToRoleAsync(clientIdentity, "Client");
+                        if (!resp.Succeeded)
+                        {
+                            return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
+                        }
+                    }
+                    ServerResponse<ClientShortInfoForOwners> clientAddResponse;
+                    try
+                    {
+                        var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                        if (identityUser is null)
+                        {
+                            return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+                        }
+
+                        var identityRole = await _userManager.GetRolesAsync(identityUser);
+                        clientAddResponse = await _clientService.AddNewClientByOwner(newClientRequest, clientIdentity.Id, ownerIdentityUser.Id);
+
+                        if (clientAddResponse.StatusCode != Utils.StatusCode.Ok)
+                        {
+                            return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(clientAddResponse.StatusCode, null));
+                        }
+                    }
+                    catch
+                    {
+                        return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
+                    }
+                    try
+                    {
+                        string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
+
+                        await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
+                        return new JsonResult(clientAddResponse);
+                    }
+                    catch
+                    {
+                        return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
+                    }
+                }
+                else
+                {
+                    return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
+                }
+            }
+            else
+            {
+                return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.EmailUsed, null));
+            }
+        }
+
+
+        // UPDATE CLIENT
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("UpdateByAdmin")]
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForAdmin>>> UpdateByAdmin([FromBody]UpdateClientRequest updateRequest)
+        {
+            return new JsonResult(await _clientService.UpdateClientByAdmin(updateRequest));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("UpdateByOwner")]
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForOwners>>> UpdateByOwner([FromBody]UpdateClientRequest updateRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _clientService.UpdateClientByOwner(updateRequest, ownerIdentityUser.Id));
         }
 
 
 
         // GET SHORT INFO
 
-        [HttpGet("ShortForUsers")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> ShortForUsers()
-        {
-            return new JsonResult(Response(await _clientService.GetShortClientInfoForUsers()));
-        }
-
 
         [Authorize(Roles = "Admin")]
         [HttpGet("ShortForAdmin")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>>> ShortForAdmin()
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForAdmin>>>> ShortForAdmin()
         {
             return new JsonResult(await _clientService.GetShortClientInfoForAdmin());
         }
@@ -216,13 +235,13 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Owner")]
         [HttpGet("ShortForOwners")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForAdminResponse>>>> ShortForOwner()
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForOwners>>>> ShortForOwner()
         {
 
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
-                return new JsonResult(new ServerResponse<ICollection<ClientShortInfoForAdminResponse>>(Utils.StatusCode.UserNotFound, null));
+                return new JsonResult(new ServerResponse<ICollection<ClientShortInfoForOwners>>(Utils.StatusCode.UserNotFound, null));
             }
 
             return new JsonResult(await _clientService.GetShortClientInfoForOwners(identityUser.Id));
@@ -233,37 +252,163 @@ namespace BR.Controllers
         // FULL INFO
 
         [Authorize(Roles = "Admin")]
-        [HttpGet("ForAdmin/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdminResponse>>> FullInfoForAdmin(int id)
+        [HttpGet("FullInfoForAdmin/{id}")]
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdmin>>> FullInfoForAdmin(int id)
         {
             return new JsonResult(await _clientService.GetFullClientInfoForAdmin(id));
         }
 
 
+        [Authorize(Roles = "Owner")]
+        [HttpGet("FullInfoForOwners/{id}")]
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForOwners>>> FullInfoForOwners(int id)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ClientFullInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _clientService.GetFullClientInfoForOwners(id, ownerIdentityUser.Id));
+        }
+
+
+
+        // MAIN IMAGE
+
+        [Authorize(Roles ="Admin")]
+        [HttpPost("UploadMainImageByAdmin")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByAdmin([FromBody]UploadMainImageRequest uploadRequest)
+        {
+            return new JsonResult(await _clientService.UploadMainImageByAdmin(uploadRequest));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("UploadMainImageByOwner")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByOwner([FromBody]UploadMainImageRequest uploadRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _clientService.UploadMainImageByOwner(uploadRequest, ownerIdentityUser.Id));
+        }
+
+
+
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("SetAsMainImageByAdmin")]
+        public async Task<ActionResult<ServerResponse>> SetAsMainImageByAdmin([FromBody]int imageId)
+        {
+            return new JsonResult(await _clientService.SetAsMainImageByAdmin(imageId));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("SetAsMainImageByOwner")]
+        public async Task<ActionResult<ServerResponse>> SetAsMainImageByOwner([FromBody]int imageId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientService.SetAsMainImageByOwner(imageId, ownerIdentityUser.Id));
+        }
+
+
+
+        // GALLERY IMAGES
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("UploadImagesByAdmin")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientImageInfo>>>> UploadImagesByAdmin([FromBody]UploadImagesRequest uploadRequest)
+        {
+            return new JsonResult(await _clientService.UploadImagesByAdmin(uploadRequest));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("UploadImagesByOwner")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientImageInfo>>>> UploadImagesByOwner([FromBody]UploadImagesRequest uploadRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ICollection<ClientImageInfo>>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _clientService.UploadImagesByOwner(uploadRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeleteImageByAdmin/{id}")]
+        public async Task<ActionResult<ServerResponse>> DeleteImageByAdmin(int id)
+        {
+            return new JsonResult(await _clientService.DeleteImageByAdmin(id));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpDelete("DeleteImageByOwner/{id}")]
+        public async Task<ActionResult<ServerResponse>> DeleteImageByOwner(int id)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientService.DeleteImageByOwner(id, ownerIdentityUser.Id));
+        }
+
+
+        // BLOCK/UNBLOCK
+
+        [Authorize(Roles="Admin")]
+        [HttpPut("Block")]
+        public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]int clientId)
+        {
+            return new JsonResult(await _clientService.BlockClient(clientId));
+        }
+
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("Unblock")]
+        public async Task<ActionResult<ServerResponse>> UnblockClient([FromBody]int clientId)
+        {
+            return new JsonResult(await _clientService.UnblockClient(clientId));
+        }
+
+
+
+
+        // ----------------------------------------------------------------------------
+
+
+
+
+
+        [HttpGet("ShortForUsers")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> ShortForUsers()
+        {
+            return new JsonResult(Response(await _clientService.GetShortClientInfoForUsers()));
+        }
+
+
         [HttpGet("ForUsers/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdminResponse>>> FullInfoForUsers(int id)
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdmin>>> FullInfoForUsers(int id)
         {
             return new JsonResult(Response(await _clientService.GetFullClientInfoForUsers(id)));
         }
 
 
-        [Authorize(Roles = "Owner")]
-        [HttpGet("ForOwners/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientFullInfoForOwnersResponse>>> FullInfoForOwners(int id)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(new ServerResponse<ICollection<ClientShortInfoForAdminResponse>>(Utils.StatusCode.UserNotFound, null));
-            }
-
-            return new JsonResult(await _clientService.GetFullClientInfoForOwners(id, identityUser.Id));
-        }
-
-
-
         [HttpGet("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> Favourite()
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> Favourite()
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -287,7 +432,7 @@ namespace BR.Controllers
 
 
         [HttpDelete("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsersResponse>>>> DeleteFavourite(int clientId)
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> DeleteFavourite(int clientId)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -301,14 +446,14 @@ namespace BR.Controllers
 
 
         [HttpGet("mealtype")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsersResponse>>>> Get(string mealType)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Get(string mealType)
         {
             return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType)));
         }
 
 
         [HttpGet("search")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsersResponse>>>> Search(string name)
+        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Search(string name)
         {
             return new JsonResult(Response(await _clientService.GetClientsByName(name)));
         }
@@ -326,67 +471,6 @@ namespace BR.Controllers
 
 
 
-
-
-
-
-        // by owner, admin
-        [HttpPut("")]
-        public async Task<ActionResult<ServerResponse<Client>>> Update([FromBody]UpdateClientRequest updateRequest)
-        {
-            return new JsonResult(Response(await _clientService.UpdateClient(updateRequest)));
-        }
-
-
-        // by owner, admin
-        // [Authorize]
-        [HttpPost("UploadMainImage")]
-        public async Task<ActionResult<ServerResponse<string>>> UploadMainImage([FromBody]UploadMainImageRequest uploadRequest)
-        {
-            return new JsonResult(await _clientService.UploadMainImage(uploadRequest));
-        }
-
-
-        // by owner, admin
-        // [Authorize]
-        [HttpPut("SetAsMainImage")]
-        public async Task<ActionResult<ServerResponse>> SetAsMainImage([FromBody]int imageId)
-        {
-            return new JsonResult(await _clientService.SetAsMainImage(imageId));
-        }
-
-
-        // by owner, admin
-        [HttpPut("UploadImages")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientImageInfo>>>> UploadImages([FromBody]UploadImagesRequest uploadRequest)
-        {
-            return new JsonResult(await _clientService.UploadImages(uploadRequest));
-        }
-
-
-        // by owner, admin
-        [HttpDelete("DeleteImage/{id}")]
-        public async Task<ActionResult<ServerResponse>> DeleteImage(int id)
-        {
-            return new JsonResult(await _clientService.DeleteImage(id));
-        }
-
-
-        // by admin
-        [HttpPut("Block")]
-        public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]int clientId)
-        {
-            return new JsonResult(await _clientService.BlockClient(clientId));
-        }
-
-
-
-        // by admin
-        [HttpPut("Unblock")]
-        public async Task<ActionResult<ServerResponse>> UnblockClient([FromBody]int clientId)
-        {
-            return new JsonResult(await _clientService.UnblockClient(clientId));
-        }
 
 
 

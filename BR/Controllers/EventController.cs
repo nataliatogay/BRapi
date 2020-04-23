@@ -37,7 +37,7 @@ namespace BR.Controllers
             var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (ownerIdentityUser is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                return new JsonResult(new ServerResponse<ICollection<EventInfoShort>>(Utils.StatusCode.UserNotFound, null));
             }
 
             return new JsonResult(await _eventService.GetEventsForOwners(clientId, ownerIdentityUser.Id));
@@ -51,7 +51,7 @@ namespace BR.Controllers
             var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (clientIdentityUser is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                return new JsonResult(new ServerResponse<ICollection<EventInfoShort>>(Utils.StatusCode.UserNotFound, null));
             }
 
             return new JsonResult(await _eventService.GetEventsForClients(clientIdentityUser.Id));
@@ -60,12 +60,12 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Owner")]
         [HttpGet("FullForOwners/{eventId}")]
-        public async Task<ActionResult<ServerResponse<EventFullInfoForOwners>>> GetEventForOwners(int eventId)
+        public async Task<ActionResult<ServerResponse<EventFullInfo>>> GetEventForOwners(int eventId)
         {
             var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (ownerIdentityUser is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                return new JsonResult(new ServerResponse<EventFullInfo>(Utils.StatusCode.UserNotFound, null));
             }
 
             return new JsonResult(await _eventService.GetEventFullInfoForOwners(eventId, ownerIdentityUser.Id));
@@ -74,12 +74,12 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Client")]
         [HttpGet("FullForClients/{eventId}")]
-        public async Task<ActionResult<ServerResponse<EventFullInfoForOwners>>> GetEventForClients(int eventId)
+        public async Task<ActionResult<ServerResponse<EventFullInfo>>> GetEventForClients(int eventId)
         {
             var clientrIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (clientrIdentityUser is null)
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                return new JsonResult(new ServerResponse<EventFullInfo>(Utils.StatusCode.UserNotFound, null));
             }
 
             return new JsonResult(await _eventService.GetEventFullInfoForClients(eventId, clientrIdentityUser.Id));
@@ -141,6 +141,27 @@ namespace BR.Controllers
             return new JsonResult(await _eventService.UpdateEventByClient(updateRequest, clientIdentityUser.Id));
         }
 
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("UpdateImageByOwner")]
+        public async Task<ActionResult<ServerResponse<string>>> UpdateImageByOwner([FromBody]UpdateEventImageRequest updateRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.UpdateEventImageByOwner(updateRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpPut("UpdateImageByClient")]
+        public async Task<ActionResult<ServerResponse<string>>> UpdateImageByClientOwner([FromBody]UpdateEventImageRequest updateRequest)
+        {
+            return new JsonResult(await _eventService.UpdateEventImageByClient(updateRequest));
+        }
 
 
 

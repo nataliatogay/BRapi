@@ -27,19 +27,19 @@ namespace BR.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<OrganizationInfoResponse>>> Post([FromBody]string title)
+        public async Task<ActionResult<ServerResponse<OrganizationInfo>>> Post([FromBody]string title)
         {
             return new JsonResult(await _organizationService.AddNewOrganization(title));
         }
 
         [HttpGet]
-        public async Task<ActionResult<ServerResponse<ICollection<OrganizationInfoResponse>>>> GetOrganizations()
+        public async Task<ActionResult<ServerResponse<ICollection<OrganizationInfo>>>> GetOrganizations()
         {
             return new JsonResult(await _organizationService.GetOrganizations());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServerResponse<OrganizationInfoResponse>>> GetOrganization(int id)
+        public async Task<ActionResult<ServerResponse<OrganizationInfo>>> GetOrganization(int id)
         {
             return new JsonResult(await _organizationService.GetOrganization(id));
         }

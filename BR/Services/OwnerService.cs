@@ -1,4 +1,5 @@
 ﻿using BR.DTO.Clients;
+using BR.DTO.Organization;
 using BR.DTO.Owners;
 using BR.EF;
 using BR.Models;
@@ -63,6 +64,43 @@ namespace BR.Services
             }
 
 
+        }
+
+        public async Task<ServerResponse<OwnerInfoForOwners>> GetOwnerInfoForOwners(string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if(owner is null)
+                {
+                    return new ServerResponse<OwnerInfoForOwners>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<OwnerInfoForOwners>(StatusCode.DbConnectionError, null);
+            }
+
+            OrganizationInfo organizationInfo = null;
+            if(owner.Organization != null)
+            {
+                organizationInfo = new OrganizationInfo()
+                {
+                    Id = owner.Organization.Id,
+                    Title = owner.Organization.Title,
+                    LogoPath = owner.Organization.LogoPath
+                };
+            }
+
+            return new ServerResponse<OwnerInfoForOwners>(StatusCode.Ok,
+                new OwnerInfoForOwners()
+                {
+                    Name = owner.Name,
+                    Email = owner.Identity.Email,
+                    PhoneNumber = owner.Identity.PhoneNumber,
+                    Organization = organizationInfo
+                });
         }
 
     }

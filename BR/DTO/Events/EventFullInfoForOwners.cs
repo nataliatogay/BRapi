@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Events
 {
-    public class EventFullInfoForOwners
+    public class EventFullInfo
     {
         public int Id { get; set; }
         

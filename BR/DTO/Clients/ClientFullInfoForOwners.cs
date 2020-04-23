@@ -1,12 +1,11 @@
-﻿using BR.DTO.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
-    public class ClientFullInfoForAdminResponse
+    public class ClientFullInfoForOwners
     {
         public int Id { get; set; }
 
@@ -63,8 +62,7 @@ namespace BR.DTO.Clients
         public ICollection<int> GoodForIds { get; set; }
 
         public ICollection<int> DishIds { get; set; }
-        
-        public ICollection<int> FeatureIds { get; set; }
 
+        public ICollection<int> FeatureIds { get; set; }
     }
 }

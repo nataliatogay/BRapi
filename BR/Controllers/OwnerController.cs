@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BR.DTO.Owners;
 using BR.Services.Interfaces;
 using BR.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,7 @@ namespace BR.Controllers
         }
 
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse>> Post([FromBody]NewOwnerRequest newOwnerRequest)
         {
@@ -109,5 +111,18 @@ namespace BR.Controllers
 
         }
 
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("ForOwners")]
+        public async Task<ActionResult<ServerResponse<OwnerInfoForOwners>>> GetOwnerInfoForOwners()
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<OwnerInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _ownerService.GetOwnerInfoForOwners(ownerIdentityUser.Id));
+        }
     }
 }

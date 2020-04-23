@@ -109,7 +109,6 @@ namespace BR.Controllers
         }
 
 
-
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
         public async Task<ActionResult<ServerResponse>> ForgotPassword([FromBody]string email)
@@ -226,7 +225,8 @@ namespace BR.Controllers
 
 
 
-        [Authorize]
+        [Authorize(Roles = "Owner")]
+        [Authorize(Roles = "Client")]
         [HttpPost("ChangeEmail")]
         public async Task<ActionResult<ServerResponse>> ChangeEmail([FromBody]string newEmail)
         {
@@ -307,9 +307,6 @@ namespace BR.Controllers
 
 
 
-
-
-
         [Authorize]
         [HttpPost("LogOut")]
         public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
@@ -324,35 +321,36 @@ namespace BR.Controllers
 
 
 
-
-
-
-
-
-
-
-
-        [Authorize]
-        [HttpGet("getinfo")]
-        public async Task<IActionResult> GetInfo()
+        [Authorize(Roles = "Client")]
+        [HttpGet("profileInfo")]
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForClients>>> GetInfo()
         {
 
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser == null)
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser == null)
             {
-                return NotFound();
+                return new JsonResult(new ServerResponse<ClientFullInfoForClients>(Utils.StatusCode.InvalidRole, null));
             }
 
-            Client clientAccount = await _clientAccountService.GetInfo(identityUser.Id);
-            if (clientAccount is null)
-            {
-                return NotFound();
-            }
-            return new JsonResult(clientAccount);
+            return new JsonResult(await _clientAccountService.GetProfileInfo(clientIdentityUser.Id));
+            
+            
         }
 
 
-        
+        // -------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         [HttpPut("UpdateProfile")]

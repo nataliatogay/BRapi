@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
-    public class ClientFullInfoForUsersResponse
+    public class ClientFullInfoForUsers
     {
         public int Id { get; set; }
         public string Name { get; set; }

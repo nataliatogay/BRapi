@@ -16,9 +16,9 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ICollection<EventInfoShort>>> GetEventsForClients(string clientIdentityId);
 
-        Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId);
+        Task<ServerResponse<EventFullInfo>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId);
 
-        Task<ServerResponse<EventFullInfoForOwners>> GetEventFullInfoForClients(int eventId, string clientIdentityId);
+        Task<ServerResponse<EventFullInfo>> GetEventFullInfoForClients(int eventId, string clientIdentityId);
 
         Task<ServerResponse<EventInfoShort>> AddNewEventByOwner(NewEventByOwnerRequest newRequest, string clientIdentityId);
 
@@ -27,6 +27,10 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<EventInfoShort>> UpdateEventByOwner(UpdateEventRequest updateRequest, string ownerIdentityId);
 
         Task<ServerResponse<EventInfoShort>> UpdateEventByClient(UpdateEventRequest updateRequest, string clientIdentityId);
+
+        Task<ServerResponse<string>> UpdateEventImageByOwner(UpdateEventImageRequest updateRequest, string ownerIdentityId);
+
+        Task<ServerResponse<string>> UpdateEventImageByClient(UpdateEventImageRequest updateRequest);
 
 
 
