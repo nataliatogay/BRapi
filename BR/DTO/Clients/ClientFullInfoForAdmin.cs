@@ -1,4 +1,5 @@
 ﻿using BR.DTO.Events;
+using BR.DTO.Organization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,7 @@ namespace BR.DTO.Clients
 
         public string ClientName { get; set; }
 
-        public string OrganizationName { get; set; }
-
-        public int OrganizationId { get; set; }
+        public OrganizationInfo Organization { get; set; }
 
         public string Email { get; set; }
 

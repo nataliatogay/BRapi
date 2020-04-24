@@ -20,6 +20,7 @@ using BR.DTO.Users;
 using BR.DTO.Events;
 using BR.DTO.Schema;
 using Microsoft.EntityFrameworkCore;
+using BR.DTO.Organization;
 
 namespace BR.Services
 {
@@ -544,8 +545,12 @@ namespace BR.Services
             {
                 Id = client.Id,
                 ClientName = client.RestaurantName,
-                OrganizationId = client.OrganizationId,
-                OrganizationName = client.Organization.Title,
+                Organization = new OrganizationInfo()
+                {
+                    Id = client.OrganizationId,
+                    Title = client.Organization.Title,
+                    LogoPath = client.Organization.LogoPath
+                },
                 MainImagePath = client.MainImagePath,
                 Email = client.Identity.Email,
                 RegistrationDate = client.RegistrationDate,
@@ -979,7 +984,7 @@ namespace BR.Services
             try
             {
                 await _repository.AddClientImages(clientImages);
-                var cl = await _repository.GetClient(uploadRequest.ClientId);
+                //var cl = await _repository.GetClient(uploadRequest.ClientId);
                 if (client is null)
                 {
                     return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.UserNotFound, null);
@@ -1017,7 +1022,7 @@ namespace BR.Services
                     return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.UserNotFound, null);
                 }
                 client = await _repository.GetClient(uploadRequest.ClientId);
-                if (client is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(client)) 
+                if (client is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(client))
                 {
                     return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.NotFound, null);
                 }
@@ -1103,7 +1108,7 @@ namespace BR.Services
             try
             {
                 owner = await _repository.GetOwner(ownerIdentityId);
-                if(owner is null)
+                if (owner is null)
                 {
                     return new ServerResponse(StatusCode.UserNotFound);
                 }

@@ -306,6 +306,13 @@ namespace BR.Controllers
         }
 
 
+        [HttpPost("Token")]
+        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
+        {
+            return new JsonResult(await _clientAccountService.UpdateToken(refreshToken));
+        }
+
+
 
         [Authorize]
         [HttpPost("LogOut")]
@@ -322,7 +329,7 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "Client")]
-        [HttpGet("profileInfo")]
+        [HttpGet("ProfileInfo")]
         public async Task<ActionResult<ServerResponse<ClientFullInfoForClients>>> GetInfo()
         {
 
@@ -338,21 +345,6 @@ namespace BR.Controllers
         }
 
 
-        // -------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         [HttpPut("UpdateProfile")]
         public async Task<ActionResult<ServerResponse>> UpdateClientProfile(UpdateClientRequest updateRequest)
         {
@@ -365,9 +357,8 @@ namespace BR.Controllers
         }
 
 
-
         // by client
-        // [Authorize]
+        [Authorize(Roles ="Client")]
         [HttpPost("UploadMainImage")]
         public async Task<ActionResult<ServerResponse<string>>> UploadMainImage([FromBody]string imageString)
         {
@@ -380,7 +371,7 @@ namespace BR.Controllers
         }
 
 
-        // by client
+        [Authorize(Roles = "Client")]
         [HttpPut("SetAsMainImage")]
         public async Task<ActionResult<ServerResponse>> SetAsMainImage([FromBody]int imageId)
         {
@@ -388,9 +379,9 @@ namespace BR.Controllers
         }
 
 
-        // [Authorize]
-        [HttpPut("UploadImages")]
-        public async Task<ActionResult<ServerResponse>> UploadImages([FromBody]ICollection<string> imagesString)
+        [Authorize(Roles ="Client")]
+        [HttpPost("UploadImages")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientImageInfo>>>> UploadImages([FromBody]ICollection<string> imagesString)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -401,18 +392,35 @@ namespace BR.Controllers
         }
 
 
-        // [Authorize]
+        [Authorize(Roles = "Client")]
         [HttpDelete("DeleteImage/{id}")]
         public async Task<ActionResult<ServerResponse>> DeleteImage(int id)
         {
             return new JsonResult(await _clientAccountService.DeleteImage(id));
         }
 
-        [HttpPost("Token")]
-        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
-        {
-            return new JsonResult(await _clientAccountService.UpdateToken(refreshToken));
-        }
+
+        // ====================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

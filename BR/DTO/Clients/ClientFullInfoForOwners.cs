@@ -23,10 +23,6 @@ namespace BR.DTO.Clients
 
         public DateTime RegistrationDate { get; set; }
 
-        public DateTime? Blocked { get; set; }
-
-        public DateTime? Deleted { get; set; }
-
         public double Lat { get; set; }
 
         public double Long { get; set; }
@@ -36,6 +32,10 @@ namespace BR.DTO.Clients
         public int CloseTime { get; set; }
 
         public int PriceCategory { get; set; }
+
+        public DateTime? Blocked { get; set; }
+
+        public DateTime? Deleted { get; set; }
 
         public int MaxReserveDays { get; set; }
 
