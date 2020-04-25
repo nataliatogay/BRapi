@@ -66,13 +66,14 @@ namespace BR.Services
 
         }
 
+
         public async Task<ServerResponse<OwnerInfoForOwners>> GetOwnerInfoForOwners(string ownerIdentityId)
         {
             Owner owner;
             try
             {
                 owner = await _repository.GetOwner(ownerIdentityId);
-                if(owner is null)
+                if (owner is null)
                 {
                     return new ServerResponse<OwnerInfoForOwners>(StatusCode.UserNotFound, null);
                 }
@@ -83,7 +84,7 @@ namespace BR.Services
             }
 
             OrganizationInfo organizationInfo = null;
-            if(owner.Organization != null)
+            if (owner.Organization != null)
             {
                 organizationInfo = new OrganizationInfo()
                 {
@@ -101,6 +102,34 @@ namespace BR.Services
                     PhoneNumber = owner.Identity.PhoneNumber,
                     Organization = organizationInfo
                 });
+        }
+
+
+        public async Task<ServerResponse> UpdateOwnerByOwner(UpdateOwnerByOwnerRequest updateRequest, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            owner.Name = updateRequest.Name;
+            try
+            {
+                owner = await _repository.UpdateOwner(owner);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
         }
 
     }

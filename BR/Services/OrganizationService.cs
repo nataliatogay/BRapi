@@ -77,6 +77,86 @@ namespace BR.Services
             }
         }
 
+
+        public async Task<ServerResponse> UpdateOrganizationByOwner(string title, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
+                if (owner.Organization is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            var organization = owner.Organization;
+            organization.Title = title;
+
+            try
+            {
+                await _repository.UpdateOrganization(organization);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch (DbUpdateException)
+            {
+                return new ServerResponse(StatusCode.Duplicate);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+
+        }
+
+
+        public async Task<ServerResponse> UpdateUOrganizationByAdmin(UpdateOrganizationRequest updateRequest)
+        {
+            Organization organization;
+            try
+            {
+                organization = await _repository.GetOrganization(updateRequest.OrganizationId);
+                if (organization is null)
+                {
+                    return new ServerResponse(StatusCode.NotFound);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+            organization.Title = updateRequest.Title.Trim();
+            try
+            {
+                await _repository.UpdateOrganization(organization);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch (DbUpdateException)
+            {
+                return new ServerResponse(StatusCode.Duplicate);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+        }
+
+
+
+
+
+
+
+        // =====================================================================
+
         public async Task<ServerResponse<OrganizationInfo>> GetOrganization(int id)
         {
             Organization organization;

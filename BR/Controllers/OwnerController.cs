@@ -124,5 +124,21 @@ namespace BR.Controllers
 
             return new JsonResult(await _ownerService.GetOwnerInfoForOwners(ownerIdentityUser.Id));
         }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("")]
+        public async Task<ActionResult<ServerResponse>> UpdateOwner(UpdateOwnerByOwnerRequest updateRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<OwnerInfoForOwners>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _ownerService.UpdateOwnerByOwner(updateRequest, ownerIdentityUser.Id));
+        }
+
+        // =========================================================================================
     }
 }

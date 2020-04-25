@@ -12,5 +12,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse> AddNewOwner(NewOwnerRequest newOwnerRequest, string identityId);
 
         Task<ServerResponse<OwnerInfoForOwners>> GetOwnerInfoForOwners(string ownerIdentityId);
+
+        Task<ServerResponse> UpdateOwnerByOwner(UpdateOwnerByOwnerRequest updateRequest, string ownerIdentityId);
     }
 }

@@ -6,6 +6,7 @@ using BR.DTO.Organization;
 using BR.Models;
 using BR.Services.Interfaces;
 using BR.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,17 +27,48 @@ namespace BR.Controllers
             _userManager = userManager;
         }
 
+
+        [Authorize(Roles ="Admin")]
         [HttpPost("")]
         public async Task<ActionResult<ServerResponse<OrganizationInfo>>> Post([FromBody]string title)
         {
             return new JsonResult(await _organizationService.AddNewOrganization(title));
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<ServerResponse<ICollection<OrganizationInfo>>>> GetOrganizations()
         {
             return new JsonResult(await _organizationService.GetOrganizations());
         }
+
+        [Authorize(Roles ="Owner")]
+        [HttpPut("UpdateByOwner")]
+        public async Task<ActionResult<ServerResponse>> EditOrganization([FromBody]string title)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse(Utils.StatusCode.UserNotFound));
+            }
+
+            return new ActionResult<ServerResponse>(await _organizationService.UpdateOrganizationByOwner(title, ownerIdentityUser.Id));
+        }
+         
+        [Authorize(Roles ="Admin")]
+        [HttpPut("UpdateByAdmin")]
+        public async Task<ActionResult<ServerResponse>> EditOrganization([FromBody]UpdateOrganizationRequest updateRequest)
+        {
+            return new ActionResult<ServerResponse>(await _organizationService.UpdateUOrganizationByAdmin(updateRequest));
+        }
+
+
+
+
+        // ========================================================================================
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<OrganizationInfo>>> GetOrganization(int id)
@@ -44,12 +76,6 @@ namespace BR.Controllers
             return new JsonResult(await _organizationService.GetOrganization(id));
         }
 
-        //by owner
-        [HttpPut]
-        public async Task<ActionResult<ServerResponse>> EditOrganization([FromBody]UpdateOrganizationRequest updateRequest)
-        {
-            return new ActionResult<ServerResponse>(await _organizationService.UpdateUOrganization(updateRequest));
-        }
 
         // by owner
         [HttpPost("UploadLogo")]

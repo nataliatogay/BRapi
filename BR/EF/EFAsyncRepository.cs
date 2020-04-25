@@ -297,6 +297,13 @@ namespace BR.EF
             return await _db.Owners.FindAsync(id);
         }
 
+        public async Task<Owner> UpdateOwner(Owner owner)
+        {
+            var res = _db.Owners.Update(owner);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
 
         // Organizations
 
@@ -717,10 +724,11 @@ namespace BR.EF
             await _db.SaveChangesAsync();
             return res.Entity;
         }
-        public async Task UpdateWaiter(Waiter waiter)
+        public async Task<Waiter> UpdateWaiter(Waiter waiter)
         {
-            _db.Waiters.Update(waiter);
+            var res = _db.Waiters.Update(waiter);
             await _db.SaveChangesAsync();
+            return res.Entity;
         }
         public async Task<bool> DeleteWaiter(Waiter waiter)
         {

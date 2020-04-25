@@ -24,6 +24,244 @@ namespace BR.Services
             _repository = repository;
         }
 
+
+        public async Task<ServerResponse<WaiterInfo>> AddNewWaiterByOwner(NewWaiterByOwnerRequest waiterRequest, string waiterIdentityId, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.UserNotFound, null);
+                }
+                Client client = await _repository.GetClient(waiterRequest.ClientId);
+                if (client is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(client))
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.NotAvailable, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+            Waiter waiter = new Waiter()
+            {
+                ClientId = waiterRequest.ClientId,
+                FirstName = waiterRequest.FirstName,
+                LastName = waiterRequest.LastName,
+                Gender = waiterRequest.Gender,
+                IdentityId = waiterIdentityId
+            };
+
+            try
+            {
+                waiter = await _repository.AddWaiter(waiter);
+                return new ServerResponse<WaiterInfo>(StatusCode.Ok, this.WaiterToWaiterInfo(waiter));
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<WaiterInfo>> AddNewWaiterByClient(NewWaiterByClientRequest waiterRequest, string waiterIdentityId, string clientIdentityId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+            Waiter waiter = new Waiter()
+            {
+                ClientId = client.Id,
+                FirstName = waiterRequest.FirstName,
+                LastName = waiterRequest.LastName,
+                Gender = waiterRequest.Gender,
+                IdentityId = waiterIdentityId
+            };
+
+            try
+            {
+                waiter = await _repository.AddWaiter(waiter);
+                return new ServerResponse<WaiterInfo>(StatusCode.Ok, this.WaiterToWaiterInfo(waiter));
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+
+        public async Task<ServerResponse<ICollection<WaiterInfo>>> GetAllWaitersForOwner(int clientId, string ownerIdentityId)
+        {
+            Owner owner;
+            Client client;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.UserNotFound, null);
+                }
+                client = await _repository.GetClient(clientId);
+                if (client is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(client))
+                {
+                    return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.DbConnectionError, null);
+            }
+
+            var waiters = client.Waiters;
+            var result = new List<WaiterInfo>();
+            foreach (var item in waiters)
+            {
+                result.Add(this.WaiterToWaiterInfo(item));
+            }
+
+            return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.Ok, result);
+        }
+
+
+        public async Task<ServerResponse<ICollection<WaiterInfo>>> GetAllWaitersForClient(string clientIdentityId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.DbConnectionError, null);
+            }
+            var waiters = client.Waiters;
+            var result = new List<WaiterInfo>();
+            foreach (var item in waiters)
+            {
+                result.Add(this.WaiterToWaiterInfo(item));
+            }
+
+            return new ServerResponse<ICollection<WaiterInfo>>(StatusCode.Ok, result);
+        }
+
+
+
+        public async Task<ServerResponse<WaiterInfo>> UpdateWaiterByOwner(UpdateWaiterRequest updateRequest, string ownerIdentityId)
+        {
+            Owner owner;
+            Waiter waiter;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.UserNotFound, null);
+                }
+                waiter = await _repository.GetWaiter(updateRequest.WaiterId);
+                if (waiter is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(waiter.Client))
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+
+            waiter.FirstName = updateRequest.FirstName;
+            waiter.LastName = updateRequest.LastName;
+            waiter.Gender = updateRequest.Gender;
+            try
+            {
+                waiter = await _repository.UpdateWaiter(waiter);
+                return new ServerResponse<WaiterInfo>(StatusCode.Ok, this.WaiterToWaiterInfo(waiter));
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<WaiterInfo>> UpdateWaiterByClient(UpdateWaiterRequest updateRequest, string clientIdentityId)
+        {
+            Client client;
+            Waiter waiter;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.UserNotFound, null);
+                }
+                waiter = await _repository.GetWaiter(updateRequest.WaiterId);
+                if (waiter is null || !client.Waiters.Contains(waiter))
+                {
+                    return new ServerResponse<WaiterInfo>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+
+            waiter.FirstName = updateRequest.FirstName;
+            waiter.LastName = updateRequest.LastName;
+            waiter.Gender = updateRequest.Gender;
+            try
+            {
+                waiter = await _repository.UpdateWaiter(waiter);
+                return new ServerResponse<WaiterInfo>(StatusCode.Ok, this.WaiterToWaiterInfo(waiter));
+            }
+            catch
+            {
+                return new ServerResponse<WaiterInfo>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+
+        private WaiterInfo WaiterToWaiterInfo(Waiter waiter)
+        {
+            if (waiter is null)
+            {
+                return null;
+            }
+            return new WaiterInfo()
+            {
+                Id = waiter.Id,
+                FirstName = waiter.FirstName,
+                LastName = waiter.LastName,
+                Gender = waiter.Gender,
+                Login = waiter.Identity.UserName,
+                PhoneNumber = waiter.Identity.PhoneNumber,
+
+                // change
+                IsHeadWaiter = false
+            };
+        }
+
+
+
+        //===========================================================================================================================
+
         public async Task<IEnumerable<Waiter>> GetAllWaiters(string clientIdentityId)
         {
             var client = await _repository.GetClient(clientIdentityId);
@@ -37,7 +275,7 @@ namespace BR.Services
         {
             return await _repository.GetWaiter(id);
         }
-        public async Task<Waiter> AddNewWaiter(NewWaiterRequest newWaiterRequest, string identityId, string clientIdentityId)
+        public async Task<Waiter> AddNewWaiter(NewWaiterByClientRequest newWaiterRequest, string identityId, string clientIdentityId)
         {
             var client = await _repository.GetClient(clientIdentityId);
             if (client != null)
@@ -51,10 +289,6 @@ namespace BR.Services
                     ClientId = client.Id,
                     IdentityId = identityId
                 };
-                if (newWaiterRequest.BirthDate != null)
-                {
-                    //  waiter.BirthDate = DateTime.ParseExact(newWaiterRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                }
                 return await _repository.AddWaiter(waiter);
 
             }

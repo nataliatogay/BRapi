@@ -61,6 +61,7 @@ namespace BR.EF
         Task<Owner> AddOwner(Owner owner);
         Task<Owner> GetOwner(string identityId);
         Task<Owner> GetOwner(int id);
+        Task<Owner> UpdateOwner(Owner owner);
 
 
         // Organizations
@@ -168,7 +169,7 @@ namespace BR.EF
         Task<Waiter> GetWaiter(int id);
         Task<Waiter> GetWaiter(string identityId);
         Task<Waiter> AddWaiter(Waiter waiter);
-        Task UpdateWaiter(Waiter waiter);
+        Task<Waiter> UpdateWaiter(Waiter waiter);
         Task<bool> DeleteWaiter(Waiter waiter);
 
 

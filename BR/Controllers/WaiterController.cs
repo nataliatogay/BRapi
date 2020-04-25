@@ -1,4 +1,4 @@
-﻿ using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,6 +42,159 @@ namespace BR.Controllers
             _smsConfiguration = smsConfiguration;
         }
 
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("ForOwners/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<WaiterInfo>>>> GetAllWaitersForOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ICollection<WaiterInfo>>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _waiterService.GetAllWaitersForOwner(clientId, ownerIdentityUser.Id));
+        }
+
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("ForClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<WaiterInfo>>>> GetAllWaitersForClient()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ICollection<WaiterInfo>>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _waiterService.GetAllWaitersForClient(clientIdentityUser.Id));
+        }
+
+
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("NewByOwner")]
+        public async Task<ActionResult<ServerResponse<WaiterInfo>>> AddNewWaiterByOwner([FromBody]NewWaiterByOwnerRequest waiterRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.UserNotFound, null));
+            }
+            var password = _waiterService.GeneratePassword();
+            string login = null;
+            IdentityResult res = null;
+            do
+            {
+                login = _waiterService.GenerateLogin(waiterRequest.LastName);
+                res = await _userManager.CreateAsync(new IdentityUser() { UserName = login, PhoneNumber = waiterRequest.PhoneNumber }, password);
+
+            } while (!res.Succeeded);
+
+            var waiterIdentityUser = await _userManager.FindByNameAsync(login);
+            var role = await _roleManager.FindByNameAsync("Waiter");
+            if (role != null)
+            {
+                var resp = await _userManager.AddToRoleAsync(waiterIdentityUser, "Waiter");
+                if (!resp.Succeeded)
+                {
+                    return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.Error, null));
+                }
+            }
+
+            // send code
+            /*
+            TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+            var body = $"Login: {login}. Password: {password}";
+            var msg = MessageResource.Create(body: body,
+                from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                to: new Twilio.Types.PhoneNumber(newWaiter.PhoneNumber));
+            return new JsonResult(msg.Sid);
+            */
+
+            return new JsonResult(await _waiterService.AddNewWaiterByOwner(waiterRequest, waiterIdentityUser.Id, ownerIdentityUser.Id));
+
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpPost("NewByClient")]
+        public async Task<ActionResult<ServerResponse<WaiterInfo>>> AddNewWaiterByClient([FromBody]NewWaiterByClientRequest waiterRequest)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.UserNotFound, null));
+            }
+            var password = _waiterService.GeneratePassword();
+            string login = null;
+            IdentityResult res = null;
+            do
+            {
+                login = _waiterService.GenerateLogin(waiterRequest.LastName);
+                res = await _userManager.CreateAsync(new IdentityUser() { UserName = login, PhoneNumber = waiterRequest.PhoneNumber }, password);
+
+            } while (!res.Succeeded);
+
+            var waiterIdentityUser = await _userManager.FindByNameAsync(login);
+            var role = await _roleManager.FindByNameAsync("Waiter");
+            if (role != null)
+            {
+                var resp = await _userManager.AddToRoleAsync(waiterIdentityUser, "Waiter");
+                if (!resp.Succeeded)
+                {
+                    return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.Error, null));
+                }
+            }
+
+            // send code
+            /*
+            TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
+            var body = $"Login: {login}. Password: {password}";
+            var msg = MessageResource.Create(body: body,
+                from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
+                to: new Twilio.Types.PhoneNumber(newWaiter.PhoneNumber));
+            return new JsonResult(msg.Sid);
+            */
+
+            return new JsonResult(await _waiterService.AddNewWaiterByClient(waiterRequest, waiterIdentityUser.Id, clientIdentityUser.Id));
+        }
+
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPut("UpdateByOwner")]
+        public async Task<ActionResult<ServerResponse<WaiterInfo>>> UpdateWaiterByOwner([FromBody]UpdateWaiterRequest updateRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _waiterService.UpdateWaiterByOwner(updateRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpPut("UpdateByClient")]
+        public async Task<ActionResult<ServerResponse<WaiterInfo>>> UpdateWaiterByClient([FromBody]UpdateWaiterRequest updateRequest)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<WaiterInfo>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _waiterService.UpdateWaiterByClient(updateRequest, clientIdentityUser.Id));
+        }
+
+
+        // =====================================================================================================================
+
+
+
+
         [HttpGet("")]
         public async Task<ActionResult<ICollection<Waiter>>> Get()
         {
@@ -62,46 +215,6 @@ namespace BR.Controllers
 
 
 
-        // change return value
-        [HttpPost("")]
-        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewWaiterRequest newWaiter)
-        {
-            var identityUserClient = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUserClient is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            var password = _waiterService.GeneratePassword();
-            string login = null;
-            IdentityResult res = null;
-            do
-            {
-                login = _waiterService.GenerateLogin(newWaiter.LastName);
-                res = await _userManager.CreateAsync(new IdentityUser() { UserName = login, PhoneNumber = newWaiter.PhoneNumber }, password);
-
-            } while (!res.Succeeded);
-            var identityUserWaiter = await _userManager.FindByNameAsync(login);
-            var role = await _roleManager.FindByNameAsync("Waiter");
-            if (role != null)
-            {
-                var resp = await _userManager.AddToRoleAsync(identityUserWaiter, "Waiter");
-                if (!resp.Succeeded)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-            }
-            // send code
-            /*
-            TwilioClient.Init(_smsConfiguration.AccountSid, _smsConfiguration.AuthToken);
-            var body = $"Login: {login}. Password: {password}";
-            var msg = MessageResource.Create(body: body,
-                from: new Twilio.Types.PhoneNumber(_smsConfiguration.PhoneNumber),
-                to: new Twilio.Types.PhoneNumber(newWaiter.PhoneNumber));
-            return new JsonResult(msg.Sid);
-            */
-
-            return new JsonResult(await _waiterService.AddNewWaiter(newWaiter, identityUserWaiter.Id, identityUserClient.Id));
-        }
 
 
         [HttpPost("AssignPrivilege")]
