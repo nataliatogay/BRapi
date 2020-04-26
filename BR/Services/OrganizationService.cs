@@ -98,7 +98,7 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
             var organization = owner.Organization;
-            organization.Title = title;
+            organization.Title = title.Trim();
 
             try
             {
@@ -150,7 +150,51 @@ namespace BR.Services
         }
 
 
+        public async Task<ServerResponse<string>> UploadLogoByOwner(string imageString, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
 
+
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+            var organization = owner.Organization;
+            if (organization is null)
+            {
+                return new ServerResponse<string>(StatusCode.NotFound, null);
+            }
+
+            string imagePath;
+            try
+            {
+                imagePath = await _blobService.UploadImage(imageString);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            organization.LogoPath = imagePath;
+            try
+            {
+                await _repository.UpdateOrganization(organization);
+                return new ServerResponse<string>(StatusCode.Ok, imagePath);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+        }
 
 
 

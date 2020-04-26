@@ -11,7 +11,9 @@ namespace BR.DTO.Events
         
         [Required]
         public string Description { get; set; }
-        
+
+        //public string ImageString { get; set; }
+
         [Required]
         public string Date { get; set; }
 

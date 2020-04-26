@@ -64,6 +64,17 @@ namespace BR.Controllers
         }
 
 
+        [HttpPut("UploadLogoByOwner")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadLogoByOwner([FromBody]string imageString)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _organizationService.UploadLogoByOwner(imageString, ownerIdentityUser.Id));
+        }
+
 
 
         // ========================================================================================

@@ -18,6 +18,8 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> UpdateUOrganizationByAdmin(UpdateOrganizationRequest updateRequest);
 
+        Task<ServerResponse<string>> UploadLogoByOwner(string imageString, string ownerIdentityId);
+
 
         // =============================================================================================
 

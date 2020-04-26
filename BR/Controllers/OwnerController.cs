@@ -136,8 +136,12 @@ namespace BR.Controllers
                 return new JsonResult(new ServerResponse<OwnerInfoForOwners>(Utils.StatusCode.UserNotFound, null));
             }
 
+            ownerIdentityUser.PhoneNumber = updateRequest.PhoneNumber;
+            await _userManager.UpdateAsync(ownerIdentityUser);
+
             return new JsonResult(await _ownerService.UpdateOwnerByOwner(updateRequest, ownerIdentityUser.Id));
         }
+
 
         // =========================================================================================
     }
