@@ -209,52 +209,55 @@ namespace BR.Services
         }
 
 
+        // CHANGE
         // send notification to clients
         public async Task<ServerResponse> DeleteUser(string identityId)
         {
-            var user = await _repository.GetUser(identityId);
-            if (user != null)
-            {
-                user.Deleted = DateTime.Now;
-                try
-                {
-                    await _repository.UpdateUser(user);
+            //var user = await _repository.GetUser(identityId);
+            //if (user != null)
+            //{
+            //    user.Deleted = DateTime.Now;
+            //    try
+            //    {
+            //        await _repository.UpdateUser(user);
 
-                    // delete tokens
-                    var tokens = await _repository.GetTokens(user.IdentityId);
-                    if (tokens != null)
-                    {
-                        foreach (var item in tokens)
-                        {
-                            await _repository.RemoveToken(item);
-                        }
-                    }
+            //        // delete tokens
+            //        var tokens = await _repository.GetTokens(user.IdentityId);
+            //        if (tokens != null)
+            //        {
+            //            foreach (var item in tokens)
+            //            {
+            //                await _repository.RemoveToken(item);
+            //            }
+            //        }
 
-                    // cancel upcoming reservations
-                    var reservations = user.Reservations;
-                    var cancelReason = await _repository.GetCancelReason("UserDeleted");
+            //        // cancel upcoming reservations
+            //        var reservations = user.Reservations;
+            //        var cancelReason = await _repository.GetCancelReason("UserDeleted");
 
-                    // if closes admin
-                    //var admin = (await _repository.GetAdmins()).FirstOrDefault();
-                    if (cancelReason != null && reservations != null)
-                    {
-                        foreach (var item in reservations)
-                        {
-                            if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
-                            {
-                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
-                            }
-                        }
-                    }
+            //        // if closes admin
+            //        //var admin = (await _repository.GetAdmins()).FirstOrDefault();
+            //        if (cancelReason != null && reservations != null)
+            //        {
+            //            foreach (var item in reservations)
+            //            {
+            //                if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
+            //                {
+            //                    await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
+            //                }
+            //            }
+            //        }
 
-                    return new ServerResponse(StatusCode.Ok);
-                }
-                catch
-                {
-                    return new ServerResponse(StatusCode.Error);
-                }
-            }
-            return new ServerResponse(StatusCode.UserNotFound);
+            //        return new ServerResponse(StatusCode.Ok);
+            //    }
+            //    catch
+            //    {
+            //        return new ServerResponse(StatusCode.Error);
+            //    }
+            //}
+            //return new ServerResponse(StatusCode.UserNotFound);
+
+            return new ServerResponse(StatusCode.Ok); // <- delete this
         }
 
         public async Task<ServerResponse> RestoreUser(string identityId)
@@ -306,54 +309,56 @@ namespace BR.Services
 
         private UserInfoForUsersResponse UserToUserInfoResponse(User user)
         {
-            if (user is null)
-            {
-                return null;
-            }
-            var reservations = new List<ReservationInfo>();
-            if (user.Reservations != null)
-            {
-                foreach (var res in user.Reservations)
-                {
-                    var tableNums = new List<int>();
-                    if (res.TableReservations != null)
-                    {
-                        foreach (var t in res.TableReservations)
-                        {
-                            tableNums.Add(t.Table.Number);
-                        }
-                    }
+            //if (user is null)
+            //{
+            //    return null;
+            //}
+            //var reservations = new List<ReservationInfo>();
+            //if (user.Reservations != null)
+            //{
+            //    foreach (var res in user.Reservations)
+            //    {
+            //        var tableNums = new List<int>();
+            //        if (res.TableReservations != null)
+            //        {
+            //            foreach (var t in res.TableReservations)
+            //            {
+            //                tableNums.Add(t.Table.Number);
+            //            }
+            //        }
 
-                    var title = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName;
-                    var floor = res.TableReservations.First().Table.Hall.Floor.Number;
-                    var hallTitle = res.TableReservations.First().Table.Hall.Title;
+            //        var title = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName;
+            //        var floor = res.TableReservations.First().Table.Hall.Floor.Number;
+            //        var hallTitle = res.TableReservations.First().Table.Hall.Title;
 
-                    var resInfo = new ReservationInfo()
-                    {
-                        Id = res.Id,
-                        Date = res.ReservationDate,
-                        ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
-                        //ChildFree = res.ChildFree,
-                        ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
-                        Floor = res.TableReservations.First().Table.Hall.Floor.Number,
-                        HallTitle = res.TableReservations.First().Table.Hall.Title,
-                        GuestCount = res.GuestCount,
-                        TableNumbers = tableNums,
-                        Comments = res.Comments
-                    };
-                    reservations.Add(resInfo);
-                }
-            }
-            return new UserInfoForUsersResponse()
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                BirthDate = user.BirthDate,
-                Gender = user.Gender,
-                ImagePath = user.ImagePath,
-                Email = user.Identity.Email,
+            //        var resInfo = new ReservationInfo()
+            //        {
+            //            Id = res.Id,
+            //            Date = res.ReservationDate,
+            //            ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
+            //            //ChildFree = res.ChildFree,
+            //            ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
+            //            Floor = res.TableReservations.First().Table.Hall.Floor.Number,
+            //            HallTitle = res.TableReservations.First().Table.Hall.Title,
+            //            GuestCount = res.GuestCount,
+            //            TableNumbers = tableNums,
+            //            Comments = res.Comments
+            //        };
+            //        reservations.Add(resInfo);
+            //    }
+            //}
+            //return new UserInfoForUsersResponse()
+            //{
+            //    FirstName = user.FirstName,
+            //    LastName = user.LastName,
+            //    BirthDate = user.BirthDate,
+            //    Gender = user.Gender,
+            //    ImagePath = user.ImagePath,
+            //    Email = user.Identity.Email,
 
-            };
+            //};
+
+            return new UserInfoForUsersResponse(); // <- delete this
         }
     }
 }

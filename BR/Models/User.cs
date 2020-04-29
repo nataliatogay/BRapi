@@ -37,8 +37,6 @@ namespace BR.Models
 
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
-
-        public virtual ICollection<Reservation> Reservations { get; set; }
         
         public virtual ICollection<Invitee> Invitees { get; set; }
         
@@ -53,7 +51,6 @@ namespace BR.Models
 
         public User()
         {
-            Reservations = new HashSet<Reservation>();
             Invitees = new HashSet<Invitee>();
             UserUserPhones = new HashSet<UserUserPhone>();
             ClientFavourites = new HashSet<ClientFavourite>();

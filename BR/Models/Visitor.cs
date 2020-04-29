@@ -13,7 +13,7 @@ namespace BR.Models
 
         public int? TableId { get; set; }
 
-        public int? BarTableId { get; set; }
+        public int? BarId { get; set; }
 
         public DateTime StartDateTime { get; set; }
 
@@ -28,8 +28,8 @@ namespace BR.Models
         [ForeignKey("TableId")]
         public virtual Table Table { get; set; }
 
-        [ForeignKey("BarTableId")]
-        public virtual BarTable BarTable { get; set; }
+        [ForeignKey("BarId")]
+        public virtual Bar Bar{ get; set; }
 
         [ForeignKey("AddedByIdentityId")]
         public virtual IdentityUser AddedByIdentity { get; set; }

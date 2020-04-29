@@ -115,69 +115,72 @@ namespace BR.Services
             }
         }
 
+        // CHANGE
         public async Task<ServerResponse> BlockUser(int userId)
         {
-            User user;
-            try
-            {
-                user = await _repository.GetUser(userId);
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.Error);
-            }
-            if (user is null)
-            {
-                return new ServerResponse(StatusCode.UserNotFound);
-            }
-            if (user.Deleted != null)
-            {
-                return new ServerResponse(StatusCode.UserDeleted);
-            }
-            if (user.Blocked is null)
-            {
-                user.Blocked = DateTime.Now;
-                try
-                {
-                    await _repository.UpdateUser(user);
+            //User user;
+            //try
+            //{
+            //    user = await _repository.GetUser(userId);
+            //}
+            //catch
+            //{
+            //    return new ServerResponse(StatusCode.Error);
+            //}
+            //if (user is null)
+            //{
+            //    return new ServerResponse(StatusCode.UserNotFound);
+            //}
+            //if (user.Deleted != null)
+            //{
+            //    return new ServerResponse(StatusCode.UserDeleted);
+            //}
+            //if (user.Blocked is null)
+            //{
+            //    user.Blocked = DateTime.Now;
+            //    try
+            //    {
+            //        await _repository.UpdateUser(user);
 
-                    // delete tokens
-                    var tokens = await _repository.GetTokens(user.IdentityId);
-                    if (tokens != null)
-                    {
-                        foreach (var item in tokens)
-                        {
-                            await _repository.RemoveToken(item);
-                        }
-                    }
+            //        // delete tokens
+            //        var tokens = await _repository.GetTokens(user.IdentityId);
+            //        if (tokens != null)
+            //        {
+            //            foreach (var item in tokens)
+            //            {
+            //                await _repository.RemoveToken(item);
+            //            }
+            //        }
 
-                    // cancel upcoming reservations
-                    var reservations = user.Reservations;
-                    var cancelReason = await _repository.GetCancelReason("UserBlocked");
+            //        // cancel upcoming reservations
+            //        var reservations = user.Reservations;
+            //        var cancelReason = await _repository.GetCancelReason("UserBlocked");
 
-                    // if closes admin
-                    //var admin = (await _repository.GetAdmins()).FirstOrDefault();
-                    if (cancelReason != null && reservations != null)
-                    {
-                        foreach (var item in reservations)
-                        {
-                            if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
-                            {
-                                await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
-                            }
-                        }
-                    }
-                    return new ServerResponse(StatusCode.Ok);
-                }
-                catch
-                {
-                    return new ServerResponse(StatusCode.Error);
-                }
-            }
-            else
-            {
-                return new ServerResponse(StatusCode.UserBlocked);
-            }
+            //        // if closes admin
+            //        //var admin = (await _repository.GetAdmins()).FirstOrDefault();
+            //        if (cancelReason != null && reservations != null)
+            //        {
+            //            foreach (var item in reservations)
+            //            {
+            //                if (item.ReservationDate > DateTime.Now && item.ReservationStateId is null)
+            //                {
+            //                    await _reservationService.CancelReservation(item.Id, cancelReason.Id, user.IdentityId);
+            //                }
+            //            }
+            //        }
+            //        return new ServerResponse(StatusCode.Ok);
+            //    }
+            //    catch
+            //    {
+            //        return new ServerResponse(StatusCode.Error);
+            //    }
+            //}
+            //else
+            //{
+            //    return new ServerResponse(StatusCode.UserBlocked);
+            //}
+
+            return new ServerResponse(StatusCode.Ok); // <- delete this
         }
 
         public async Task<ServerResponse> UnblockUser(int userId)

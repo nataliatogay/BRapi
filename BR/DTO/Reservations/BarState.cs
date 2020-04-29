@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Reservations
 {
-    public class TableStatesRequest
+    public class BarStates
     {
         public string StartDateTime { get; set; }   // dd/MM/yyyy HH:mm
         public int Duration { get; set; } // in min
-        public ICollection<int> TableIds { get; set; }
+        public int GuestCount { get; set; }
+        public int BarId { get; set; }
     }
 }

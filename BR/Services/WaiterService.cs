@@ -40,6 +40,7 @@ namespace BR.Services
                 {
                     return new ServerResponse<WaiterInfo>(StatusCode.NotAvailable, null);
                 }
+
             }
             catch
             {

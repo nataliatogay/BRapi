@@ -81,7 +81,7 @@ namespace BR.EF
 
         Task<ICollection<ClientRequest>> GetClientRequests();
         Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip);
-      //  Task<ICollection<ClientRequest>> GetUndoneClientRequests();
+        //  Task<ICollection<ClientRequest>> GetUndoneClientRequests();
         Task<ClientRequest> GetClientRequest(int id);
         Task UpdateClientRequest(ClientRequest clientRequest);
         Task<ClientRequest> AddClientRequest(ClientRequest clientRequest);
@@ -178,13 +178,15 @@ namespace BR.EF
         Task<Reservation> GetReservation(int id);
         Task<Reservation> AddReservation(Reservation reservation);
         Task<Reservation> UpdateReservation(Reservation reservation);
-        Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId);
-        Task<TableReservation> AddTableReservation(TableReservation tableReservation);
-        Task DeleteTableReservations(int reservationId);
         Task<ReservationState> GetReservationState(string title);
         Task<CancelReason> GetCancelReason(int id);
         Task<CancelReason> GetCancelReason(string title);
 
+
+        // Reservation Requests
+
+        Task<ReservationRequest> GetReservationRequest(int id);
+        Task<ReservationRequest> AddReservationRequest(ReservationRequest reservationRequest);
 
         // Visitors
 
@@ -205,7 +207,7 @@ namespace BR.EF
 
         // Bars
 
-        Task<BarTable> GetBarTable(int id);
+        Task<Bar> GetBar(int id);
 
 
         // Floors

@@ -10,15 +10,22 @@ namespace BR.Models
     public class CancelReason
     {
         public int Id { get; set; }
+
         public string Title { get; set; }
+
         public string RoleId { get; set; }
+
         [ForeignKey("RoleId")]
         public virtual IdentityRole IdentityRole{ get; set; }
+        
         public virtual ICollection<Reservation> Reservations { get; set; }
+
+        public virtual ICollection<BarReservation> BarReservations { get; set; }
 
         public CancelReason()
         {
             Reservations = new HashSet<Reservation>();
+            BarReservations = new HashSet<BarReservation>();
         }
     }
 }

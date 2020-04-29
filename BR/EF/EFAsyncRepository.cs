@@ -770,29 +770,6 @@ namespace BR.EF
             return await _db.Reservations.FindAsync(id);
         }
 
-        public async Task<IEnumerable<TableReservation>> GetTableReservations(int reservationId)
-        {
-            var reservation = await _db.Reservations.FindAsync(reservationId);
-            if (reservation is null)
-            {
-                return null;
-            }
-            return reservation.TableReservations;
-        }
-
-        public async Task<TableReservation> AddTableReservation(TableReservation tableReservation)
-        {
-            var res = await _db.TableReservations.AddAsync(tableReservation);
-            await _db.SaveChangesAsync();
-            return res.Entity;
-        }
-
-        public async Task DeleteTableReservations(int reservationId)
-        {
-            var tableRes = await this.GetTableReservations(reservationId);
-            _db.TableReservations.RemoveRange(tableRes);
-            await _db.SaveChangesAsync();
-        }
 
         public async Task<ReservationState> GetReservationState(string title)
         {
@@ -808,6 +785,23 @@ namespace BR.EF
         {
             return await _db.CancelReasons.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
         }
+
+
+        // Reservation Requests
+
+
+        public async Task<ReservationRequest> GetReservationRequest(int id)
+        {
+            return await _db.ReservationRequests.FindAsync(id);
+        }
+
+        public async Task<ReservationRequest> AddReservationRequest(ReservationRequest reservationRequest)
+        {
+            var res = await _db.ReservationRequests.AddAsync(reservationRequest);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
 
 
         // Visitors
@@ -869,9 +863,9 @@ namespace BR.EF
             }
         }
 
-        public async Task<BarTable> GetBarTable(int id)
+        public async Task<Bar> GetBar(int id)
         {
-            return await _db.BarTables.FindAsync(id);
+            return await _db.Bars.FindAsync(id);
         }
 
         // Floors

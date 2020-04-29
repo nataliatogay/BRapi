@@ -13,9 +13,12 @@ namespace BR.Models
 
         public virtual ICollection<Reservation> Reservations { get; set; }
 
+        public virtual ICollection<BarReservation> BarReservations { get; set; }
+
         public ReservationState()
         {
             Reservations = new HashSet<Reservation>();
+            BarReservations = new HashSet<BarReservation>();
         }
     
     }

@@ -59,13 +59,19 @@ namespace BR.EF
 
         public DbSet<Table> Tables { get; set; }
 
-        public DbSet<BarTable> BarTables { get; set; }
+        public DbSet<Bar> Bars { get; set; }
 
         public DbSet<ReservationState> ReservationStates { get; set; }
 
         public DbSet<Reservation> Reservations { get; set; }
 
-        public DbSet<TableReservation> TableReservations { get; set; }
+        public DbSet<BarReservation> BarReservations { get; set; }
+
+        public DbSet<ReservationRequest> ReservationRequests{ get; set; }
+
+        public DbSet<BarReservationRequest> BarReservationRequests { get; set; }
+        
+        public DbSet<ReservationRequestState> ReservationRequestStates{ get; set; }
 
         public DbSet<CancelReason> CancelReasons { get; set; }
 
@@ -129,8 +135,6 @@ namespace BR.EF
 
             modelBuilder.Entity<ClientFeature>().HasKey(c => new { c.ClientId, c.FeatureId });
 
-            modelBuilder.Entity<TableReservation>().HasKey(t => new { t.TableId, t.ReservationId });
-
             modelBuilder.Entity<Invitee>().HasKey(i => new { i.UserId, i.ReservationId });
 
             modelBuilder.Entity<UserUserPhone>().HasKey(u => new { u.UserId, u.UserPhoneId });
@@ -155,13 +159,13 @@ namespace BR.EF
 
             modelBuilder.Entity<ClientMealType>().HasOne(c => c.MealType).WithMany(c => c.ClientMealTypes).OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Reservation>().HasOne(r => r.BarTable).WithMany(c => c.Reservations).OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<Client>().HasOne(r => r.Organization).WithMany(c => c.Clients).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Owner>().HasOne(r => r.Organization).WithMany(c => c.Owners).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Reservation>().HasOne(r => r.Client).WithMany(c => c.Reservations).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BarReservation>().HasOne(r => r.Client).WithMany(c => c.BarReservations).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Cuisine>().HasIndex(u => u.Title).IsUnique();
 
@@ -180,6 +184,8 @@ namespace BR.EF
             modelBuilder.Entity<NotificationType>().HasIndex(t => t.Title).IsUnique();
 
             modelBuilder.Entity<Organization>().HasIndex(o => o.Title).IsUnique();
+
+            modelBuilder.Entity<ReservationRequestState>().HasIndex(s => s.Title).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

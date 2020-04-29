@@ -10,7 +10,7 @@ namespace BR.DTO.Reservations
     {
         public int? TableId { get; set; }
 
-        public int? BarTableId { get; set; }
+        public int? BarId { get; set; }
 
         [Required]
         public string StartDateTime { get; set; }

@@ -90,7 +90,7 @@ namespace BR.Models
 
         public virtual ICollection<Reservation> Reservations { get; set; }
 
-
+        public virtual ICollection<BarReservation> BarReservations { get; set; }
 
 
 
@@ -113,6 +113,7 @@ namespace BR.Models
             ClientGoodFors = new HashSet<ClientGoodFor>();
             ClientFeatures = new HashSet<ClientFeature>();
             Reservations = new HashSet<Reservation>();
+            BarReservations = new HashSet<BarReservation>();
         }
     }
 }

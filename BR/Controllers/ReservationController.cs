@@ -34,6 +34,34 @@ namespace BR.Controllers
             _notificationService = notificationService;
         }
 
+
+
+        [HttpPost("pending")]
+        public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetPendingState(TableState stateRequest)
+        {
+            return new JsonResult(await _reservationService.SetPendingTableState(stateRequest));
+        }
+
+
+        // by user
+        [HttpPost("newReservation")]
+        public async Task<ActionResult<ServerResponse>> NewReservation([FromBody]NewReservationByUserRequest newReservation)
+        {
+            // add notification to waiters
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+
+            return new JsonResult(_reservationService.AddNewReservationByUser(newReservation, identityUser.Id));
+        }
+
+
+
+        //=========================================================================
+
+
         [HttpGet("")]
         public async Task<ActionResult<ICollection<Reservation>>> Get()
         {
@@ -52,40 +80,16 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.GetReservation(id));
         }
 
-        [HttpPost("pending")]
-        public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetPendingState(TableStatesRequest stateRequest)
-        {
-            return new JsonResult(await _reservationService.SetPendingTableState(stateRequest));
-        }
+        
 
         [HttpPost("BarPending")]
-        public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetBarPendingState(BarStatesRequest stateRequest)
+        public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetBarPendingState(BarStates stateRequest)
         {
             return new JsonResult(await _reservationService.SetBarPendingTableState(stateRequest));
         }
 
 
-        [HttpPost("")]
-        public async Task<ActionResult<ServerResponse<int>>> NewReservation([FromBody]NewReservationRequest newReservation)
-        {
-            // add notification to waiters
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-
-            var result = await _reservationService.AddNewReservation(newReservation, identityUser.Id);
-            if (result.Data is null)
-            {
-                return new JsonResult(Response(result.StatusCode));
-            }
-            else
-            {
-                return new JsonResult(Response(result.StatusCode, result.Data.Id));
-            }
-        }
-
+        
 
         [HttpPost("bar")]
         public async Task<ActionResult<ServerResponse<int>>> NewBarReservation([FromBody]NewBarReservationRequest newBarReservation)
@@ -125,16 +129,16 @@ namespace BR.Controllers
         }
 
         [HttpGet("TableStates")]
-        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableStatesRequest tableStatesRequests)
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableState tableStatesRequests)
         {
             return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
         }
 
 
-        [HttpGet("BarTableStates")]
-        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetBarTableStates(BarStatesRequest barStatesRequests)
+        [HttpGet("BarStates")]
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetBarStates(BarStates barStatesRequests)
         {
-            return new JsonResult(await _reservationService.GetBarTablesStates(barStatesRequests));
+            return new JsonResult(await _reservationService.GetBarStates(barStatesRequests));
         }
 
 
