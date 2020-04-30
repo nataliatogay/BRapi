@@ -802,7 +802,27 @@ namespace BR.EF
             return res.Entity;
         }
 
+        public async Task<ReservationRequest> UpdateReservationRequest(ReservationRequest reservationRequest)
+        {
+            var res = _db.ReservationRequests.Update(reservationRequest);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
 
+        public async Task<ReservationRequestState> GetReservationRequestState(string title)
+        {
+            return await _db.ReservationRequestStates.FirstOrDefaultAsync(item => item.Title.ToUpper().Equals(title.ToUpper()));
+        }
+
+
+        // Invitees
+
+        public async Task<Invitee> AddInvitee(Invitee invitee)
+        {
+            var res = await _db.Invitees.AddAsync(invitee);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
 
         // Visitors
 

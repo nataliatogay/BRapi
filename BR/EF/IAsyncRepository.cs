@@ -187,6 +187,18 @@ namespace BR.EF
 
         Task<ReservationRequest> GetReservationRequest(int id);
         Task<ReservationRequest> AddReservationRequest(ReservationRequest reservationRequest);
+        Task<ReservationRequest> UpdateReservationRequest(ReservationRequest reservationRequest);
+
+        Task<ReservationRequestState> GetReservationRequestState(string title);
+
+
+        // Invitees
+
+        Task<Invitee> AddInvitee(Invitee invitee);
+
+
+
+
 
         // Visitors
 

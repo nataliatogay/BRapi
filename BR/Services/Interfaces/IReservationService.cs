@@ -13,24 +13,40 @@ namespace BR.Services.Interfaces
     public interface IReservationService
     {
 
+        Task<ServerResponse<ICollection<ReservationInfoForClient>>> GetReservationsByClient(string fromDate, string toDate, string clientIdentityId);
+
         Task<ServerResponse<string>> SetPendingTableState(TableState tableState);
 
         Task<ServerResponse> AddNewReservationByUser(NewReservationByUserRequest newReservationRequest, string userIdentityId);
 
+        Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest, string clientIdentityId);
+
+
+
+
+
+
+
+
 
         //===========================================================================
+
+
+
+
+
+
 
         Task<ICollection<Reservation>> GetReservations(string identityUserId);
 
         Task<Reservation> GetReservation(int id);
 
-        
 
-        
+
+
 
         //Task<ServerResponse> SendReservationOnConfirmation(TableState tableStateRequest, NewReservationRequest reservationRequest, int userId, Client client);
 
-        Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest);
 
         Task<ServerResponse> AddReservationByPhone(NewReservationByPhoneRequest reservationRequest, string waiterIdentityId);
 

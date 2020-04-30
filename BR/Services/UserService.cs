@@ -25,6 +25,8 @@ namespace BR.Services
             _reservationService = reservationService;
 
         }
+
+
         public async Task<ServerResponse<ICollection<UserShortInfoForAdminResponse>>> GetUserShortInfoForAdmin()
         {
             ICollection<User> users;
@@ -58,6 +60,7 @@ namespace BR.Services
             return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Ok, res);
         }
 
+
         public async Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id)
         {
             try
@@ -88,6 +91,35 @@ namespace BR.Services
                 return new ServerResponse<UserInfoForAdminResponse>(StatusCode.Error, null);
             }
         }
+
+
+        private UserFullInfoForClient UserToUserFullInfoForClient(User user)
+        {
+            if (user is null)
+            {
+                return null;
+            }
+            return new UserFullInfoForClient()
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                ImagePath = user.ImagePath,
+                PhoneNumber = user.Identity.PhoneNumber,
+                Email = user.Identity.Email
+            };
+        }
+
+
+
+
+        // ==============================================================================
+
+
+
+
 
         public async Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id)
         {
@@ -192,7 +224,7 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse(StatusCode.Error);    
+                return new ServerResponse(StatusCode.Error);
             }
             if (user is null)
             {

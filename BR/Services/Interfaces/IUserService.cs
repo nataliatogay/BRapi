@@ -12,8 +12,14 @@ namespace BR.Services.Interfaces
     public interface IUserService
     {
         Task<ServerResponse<ICollection<UserShortInfoForAdminResponse>>> GetUserShortInfoForAdmin();
-        Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id);
+
         Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id);
+
+       
+
+
+        // =======================================================================================
+        Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id);
         Task<ServerResponse> BlockUser(int userId);
         Task<ServerResponse> UnblockUser(int userId);
     }

@@ -212,8 +212,8 @@ namespace BR
             }
             //app.Use(async (context, next) =>
             //{
-            //    var shalom = context.Request;
-            //    var reader = new StreamReader(shalom.Body);
+            //    var req = context.Request;
+            //    var reader = new StreamReader(req.Body);
             //    var data = reader.ReadLine();
             //    await next();
             //});

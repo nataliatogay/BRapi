@@ -34,18 +34,19 @@ namespace BR.Controllers
             return new JsonResult(await _userService.GetUserShortInfoForAdmin());
         }
 
-        [HttpGet("ForUsers/{id}")]
-        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> GetInfoForUser(int id)
-        {
-            return new JsonResult(await _userService.GetUserInfoForUsers(id));
-        }
-
         [Authorize]
         [HttpGet("ForAdmin/{id}")]
         public async Task<ActionResult<ServerResponse<UserInfoForAdminResponse>>> GetInfoForAdmin(int id)
         {
             return new JsonResult(await _userService.GetUserInfoForAdmin(id));
         }
+
+
+
+
+        // ====================================================================================
+
+
 
         [HttpPut("Block")]
         public async Task<ActionResult<ServerResponse>> BlockUser([FromBody]int userId)
@@ -58,6 +59,18 @@ namespace BR.Controllers
         {
             return new JsonResult(await _userService.UnblockUser(userId));
         }
+
+
+
+        [HttpGet("ForUsers/{id}")]
+        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> GetInfoForUser(int id)
+        {
+            return new JsonResult(await _userService.GetUserInfoForUsers(id));
+        }
+
+       
+
+        
 
     }
 }

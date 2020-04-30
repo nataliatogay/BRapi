@@ -35,6 +35,18 @@ namespace BR.Controllers
         }
 
 
+      //  [Authorize(Roles ="Client")]
+        [HttpGet("InfoForClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetReservationsForClient(string fromDate, string toDate)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetReservationsByClient(fromDate, toDate, clientIdentityUser.Id));
+        }
+
 
         [HttpPost("pending")]
         public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetPendingState(TableState stateRequest)
@@ -54,7 +66,20 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
 
-            return new JsonResult(_reservationService.AddNewReservationByUser(newReservation, identityUser.Id));
+            return new JsonResult(await _reservationService.AddNewReservationByUser(newReservation, identityUser.Id));
+        }
+
+
+        // by client, waiter
+        [HttpPost("Confirm")]
+        public async Task<ActionResult<ServerResponse>> ConfirmReservation([FromBody]ConfirmReservationRequest confirmRequest)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.AddConfirmedReservation(confirmRequest, clientIdentityUser.Id));
         }
 
 
@@ -115,11 +140,7 @@ namespace BR.Controllers
 
 
 
-        [HttpPost("Confirm")]
-        public async Task<ActionResult<ServerResponse>> ConfirmReservation([FromBody]ConfirmReservationRequest confirmRequest)
-        {
-            return new JsonResult(await _reservationService.AddConfirmedReservation(confirmRequest));
-        }
+        
 
 
         [HttpPost("BarConfirm")]
