@@ -77,9 +77,9 @@ namespace BR.Services
                             Id = item.Id,
                             ChildFree = item.ChildFree,
                             Comments = item.Comments,
-                            DateTime = item.ReservationDate,
-                            Duration = item.Duration,
-                            GuestsCount = item.GuestCount,
+                            StartDateTime = item.ReservationDate,
+                            EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
+                            GuestCount = item.GuestCount,
                             Invalids = item.Invalids,
                             TableNumber = item.Table.Number,
                             PetsFree = item.PetsFree,
@@ -93,8 +93,293 @@ namespace BR.Services
         }
 
 
+        public async Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetReservationRequestsForClient(string clientIdentityUserId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityUserId);
+
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+            var requests = await _repository.GetWaitingReservationRequestsByClientId(client.Id);
+
+            var res = new List<ReservationRequestInfoForClient>();
+            foreach (var item in requests)
+            {
+                var user = await _repository.GetUser(item.RequestedByIdentityId);
+                List<int> inviteeIds = JsonConvert.DeserializeObject<List<int>>(item.InviteeIds);
+                var invitees = new List<UserFullInfoForClient>();
+                foreach (var inv in inviteeIds)
+                {
+                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                }
+                res.Add(
+                    new ReservationRequestInfoForClient()
+                    {
+                        Id = item.Id,
+                        ChildFree = item.ChildFree,
+                        Comments = item.Comments,
+                        StartDateTime = item.ReservationDateTime,
+                        EndDateTime = item.ReservationDateTime.AddMinutes(item.Duration),
+                        GuestCount = item.GuestCount,
+                        Invalids = item.Invalids,
+                        PetsFree = item.PetsFree,
+                        TableNumber = item.Table.Number,
+                        IssueDate = item.IssueDate,
+                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        Invitees = invitees,
+                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                    });
+            }
+            return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
+
+        }
 
 
+        public async Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetRejectedReservationRequestsForClient(string clientIdentityUserId, string date)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityUserId);
+
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+            var resDate = DateTime.ParseExact(date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var requests = await _repository.GetRejectedReservationRequestsByClientId(client.Id, resDate);
+
+            var res = new List<ReservationRequestInfoForClient>();
+            foreach (var item in requests)
+            {
+                var user = await _repository.GetUser(item.RequestedByIdentityId);
+                List<int> inviteeIds = JsonConvert.DeserializeObject<List<int>>(item.InviteeIds);
+                var invitees = new List<UserFullInfoForClient>();
+                foreach (var inv in inviteeIds)
+                {
+                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                }
+                res.Add(
+                    new ReservationRequestInfoForClient()
+                    {
+                        Id = item.Id,
+                        ChildFree = item.ChildFree,
+                        Comments = item.Comments,
+                        StartDateTime = item.ReservationDateTime,
+                        EndDateTime = item.ReservationDateTime.AddMinutes(item.Duration),
+                        GuestCount = item.GuestCount,
+                        Invalids = item.Invalids,
+                        PetsFree = item.PetsFree,
+                        TableNumber = item.Table.Number,
+                        IssueDate = item.IssueDate,
+                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        Invitees = invitees,
+                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                    });
+            }
+            return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
+
+        }
+
+
+        public async Task<ServerResponse<ICollection<ReservationInfoForClient>>> GetReservationsByOwner(string fromDate, string toDate, int clientId, string ownerIdentityId)
+        {
+            var fromDateDate = DateTime.ParseExact(fromDate, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var toDateDate = DateTime.ParseExact(toDate, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null)
+                {
+                    return new ServerResponse<ICollection<ReservationInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ReservationInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+
+            if (client is null)
+            {
+                return new ServerResponse<ICollection<ReservationInfoForClient>>(StatusCode.NotFound, null);
+            }
+
+
+            var reservations = client.Reservations;
+            var response = new List<ReservationInfoForClient>();
+            foreach (var item in reservations)
+            {
+                if (item.ReservationDate >= fromDateDate && item.ReservationDate <= toDateDate)
+                {
+                    var user = await _repository.GetUser(item.IdentityUserId);
+                    var invitees = new List<UserFullInfoForClient>();
+                    foreach (var inv in item.Invitees)
+                    {
+                        invitees.Add(UserToUserFullInfoForClient(inv.User));
+                    }
+                    response.Add(
+                        new ReservationInfoForClient()
+                        {
+                            Id = item.Id,
+                            ChildFree = item.ChildFree,
+                            Comments = item.Comments,
+                            StartDateTime = item.ReservationDate,
+                            EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
+                            GuestCount = item.GuestCount,
+                            Invalids = item.Invalids,
+                            TableNumber = item.Table.Number,
+                            PetsFree = item.PetsFree,
+                            ReservationState = item.ReservationState is null ? "idle" : item.ReservationState.Title,
+                            User = UserToUserFullInfoForClient(user),
+                            Invitees = invitees
+                        });
+                }
+            }
+            return new ServerResponse<ICollection<ReservationInfoForClient>>(StatusCode.Ok, response);
+        }
+
+
+        public async Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetReservationRequestsForOwner(string ownerIdentityId, int clientId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null)
+                {
+                    return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+
+            if (client is null)
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.NotFound, null);
+            }
+
+            var requests = await _repository.GetWaitingReservationRequestsByClientId(client.Id);
+
+            var res = new List<ReservationRequestInfoForClient>();
+            foreach (var item in requests)
+            {
+                var user = await _repository.GetUser(item.RequestedByIdentityId);
+                List<int> inviteeIds = JsonConvert.DeserializeObject<List<int>>(item.InviteeIds);
+                var invitees = new List<UserFullInfoForClient>();
+                foreach (var inv in inviteeIds)
+                {
+                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                }
+                res.Add(
+                    new ReservationRequestInfoForClient()
+                    {
+                        Id = item.Id,
+                        ChildFree = item.ChildFree,
+                        Comments = item.Comments,
+                        StartDateTime = item.ReservationDateTime,
+                        EndDateTime = item.ReservationDateTime.AddMinutes(item.Duration),
+                        GuestCount = item.GuestCount,
+                        Invalids = item.Invalids,
+                        PetsFree = item.PetsFree,
+                        TableNumber = item.Table.Number,
+                        IssueDate = item.IssueDate,
+                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        Invitees = invitees,
+                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                    });
+            }
+            return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
+
+        }
+
+
+        public async Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetRejectedReservationRequestsForOwner(string ownerIdentityId, int clientId, string date)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null)
+                {
+                    return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+
+            if (client is null)
+            {
+                return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.NotFound, null);
+            }
+
+            var resDate = DateTime.ParseExact(date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+            var requests = await _repository.GetRejectedReservationRequestsByClientId(client.Id, resDate);
+
+            var res = new List<ReservationRequestInfoForClient>();
+            foreach (var item in requests)
+            {
+                var user = await _repository.GetUser(item.RequestedByIdentityId);
+                List<int> inviteeIds = JsonConvert.DeserializeObject<List<int>>(item.InviteeIds);
+                var invitees = new List<UserFullInfoForClient>();
+                foreach (var inv in inviteeIds)
+                {
+                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                }
+                res.Add(
+                    new ReservationRequestInfoForClient()
+                    {
+                        Id = item.Id,
+                        ChildFree = item.ChildFree,
+                        Comments = item.Comments,
+                        StartDateTime = item.ReservationDateTime,
+                        EndDateTime = item.ReservationDateTime.AddMinutes(item.Duration),
+                        GuestCount = item.GuestCount,
+                        Invalids = item.Invalids,
+                        PetsFree = item.PetsFree,
+                        TableNumber = item.Table.Number,
+                        IssueDate = item.IssueDate,
+                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        Invitees = invitees,
+                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                    });
+            }
+            return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
+
+        }
 
 
         private async Task HandlePendingTimer(string key, Timer timer)
@@ -264,7 +549,8 @@ namespace BR.Services
                         GuestCount = newReservationRequest.GuestCount,
                         ReservationDateTime = resDate,
                         TableId = tableState.TableId,
-                        RequestedByIdentityId = userIdentityId
+                        RequestedByIdentityId = userIdentityId,
+                        IssueDate = DateTime.Now
                     };
                     try
                     {

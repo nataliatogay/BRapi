@@ -1,5 +1,6 @@
 ﻿using BR.Models;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -191,6 +192,10 @@ namespace BR.EF
 
         Task<ReservationRequestState> GetReservationRequestState(string title);
 
+        Task<ICollection<ReservationRequest>> GetWaitingReservationRequestsByClientId(int clientId);
+        Task<ICollection<ReservationRequest>> GetRejectedReservationRequestsByClientId(int clientId, DateTime date);
+
+
 
         // Invitees
 
@@ -214,7 +219,8 @@ namespace BR.EF
         Task<Table> AddTable(Table table);
         Task<Table> UpdateTable(Table table);
         Task<bool> DeleteTable(Table table);
-        //    Task<TableState> GetTableState(string title);
+        //Task<ICollection<Table>> GetTablesByClientId(int clientId);
+
 
 
         // Bars

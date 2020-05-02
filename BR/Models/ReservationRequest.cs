@@ -33,6 +33,8 @@ namespace BR.Models
 
         public string Comments { get; set; }
 
+        public DateTime IssueDate { get; set; }
+
         public string ReviewedByIndentityId { get; set; }
 
         public int? ReservationRequestStateId { get; set; }

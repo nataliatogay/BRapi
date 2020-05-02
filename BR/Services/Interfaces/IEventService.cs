@@ -16,6 +16,10 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ICollection<EventInfoShort>>> GetEventsForClients(string clientIdentityId);
 
+        Task<ServerResponse<ICollection<EventInfoShort>>> GetUpcomingEventsForClients(string clientIdentityId);
+
+        Task<ServerResponse<ICollection<EventInfoShort>>> GetUpcomingEventsForOwners(int clientId, string ownerIdentityId);
+
         Task<ServerResponse<EventFullInfo>> GetEventFullInfoForOwners(int eventId, string ownerIdentityId);
 
         Task<ServerResponse<EventFullInfo>> GetEventFullInfoForClients(int eventId, string clientIdentityId);

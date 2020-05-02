@@ -59,6 +59,35 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "Owner")]
+        [HttpGet("UpcomingForOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetUpcomingEventsForClients(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ICollection<EventInfoShort>>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.GetUpcomingEventsForOwners(clientId, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("UpcomingForClients")]
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetUpcomingEventsForClients()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<ICollection<EventInfoShort>>(Utils.StatusCode.UserNotFound, null));
+            }
+
+            return new JsonResult(await _eventService.GetUpcomingEventsForClients(clientIdentityUser.Id));
+        }
+
+
+
+        [Authorize(Roles = "Owner")]
         [HttpGet("FullForOwners/{eventId}")]
         public async Task<ActionResult<ServerResponse<EventFullInfo>>> GetEventForOwners(int eventId)
         {
@@ -116,7 +145,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Owner")]
         [HttpPut("UpdateByOwner")]
-        public async Task<ActionResult<ServerResponse<EventInfoShort>>> UpdateByOwner ([FromBody]UpdateEventRequest updateRequest)
+        public async Task<ActionResult<ServerResponse<EventInfoShort>>> UpdateByOwner([FromBody]UpdateEventRequest updateRequest)
         {
             var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (ownerIdentityUser is null)
@@ -186,7 +215,7 @@ namespace BR.Controllers
         }
 
 
-        
+
 
 
 

@@ -814,6 +814,50 @@ namespace BR.EF
             return await _db.ReservationRequestStates.FirstOrDefaultAsync(item => item.Title.ToUpper().Equals(title.ToUpper()));
         }
 
+        public async Task<ICollection<ReservationRequest>> GetWaitingReservationRequestsByClientId(int clientId)
+        {
+            var floors = await _db.Floors.Where(f => f.ClientId == clientId).ToListAsync();
+            var halls = new List<Hall>();
+            foreach (var item in floors)
+            {
+                halls.AddRange(await _db.Halls.Where(h => h.FloorId == item.Id).ToListAsync());
+            }
+            var tables = new List<Table>();
+            foreach (var item in halls)
+            {
+                tables.AddRange(await _db.Tables.Where(t => t.HallId == item.Id).ToListAsync());
+            }
+            var requests = new List<ReservationRequest>();
+            foreach (var item in tables)
+            {
+                requests.AddRange(await _db.ReservationRequests.Where(r => r.TableId == item.Id && r.ReservationRequestStateId == null).ToListAsync());
+            }
+            return requests;
+        }
+
+        public async Task<ICollection<ReservationRequest>> GetRejectedReservationRequestsByClientId(int clientId, DateTime date)
+        {
+            var floors = await _db.Floors.Where(f => f.ClientId == clientId).ToListAsync();
+            var halls = new List<Hall>();
+            foreach (var item in floors)
+            {
+                halls.AddRange(await _db.Halls.Where(h => h.FloorId == item.Id).ToListAsync());
+            }
+            var tables = new List<Table>();
+            foreach (var item in halls)
+            {
+                tables.AddRange(await _db.Tables.Where(t => t.HallId == item.Id).ToListAsync());
+            }
+            var state = await _db.ReservationRequestStates.FirstOrDefaultAsync(item => item.Title.ToUpper().Equals("Rejected".ToUpper()));
+
+            var requests = new List<ReservationRequest>();
+            foreach (var item in tables)
+            {
+                requests.AddRange(await _db.ReservationRequests.Where(r => r.TableId == item.Id && r.ReservationRequestStateId == state.Id && r.ReservationDateTime.ToShortDateString() == date.ToShortDateString()).ToListAsync());
+            }
+            return requests;
+        }
+
 
         // Invitees
 
@@ -882,6 +926,10 @@ namespace BR.EF
                 return false;
             }
         }
+
+
+
+
 
         public async Task<Bar> GetBar(int id)
         {

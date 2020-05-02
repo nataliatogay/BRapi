@@ -35,7 +35,7 @@ namespace BR.Controllers
         }
 
 
-      //  [Authorize(Roles ="Client")]
+        [Authorize(Roles = "Client")]
         [HttpGet("InfoForClient")]
         public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetReservationsForClient(string fromDate, string toDate)
         {
@@ -45,6 +45,71 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _reservationService.GetReservationsByClient(fromDate, toDate, clientIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("RequestsForClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationRequestInfoForClient>>>> GetWaitingReservationRequestsByClient()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetReservationRequestsForClient(clientIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("RejectedRequestsForClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationRequestInfoForClient>>>> GetRejectedReservationRequestsByClient(string date)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetRejectedReservationRequestsForClient(clientIdentityUser.Id, date));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("InfoForOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetReservationsForOwner(int clientId, string fromDate, string toDate)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetReservationsByOwner(fromDate, toDate, clientId, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("RequestsForOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationRequestInfoForClient>>>> GetWaitingReservationRequestsByOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetReservationRequestsForOwner(ownerIdentityUser.Id, clientId));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("RejectedRequestsForOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationRequestInfoForClient>>>> GetRejectedReservationRequestsByClient(string date, int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetRejectedReservationRequestsForOwner(ownerIdentityUser.Id, clientId, date));
         }
 
 
@@ -105,7 +170,7 @@ namespace BR.Controllers
             return new JsonResult(await _reservationService.GetReservation(id));
         }
 
-        
+
 
         [HttpPost("BarPending")]
         public async Task<ActionResult<ServerResponse<ServerResponse<string>>>> SetBarPendingState(BarStates stateRequest)
@@ -114,7 +179,7 @@ namespace BR.Controllers
         }
 
 
-        
+
 
         [HttpPost("bar")]
         public async Task<ActionResult<ServerResponse<int>>> NewBarReservation([FromBody]NewBarReservationRequest newBarReservation)
@@ -140,7 +205,7 @@ namespace BR.Controllers
 
 
 
-        
+
 
 
         [HttpPost("BarConfirm")]

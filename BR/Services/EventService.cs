@@ -85,6 +85,68 @@ namespace BR.Services
         }
 
 
+        public async Task<ServerResponse<ICollection<EventInfoShort>>> GetUpcomingEventsForClients(string clientIdentityId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.UserNotFound, null);
+                }
+
+                var eventInfos = new List<EventInfoShort>();
+                foreach (var item in client.Events)
+                {
+                    if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                    {
+                        eventInfos.Add(this.ToShortEventInfo(item));
+                    }
+                }
+                return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.Ok, eventInfos);
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<ICollection<EventInfoShort>>> GetUpcomingEventsForOwners(int clientId, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null)
+                {
+                    return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.DbConnectionError, null);
+            }
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+
+            if (client is null)
+            {
+                return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.NotFound, null);
+            }
+
+            var eventInfos = new List<EventInfoShort>();
+            foreach (var item in client.Events)
+            {
+                if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                {
+                    eventInfos.Add(this.ToShortEventInfo(item));
+                }
+            }
+            return new ServerResponse<ICollection<EventInfoShort>>(StatusCode.Ok, eventInfos);
+        }
+
 
         public async Task<ServerResponse<EventInfoShort>> AddNewEventByOwner(NewEventByOwnerRequest newRequest, string ownerIdentityId)
         {
@@ -122,7 +184,6 @@ namespace BR.Services
             {
                 try
                 {
-
                     imagePath = await _blobService.UploadImage(newRequest.Image);
                 }
                 catch
@@ -179,7 +240,6 @@ namespace BR.Services
             {
                 try
                 {
-
                     imagePath = await _blobService.UploadImage(newRequest.Image);
                 }
                 catch

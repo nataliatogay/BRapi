@@ -15,11 +15,21 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ICollection<ReservationInfoForClient>>> GetReservationsByClient(string fromDate, string toDate, string clientIdentityId);
 
+        Task<ServerResponse<ICollection<ReservationInfoForClient>>> GetReservationsByOwner(string fromDate, string toDate, int clientId, string ownerIdentityId);
+
         Task<ServerResponse<string>> SetPendingTableState(TableState tableState);
 
         Task<ServerResponse> AddNewReservationByUser(NewReservationByUserRequest newReservationRequest, string userIdentityId);
 
         Task<ServerResponse> AddConfirmedReservation(ConfirmReservationRequest confirmRequest, string clientIdentityId);
+
+        Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetReservationRequestsForClient(string clientIdentityUserId);
+
+        Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetRejectedReservationRequestsForClient(string clientIdentityUserId, string date);
+
+        Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetReservationRequestsForOwner(string ownerIdentityId, int clientId);
+
+        Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetRejectedReservationRequestsForOwner(string ownerIdentityId, int clientId, string date);
 
 
 
