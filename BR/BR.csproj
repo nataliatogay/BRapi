@@ -12,11 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200425082213_waiter-edit.cs" />
-    <Compile Remove="Migrations\20200425082213_waiter-edit.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

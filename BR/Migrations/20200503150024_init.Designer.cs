@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    [Migration("20200408214719_edit_model3")]
-    partial class edit_model3
+    [Migration("20200503150024_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.14-servicing-32113")
+                .HasAnnotation("ProductVersion", "2.1.11-servicing-32099")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -70,7 +70,7 @@ namespace BR.Migrations
 
                     b.Property<DateTime>("DateTime");
 
-                    b.Property<bool>("IsDone");
+                    b.Property<bool?>("Done");
 
                     b.Property<int>("NotificationTypeId");
 
@@ -81,16 +81,20 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.HasIndex("NotificationTypeId");
 
-                    b.HasIndex("RequestId");
+                    b.HasIndex("RequestId")
+                        .IsUnique()
+                        .HasFilter("[RequestId] IS NOT NULL");
 
                     b.ToTable("AdminNotifications");
                 });
 
-            modelBuilder.Entity("BR.Models.BarTable", b =>
+            modelBuilder.Entity("BR.Models.Bar", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -104,7 +108,97 @@ namespace BR.Migrations
 
                     b.HasIndex("HallId");
 
-                    b.ToTable("BarTables");
+                    b.ToTable("Bars");
+                });
+
+            modelBuilder.Entity("BR.Models.BarReservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AddedByIdentityId")
+                        .IsRequired();
+
+                    b.Property<int>("BarId");
+
+                    b.Property<int?>("BarReservationRequestId");
+
+                    b.Property<int?>("CancelReasonId");
+
+                    b.Property<string>("CancelledByIdentityId");
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<string>("Comments");
+
+                    b.Property<int>("Duration");
+
+                    b.Property<int>("GuestCount");
+
+                    b.Property<string>("IdentityUserId");
+
+                    b.Property<DateTime>("ReservationDate");
+
+                    b.Property<int?>("ReservationStateId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedByIdentityId");
+
+                    b.HasIndex("BarId");
+
+                    b.HasIndex("BarReservationRequestId")
+                        .IsUnique()
+                        .HasFilter("[BarReservationRequestId] IS NOT NULL");
+
+                    b.HasIndex("CancelReasonId");
+
+                    b.HasIndex("CancelledByIdentityId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("IdentityUserId");
+
+                    b.HasIndex("ReservationStateId");
+
+                    b.ToTable("BarReservations");
+                });
+
+            modelBuilder.Entity("BR.Models.BarReservationRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BarId");
+
+                    b.Property<string>("Comments");
+
+                    b.Property<int>("Duration");
+
+                    b.Property<int>("GuestCount");
+
+                    b.Property<string>("RequestedByIdentityId")
+                        .IsRequired();
+
+                    b.Property<DateTime>("ReservationDateTime");
+
+                    b.Property<int?>("ReservationRequestStateId");
+
+                    b.Property<string>("ReviewedByIndentityId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BarId");
+
+                    b.HasIndex("RequestedByIdentityId");
+
+                    b.HasIndex("ReservationRequestStateId");
+
+                    b.HasIndex("ReviewedByIndentityId");
+
+                    b.ToTable("BarReservationRequests");
                 });
 
             modelBuilder.Entity("BR.Models.CancelReason", b =>
@@ -146,9 +240,9 @@ namespace BR.Migrations
 
                     b.Property<bool>("IsConfirmedByAdmin");
 
-                    b.Property<float>("Lat");
+                    b.Property<double>("Lat");
 
-                    b.Property<float>("Long");
+                    b.Property<double>("Long");
 
                     b.Property<string>("MainImagePath")
                         .IsRequired();
@@ -536,9 +630,13 @@ namespace BR.Migrations
 
                     b.Property<int>("ReservationId");
 
+                    b.Property<int?>("BarReservationId");
+
                     b.HasKey("UserId", "ReservationId");
 
                     b.HasAlternateKey("ReservationId", "UserId");
+
+                    b.HasIndex("BarReservationId");
 
                     b.ToTable("Invitees");
                 });
@@ -611,6 +709,9 @@ namespace BR.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Organizations");
                 });
 
@@ -681,11 +782,8 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("AddedByIdentityId");
-
-                    b.Property<string>("AdditionalInfo");
-
-                    b.Property<int?>("BarTableId");
+                    b.Property<string>("AddedByIdentityId")
+                        .IsRequired();
 
                     b.Property<int?>("CancelReasonId");
 
@@ -701,21 +799,23 @@ namespace BR.Migrations
 
                     b.Property<int>("GuestCount");
 
+                    b.Property<string>("IdentityUserId");
+
                     b.Property<bool>("Invalids");
 
                     b.Property<bool>("PetsFree");
 
                     b.Property<DateTime>("ReservationDate");
 
+                    b.Property<int?>("ReservationRequestId");
+
                     b.Property<int?>("ReservationStateId");
 
-                    b.Property<int?>("UserId");
+                    b.Property<int>("TableId");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AddedByIdentityId");
-
-                    b.HasIndex("BarTableId");
 
                     b.HasIndex("CancelReasonId");
 
@@ -723,11 +823,80 @@ namespace BR.Migrations
 
                     b.HasIndex("ClientId");
 
+                    b.HasIndex("IdentityUserId");
+
+                    b.HasIndex("ReservationRequestId")
+                        .IsUnique()
+                        .HasFilter("[ReservationRequestId] IS NOT NULL");
+
                     b.HasIndex("ReservationStateId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("TableId");
 
                     b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("BR.Models.ReservationRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("ChildFree");
+
+                    b.Property<string>("Comments");
+
+                    b.Property<int>("Duration");
+
+                    b.Property<int>("GuestCount");
+
+                    b.Property<bool>("Invalids");
+
+                    b.Property<string>("InviteeIds");
+
+                    b.Property<DateTime>("IssueDate");
+
+                    b.Property<bool>("PetsFree");
+
+                    b.Property<string>("RequestedByIdentityId")
+                        .IsRequired();
+
+                    b.Property<DateTime>("ReservationDateTime");
+
+                    b.Property<int?>("ReservationRequestStateId");
+
+                    b.Property<string>("ReviewedByIndentityId");
+
+                    b.Property<int>("TableId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestedByIdentityId");
+
+                    b.HasIndex("ReservationRequestStateId");
+
+                    b.HasIndex("ReviewedByIndentityId");
+
+                    b.HasIndex("TableId");
+
+                    b.ToTable("ReservationRequests");
+                });
+
+            modelBuilder.Entity("BR.Models.ReservationRequestState", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Title")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("ReservationRequestStates");
                 });
 
             modelBuilder.Entity("BR.Models.ReservationState", b =>
@@ -791,19 +960,6 @@ namespace BR.Migrations
                     b.HasIndex("HallId");
 
                     b.ToTable("Tables");
-                });
-
-            modelBuilder.Entity("BR.Models.TableReservation", b =>
-                {
-                    b.Property<int>("TableId");
-
-                    b.Property<int>("ReservationId");
-
-                    b.HasKey("TableId", "ReservationId");
-
-                    b.HasAlternateKey("ReservationId", "TableId");
-
-                    b.ToTable("TableReservations");
                 });
 
             modelBuilder.Entity("BR.Models.User", b =>
@@ -888,7 +1044,7 @@ namespace BR.Migrations
 
                     b.Property<string>("AddedByIdentityId");
 
-                    b.Property<int?>("BarTableId");
+                    b.Property<int?>("BarId");
 
                     b.Property<int>("Duration");
 
@@ -904,7 +1060,7 @@ namespace BR.Migrations
 
                     b.HasIndex("AddedByIdentityId");
 
-                    b.HasIndex("BarTableId");
+                    b.HasIndex("BarId");
 
                     b.HasIndex("TableId");
 
@@ -921,6 +1077,8 @@ namespace BR.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired();
+
+                    b.Property<bool>("Gender");
 
                     b.Property<string>("IdentityId")
                         .IsRequired();
@@ -1116,8 +1274,8 @@ namespace BR.Migrations
             modelBuilder.Entity("BR.Models.AdminNotification", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("AdminNotifications")
-                        .HasForeignKey("ClientId");
+                        .WithOne("AdminNotification")
+                        .HasForeignKey("BR.Models.AdminNotification", "ClientId");
 
                     b.HasOne("BR.Models.NotificationType", "NotificationType")
                         .WithMany("AdminNotifications")
@@ -1125,16 +1283,75 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.ClientRequest", "Request")
-                        .WithMany("AdminNotifications")
-                        .HasForeignKey("RequestId");
+                        .WithOne("AdminNotification")
+                        .HasForeignKey("BR.Models.AdminNotification", "RequestId");
                 });
 
-            modelBuilder.Entity("BR.Models.BarTable", b =>
+            modelBuilder.Entity("BR.Models.Bar", b =>
                 {
                     b.HasOne("BR.Models.Hall", "Hall")
-                        .WithMany("BarTables")
+                        .WithMany("Bars")
                         .HasForeignKey("HallId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.BarReservation", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "AddedByIdentity")
+                        .WithMany()
+                        .HasForeignKey("AddedByIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.Bar", "Bar")
+                        .WithMany("BarReservations")
+                        .HasForeignKey("BarId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.BarReservationRequest", "BarReservationRequest")
+                        .WithOne("BarReservation")
+                        .HasForeignKey("BR.Models.BarReservation", "BarReservationRequestId");
+
+                    b.HasOne("BR.Models.CancelReason", "CancelReason")
+                        .WithMany("BarReservations")
+                        .HasForeignKey("CancelReasonId");
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CancelledByIdentity")
+                        .WithMany()
+                        .HasForeignKey("CancelledByIdentityId");
+
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("BarReservations")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityUserId");
+
+                    b.HasOne("BR.Models.ReservationState", "ReservationState")
+                        .WithMany("BarReservations")
+                        .HasForeignKey("ReservationStateId");
+                });
+
+            modelBuilder.Entity("BR.Models.BarReservationRequest", b =>
+                {
+                    b.HasOne("BR.Models.Bar", "Bar")
+                        .WithMany("BarReservationRequests")
+                        .HasForeignKey("BarId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "RequestedByIdentityUser")
+                        .WithMany()
+                        .HasForeignKey("RequestedByIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.ReservationRequestState", "ReservationRequestState")
+                        .WithMany("BarReservationRequests")
+                        .HasForeignKey("ReservationRequestStateId");
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "ReviewedByIdentityUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByIndentityId");
                 });
 
             modelBuilder.Entity("BR.Models.CancelReason", b =>
@@ -1339,6 +1556,10 @@ namespace BR.Migrations
 
             modelBuilder.Entity("BR.Models.Invitee", b =>
                 {
+                    b.HasOne("BR.Models.BarReservation")
+                        .WithMany("Invitees")
+                        .HasForeignKey("BarReservationId");
+
                     b.HasOne("BR.Models.Reservation", "Reservation")
                         .WithMany("Invitees")
                         .HasForeignKey("ReservationId")
@@ -1389,12 +1610,8 @@ namespace BR.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "AddedByIdentity")
                         .WithMany()
-                        .HasForeignKey("AddedByIdentityId");
-
-                    b.HasOne("BR.Models.BarTable", "BarTable")
-                        .WithMany("Reservations")
-                        .HasForeignKey("BarTableId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("AddedByIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BR.Models.CancelReason", "CancelReason")
                         .WithMany("Reservations")
@@ -1409,13 +1626,43 @@ namespace BR.Migrations
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityUserId");
+
+                    b.HasOne("BR.Models.ReservationRequest", "ReservationRequest")
+                        .WithOne("Reservation")
+                        .HasForeignKey("BR.Models.Reservation", "ReservationRequestId");
+
                     b.HasOne("BR.Models.ReservationState", "ReservationState")
                         .WithMany("Reservations")
                         .HasForeignKey("ReservationStateId");
 
-                    b.HasOne("BR.Models.User", "User")
+                    b.HasOne("BR.Models.Table", "Table")
                         .WithMany("Reservations")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BR.Models.ReservationRequest", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "RequestedByIdentityUser")
+                        .WithMany()
+                        .HasForeignKey("RequestedByIdentityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BR.Models.ReservationRequestState", "ReservationRequestState")
+                        .WithMany("ReservationRequests")
+                        .HasForeignKey("ReservationRequestStateId");
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "ReviewedByIdentityUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByIndentityId");
+
+                    b.HasOne("BR.Models.Table", "Table")
+                        .WithMany("ReservationRequests")
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("BR.Models.SocialLink", b =>
@@ -1431,19 +1678,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.Hall", "Hall")
                         .WithMany("Tables")
                         .HasForeignKey("HallId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.TableReservation", b =>
-                {
-                    b.HasOne("BR.Models.Reservation", "Reservation")
-                        .WithMany("TableReservations")
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BR.Models.Table", "Table")
-                        .WithMany("TableReservations")
-                        .HasForeignKey("TableId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1486,9 +1720,9 @@ namespace BR.Migrations
                         .WithMany()
                         .HasForeignKey("AddedByIdentityId");
 
-                    b.HasOne("BR.Models.BarTable", "BarTable")
+                    b.HasOne("BR.Models.Bar", "Bar")
                         .WithMany()
-                        .HasForeignKey("BarTableId");
+                        .HasForeignKey("BarId");
 
                     b.HasOne("BR.Models.Table", "Table")
                         .WithMany()

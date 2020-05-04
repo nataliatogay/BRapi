@@ -17,6 +17,9 @@ namespace BR.Migrations
                 name: "AccountTokens");
 
             migrationBuilder.DropTable(
+                name: "AdminNotifications");
+
+            migrationBuilder.DropTable(
                 name: "Admins");
 
             migrationBuilder.DropTable(
@@ -62,13 +65,10 @@ namespace BR.Migrations
                 name: "ClientRatings");
 
             migrationBuilder.DropTable(
-                name: "ClientRequests");
-
-            migrationBuilder.DropTable(
                 name: "ClientSpecialDiets");
 
             migrationBuilder.DropTable(
-                name: "Events");
+                name: "EventMarks");
 
             migrationBuilder.DropTable(
                 name: "Favourites");
@@ -86,13 +86,22 @@ namespace BR.Migrations
                 name: "SocialLinks");
 
             migrationBuilder.DropTable(
-                name: "TableReservations");
+                name: "UserPrivileges");
 
             migrationBuilder.DropTable(
                 name: "UserUserPhones");
 
             migrationBuilder.DropTable(
+                name: "Visitors");
+
+            migrationBuilder.DropTable(
                 name: "Waiters");
+
+            migrationBuilder.DropTable(
+                name: "NotificationTypes");
+
+            migrationBuilder.DropTable(
+                name: "ClientRequests");
 
             migrationBuilder.DropTable(
                 name: "ClientTypes");
@@ -113,40 +122,55 @@ namespace BR.Migrations
                 name: "MealTypes");
 
             migrationBuilder.DropTable(
-                name: "Owners");
-
-            migrationBuilder.DropTable(
                 name: "SpecialDiets");
 
             migrationBuilder.DropTable(
-                name: "EventTypes");
+                name: "Events");
+
+            migrationBuilder.DropTable(
+                name: "BarReservations");
 
             migrationBuilder.DropTable(
                 name: "Reservations");
 
             migrationBuilder.DropTable(
-                name: "Tables");
-
-            migrationBuilder.DropTable(
-                name: "UserPhones");
-
-            migrationBuilder.DropTable(
-                name: "BarTables");
-
-            migrationBuilder.DropTable(
-                name: "CancelReasons");
-
-            migrationBuilder.DropTable(
-                name: "ReservationStates");
+                name: "Privileges");
 
             migrationBuilder.DropTable(
                 name: "ApplicationUsers");
 
             migrationBuilder.DropTable(
-                name: "Halls");
+                name: "UserPhones");
+
+            migrationBuilder.DropTable(
+                name: "Owners");
+
+            migrationBuilder.DropTable(
+                name: "BarReservationRequests");
+
+            migrationBuilder.DropTable(
+                name: "CancelReasons");
+
+            migrationBuilder.DropTable(
+                name: "ReservationRequests");
+
+            migrationBuilder.DropTable(
+                name: "ReservationStates");
+
+            migrationBuilder.DropTable(
+                name: "Bars");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "ReservationRequestStates");
+
+            migrationBuilder.DropTable(
+                name: "Tables");
+
+            migrationBuilder.DropTable(
+                name: "Halls");
 
             migrationBuilder.DropTable(
                 name: "Floors");

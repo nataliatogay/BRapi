@@ -1,6 +1,7 @@
 ﻿using BR.DTO;
 using BR.DTO.Redis;
 using BR.DTO.Reservations;
+using BR.DTO.Schema;
 using BR.DTO.Users;
 using BR.EF;
 using BR.Models;
@@ -81,7 +82,7 @@ namespace BR.Services
                             EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                             GuestCount = item.GuestCount,
                             Invalids = item.Invalids,
-                            TableNumber = item.Table.Number,
+                            Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                             User = UserToUserFullInfoForClient(user),
@@ -130,7 +131,7 @@ namespace BR.Services
                         EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
@@ -182,7 +183,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
                         User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
                         Invitees = invitees,
@@ -235,7 +236,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
                         User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
                         Invitees = invitees,
@@ -298,7 +299,7 @@ namespace BR.Services
                             EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                             GuestCount = item.GuestCount,
                             Invalids = item.Invalids,
-                            TableNumber = item.Table.Number,
+                            Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                             ApplicationDate = item.ReservationRequest.IssueDate,
@@ -356,7 +357,7 @@ namespace BR.Services
                         EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
@@ -416,7 +417,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
                         User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
                         Invitees = invitees,
@@ -477,7 +478,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        TableNumber = item.Table.Number,
+                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
                         User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
                         Invitees = invitees,
@@ -963,7 +964,12 @@ namespace BR.Services
             {
                 resRequest.ReviewedByIndentityId = clientIdentityId;
                 resRequest.ReservationRequestStateId = requestState.Id;
-                resRequest = await _repository.UpdateReservationRequest(resRequest);
+                try
+                {
+                    resRequest = await _repository.UpdateReservationRequest(resRequest);
+
+                }
+                catch { }
             }
             return new ServerResponse(StatusCode.Ok);
 
@@ -1126,7 +1132,12 @@ namespace BR.Services
             {
                 resRequest.ReviewedByIndentityId = ownerIdentityId;
                 resRequest.ReservationRequestStateId = requestState.Id;
-                resRequest = await _repository.UpdateReservationRequest(resRequest);
+                try
+                {
+                    resRequest = await _repository.UpdateReservationRequest(resRequest);
+
+                }
+                catch { }
             }
             return new ServerResponse(StatusCode.Ok);
 
