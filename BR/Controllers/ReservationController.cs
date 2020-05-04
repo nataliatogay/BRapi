@@ -36,7 +36,7 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "Client")]
-        [HttpGet("InfoForClient")]
+        [HttpGet("GetForClient")]
         public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetReservationsForClient(string fromDate, string toDate)
         {
             var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -45,6 +45,19 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _reservationService.GetReservationsByClient(fromDate, toDate, clientIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("GetAllForClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetAllReservationsForClient()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetAllReservationsByClient(clientIdentityUser.Id));
         }
 
 
@@ -75,7 +88,7 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "Owner")]
-        [HttpGet("InfoForOwner/{clientId}")]
+        [HttpGet("GetForOwner/{clientId}")]
         public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetReservationsForOwner(int clientId, string fromDate, string toDate)
         {
             var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -84,6 +97,18 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _reservationService.GetReservationsByOwner(fromDate, toDate, clientId, ownerIdentityUser.Id));
+        }
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("GetAllForOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<ReservationInfoForClient>>>> GetAllReservationsForOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetAllReservationsByOwner(clientId, ownerIdentityUser.Id));
         }
 
 
@@ -135,16 +160,31 @@ namespace BR.Controllers
         }
 
 
-        // by client, waiter
-        [HttpPost("Confirm")]
-        public async Task<ActionResult<ServerResponse>> ConfirmReservation([FromBody]ConfirmReservationRequest confirmRequest)
+
+        [Authorize(Roles = "Client")]
+        [HttpPost("ConfirmByClient")]
+        public async Task<ActionResult<ServerResponse>> ConfirmReservationByClient([FromBody]ConfirmReservationRequest confirmRequest)
         {
             var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (clientIdentityUser is null)
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            return new JsonResult(await _reservationService.AddConfirmedReservation(confirmRequest, clientIdentityUser.Id));
+            return new JsonResult(await _reservationService.AddConfirmedReservationByClient(confirmRequest, clientIdentityUser.Id));
+        }
+
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpPost("ConfirmByOwner")]
+        public async Task<ActionResult<ServerResponse>> ConfirmReservationByOwner([FromBody]ConfirmReservationRequest confirmRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.AddConfirmedReservationByOwner(confirmRequest, ownerIdentityUser.Id));
         }
 
 

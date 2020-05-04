@@ -12,6 +12,8 @@ namespace BR.DTO.Reservations
 
         public UserFullInfoForClient User { get; set; }
 
+        public DateTime ApplicationDate { get; set; }
+
         public DateTime StartDateTime { get; set; }
 
         public DateTime EndDateTime { get; set; }
@@ -20,7 +22,7 @@ namespace BR.DTO.Reservations
 
         public int TableNumber { get; set; }
 
-        public string ReservationState { get; set; }
+        public string State { get; set; }
 
         public bool ChildFree { get; set; }
 
