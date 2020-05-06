@@ -36,7 +36,7 @@ namespace BR.Services
 
                 if (newOwnerRequest.RequestId != null)
                 {
-                    ClientRequest clientRequest = await _repository.GetClientRequest(newOwnerRequest.RequestId ?? default(int));
+                    OwnerRequest clientRequest = await _repository.GetClientRequest(newOwnerRequest.RequestId ?? default(int));
                     if (clientRequest != null)
                     {
 

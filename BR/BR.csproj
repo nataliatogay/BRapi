@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200506131106_neww.cs" />
+    <Compile Remove="Migrations\20200506131106_neww.Designer.cs" />
+    <Compile Remove="Migrations\20200506132047_test.cs" />
+    <Compile Remove="Migrations\20200506132047_test.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

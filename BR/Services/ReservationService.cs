@@ -686,11 +686,6 @@ namespace BR.Services
         }
 
 
-
-
-
-
-
         private async Task HandleConfirmationTimer(int reservationRequestId, Timer timer)
         {
 
@@ -713,6 +708,17 @@ namespace BR.Services
                     {
                         await this.RemoveTableStateCacheData(resRequest.ReservationDateTime, resRequest.Duration, resRequest.TableId, false);
                     }
+                    try
+                    {
+
+                        var requestState = await _repository.GetReservationRequestState("missed");
+                        if (requestState != null)
+                        {
+                            resRequest.ReservationRequestStateId = requestState.Id;
+                            resRequest = await _repository.UpdateReservationRequest(resRequest);
+                        }
+                    }
+                    catch { }
                     var waiters = resRequest.Table.Hall.Floor.Client.Waiters;
                     if (waiters != null)
                     {

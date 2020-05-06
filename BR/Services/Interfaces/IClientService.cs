@@ -30,9 +30,9 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ClientShortInfoForOwners>> UpdateClientByOwner(UpdateClientRequest updateRequest, string ownerIdentityId);
 
-        Task<ServerResponse<string>> UploadMainImageByAdmin(UploadMainImageRequest uploadRequest);
+        //Task<ServerResponse<string>> UploadMainImageByAdmin(UploadMainImageRequest uploadRequest); // was ready, now need change
 
-        Task<ServerResponse<string>> UploadMainImageByOwner(UploadMainImageRequest uploadRequest, string ownerIdentityId);
+        //Task<ServerResponse<string>> UploadMainImageByOwner(UploadMainImageRequest uploadRequest, string ownerIdentityId);  // was ready, now need change
 
         Task<ServerResponse> SetAsMainImageByAdmin(int imageId);
 

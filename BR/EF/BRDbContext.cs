@@ -15,7 +15,7 @@ namespace BR.EF
 
         public DbSet<Admin> Admins { get; set; }
 
-        public DbSet<ClientRequest> ClientRequests { get; set; }
+        public DbSet<OwnerRequest> OwnerRequests { get; set; }
 
         public DbSet<Client> Clients { get; set; }
 
@@ -85,7 +85,7 @@ namespace BR.EF
 
         public DbSet<Event> Events { get; set; }
 
-        public DbSet<ClientImage> ClientImages { get; set; }
+        public DbSet<ClientGalleryImage> ClientGalleryImages { get; set; }
 
         public DbSet<ClientFavourite> Favourites { get; set; }
 
@@ -110,6 +110,7 @@ namespace BR.EF
         public DbSet<AdminNotification> AdminNotifications { get; set; }
 
         public DbSet<NotificationType> NotificationTypes { get; set; }
+
 
 
 

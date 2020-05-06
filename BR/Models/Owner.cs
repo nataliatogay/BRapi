@@ -26,7 +26,7 @@ namespace BR.Models
         [ForeignKey("IdentityId")]
         public virtual IdentityUser Identity { get; set; }
 
-        public virtual ClientRequest ClientRequest { get; set; }
+        public virtual OwnerRequest ClientRequest { get; set; }
 
     }
 }

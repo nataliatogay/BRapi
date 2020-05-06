@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BR.Services.Interfaces
 {
-    public interface IClientRequestService
+    public interface IOwnerRequestService
     {
         Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests();
 

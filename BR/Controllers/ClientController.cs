@@ -276,25 +276,29 @@ namespace BR.Controllers
 
         // MAIN IMAGE
 
-        [Authorize(Roles ="Admin")]
-        [HttpPost("UploadMainImageByAdmin")]
-        public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByAdmin([FromBody]UploadMainImageRequest uploadRequest)
-        {
-            return new JsonResult(await _clientService.UploadMainImageByAdmin(uploadRequest));
-        }
+        // no need for now
+
+        //[Authorize(Roles ="Admin")]
+        //[HttpPost("UploadMainImageByAdmin")]
+        //public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByAdmin([FromBody]UploadMainImageRequest uploadRequest)
+        //{
+        //    return new JsonResult(await _clientService.UploadMainImageByAdmin(uploadRequest));
+        //}
 
 
-        [Authorize(Roles = "Owner")]
-        [HttpPost("UploadMainImageByOwner")]
-        public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByOwner([FromBody]UploadMainImageRequest uploadRequest)
-        {
-            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (ownerIdentityUser is null)
-            {
-                return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
-            }
-            return new JsonResult(await _clientService.UploadMainImageByOwner(uploadRequest, ownerIdentityUser.Id));
-        }
+        // no need for now
+
+        //[Authorize(Roles = "Owner")]
+        //[HttpPost("UploadMainImageByOwner")]
+        //public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByOwner([FromBody]UploadMainImageRequest uploadRequest)
+        //{
+        //    var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (ownerIdentityUser is null)
+        //    {
+        //        return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
+        //    }
+        //    return new JsonResult(await _clientService.UploadMainImageByOwner(uploadRequest, ownerIdentityUser.Id));
+        //}
 
 
 

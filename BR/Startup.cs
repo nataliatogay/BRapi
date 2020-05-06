@@ -86,7 +86,7 @@ namespace BR
             services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddScoped<IWaiterAccountService, WaiterAccountService>();
             services.AddScoped<IOwnerService, OwnerService>();
-            services.AddScoped<IClientRequestService, ClientRequestService>();
+            services.AddScoped<IOwnerRequestService, OwnerRequestService>();
             services.AddScoped<IParameterService, ParameterService>();
             services.AddScoped<IBlobService, BlobService>();
             services.AddScoped<IUserService, UserService>();

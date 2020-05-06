@@ -28,7 +28,7 @@ namespace BR.Models
         public virtual NotificationType NotificationType { get; set; }
 
         [ForeignKey("RequestId")]
-        public virtual ClientRequest Request { get; set; }
+        public virtual OwnerRequest Request { get; set; }
 
         [ForeignKey("ClientId")]
         public virtual Client Client { get; set; }

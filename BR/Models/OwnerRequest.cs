@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BR.Models
 {
-    public class ClientRequest
+    public class OwnerRequest
     {
 
 

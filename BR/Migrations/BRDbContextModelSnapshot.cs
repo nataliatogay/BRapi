@@ -15,7 +15,7 @@ namespace BR.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.11-servicing-32099")
+                .HasAnnotation("ProductVersion", "2.1.14-servicing-32113")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -242,9 +242,6 @@ namespace BR.Migrations
 
                     b.Property<double>("Long");
 
-                    b.Property<string>("MainImagePath")
-                        .IsRequired();
-
                     b.Property<int>("MaxReserveDays");
 
                     b.Property<int>("OpenTime");
@@ -334,6 +331,25 @@ namespace BR.Migrations
                     b.ToTable("ClientFeatures");
                 });
 
+            modelBuilder.Entity("BR.Models.ClientGalleryImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClientId");
+
+                    b.Property<string>("ImagePath");
+
+                    b.Property<bool>("IsMain");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("ClientGalleryImages");
+                });
+
             modelBuilder.Entity("BR.Models.ClientGoodFor", b =>
                 {
                     b.Property<int>("ClientId");
@@ -345,23 +361,6 @@ namespace BR.Migrations
                     b.HasIndex("GoodForId");
 
                     b.ToTable("ClientGoodFors");
-                });
-
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ClientId");
-
-                    b.Property<string>("ImagePath");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientImages");
                 });
 
             modelBuilder.Entity("BR.Models.ClientMealType", b =>
@@ -403,39 +402,6 @@ namespace BR.Migrations
                     b.HasAlternateKey("ClientId", "UserId");
 
                     b.ToTable("ClientRatings");
-                });
-
-            modelBuilder.Entity("BR.Models.ClientRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Comments");
-
-                    b.Property<string>("Email")
-                        .IsRequired();
-
-                    b.Property<string>("OrganizationName")
-                        .IsRequired();
-
-                    b.Property<int?>("OwnerId");
-
-                    b.Property<string>("OwnerName")
-                        .IsRequired();
-
-                    b.Property<string>("OwnerPhoneNumber")
-                        .IsRequired();
-
-                    b.Property<DateTime>("RegisteredDate");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId")
-                        .IsUnique()
-                        .HasFilter("[OwnerId] IS NOT NULL");
-
-                    b.ToTable("ClientRequests");
                 });
 
             modelBuilder.Entity("BR.Models.ClientSpecialDiet", b =>
@@ -733,6 +699,39 @@ namespace BR.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("Owners");
+                });
+
+            modelBuilder.Entity("BR.Models.OwnerRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Comments");
+
+                    b.Property<string>("Email")
+                        .IsRequired();
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired();
+
+                    b.Property<int?>("OwnerId");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired();
+
+                    b.Property<string>("OwnerPhoneNumber")
+                        .IsRequired();
+
+                    b.Property<DateTime>("RegisteredDate");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId")
+                        .IsUnique()
+                        .HasFilter("[OwnerId] IS NOT NULL");
+
+                    b.ToTable("OwnerRequests");
                 });
 
             modelBuilder.Entity("BR.Models.PhotoPoint", b =>
@@ -1280,7 +1279,7 @@ namespace BR.Migrations
                         .HasForeignKey("NotificationTypeId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("BR.Models.ClientRequest", "Request")
+                    b.HasOne("BR.Models.OwnerRequest", "Request")
                         .WithOne("AdminNotification")
                         .HasForeignKey("BR.Models.AdminNotification", "RequestId");
                 });
@@ -1436,6 +1435,14 @@ namespace BR.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("BR.Models.ClientGalleryImage", b =>
+                {
+                    b.HasOne("BR.Models.Client", "Client")
+                        .WithMany("ClientImages")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("BR.Models.ClientGoodFor", b =>
                 {
                     b.HasOne("BR.Models.Client", "Client")
@@ -1446,14 +1453,6 @@ namespace BR.Migrations
                     b.HasOne("BR.Models.GoodFor", "GoodFor")
                         .WithMany("ClientGoodFors")
                         .HasForeignKey("GoodForId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.ClientImage", b =>
-                {
-                    b.HasOne("BR.Models.Client", "Client")
-                        .WithMany("ClientImages")
-                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1489,13 +1488,6 @@ namespace BR.Migrations
                         .WithMany("ClientRatings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BR.Models.ClientRequest", b =>
-                {
-                    b.HasOne("BR.Models.Owner", "Owner")
-                        .WithOne("ClientRequest")
-                        .HasForeignKey("BR.Models.ClientRequest", "OwnerId");
                 });
 
             modelBuilder.Entity("BR.Models.ClientSpecialDiet", b =>
@@ -1587,6 +1579,13 @@ namespace BR.Migrations
                         .WithMany("Owners")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("BR.Models.OwnerRequest", b =>
+                {
+                    b.HasOne("BR.Models.Owner", "Owner")
+                        .WithOne("ClientRequest")
+                        .HasForeignKey("BR.Models.OwnerRequest", "OwnerId");
                 });
 
             modelBuilder.Entity("BR.Models.PhotoPoint", b =>

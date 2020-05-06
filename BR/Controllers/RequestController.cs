@@ -17,9 +17,9 @@ namespace BR.Controllers
     [ApiController]
     public class RequestController : ResponseController
     {
-        private readonly IClientRequestService _clientRequestService;
+        private readonly IOwnerRequestService _clientRequestService;
 
-        public RequestController(IClientRequestService clientRequestService)
+        public RequestController(IOwnerRequestService clientRequestService)
         {
             _clientRequestService = clientRequestService;
         }
@@ -55,7 +55,7 @@ namespace BR.Controllers
 
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServerResponse<ClientRequest>>> Get(int id)
+        public async Task<ActionResult<ServerResponse<OwnerRequest>>> Get(int id)
         {
             return new JsonResult(await _clientRequestService.GetClientRequest(id));
         }
@@ -63,7 +63,7 @@ namespace BR.Controllers
 
 
         [HttpPut("Decline")]
-        public async Task<ActionResult<ServerResponse<ClientRequest>>> DeclineRequest([FromBody]int id)
+        public async Task<ActionResult<ServerResponse<OwnerRequest>>> DeclineRequest([FromBody]int id)
         {
             return new JsonResult(await _clientRequestService.DeclineRequest(id));
         }

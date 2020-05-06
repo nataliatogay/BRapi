@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace BR.Services
 {
-    public class ClientRequestService : IClientRequestService
+    public class OwnerRequestService : IOwnerRequestService
     {
         private readonly IAsyncRepository _repository;
-        public ClientRequestService(IAsyncRepository repository)
+        public OwnerRequestService(IAsyncRepository repository)
         {
             _repository = repository;
         }
@@ -23,7 +23,7 @@ namespace BR.Services
         public async Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest)
         {
 
-            ClientRequest clientRequest = new ClientRequest()
+            OwnerRequest clientRequest = new OwnerRequest()
             {
                 OwnerName = newClientRequest.OwnerName,
                 OrganizationName = newClientRequest.OrganizationName,
@@ -61,7 +61,7 @@ namespace BR.Services
 
         public async Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests()
         {
-            IEnumerable<ClientRequest> requests;
+            IEnumerable<OwnerRequest> requests;
             try
             {
 
@@ -96,7 +96,7 @@ namespace BR.Services
 
         public async Task<ServerResponse<ICollection<RequestInfoResponse>>> GetAllClientRequests(int take, int skip)
         {
-            ICollection<ClientRequest> requests;
+            ICollection<OwnerRequest> requests;
 
             try
             {
@@ -130,7 +130,7 @@ namespace BR.Services
 
         public async Task<ServerResponse<RequestInfoResponse>> GetClientRequest(int id)
         {
-            ClientRequest request;
+            OwnerRequest request;
 
             try
             {
@@ -181,7 +181,7 @@ namespace BR.Services
 
         public async Task<ServerResponse<int>> ClientRequestCount()
         {
-            IEnumerable<ClientRequest> requests;
+            IEnumerable<OwnerRequest> requests;
 
             try
             {
@@ -202,7 +202,7 @@ namespace BR.Services
 
         public async Task<ServerResponse> DeclineRequest(int requestId)
         {
-            ClientRequest request;
+            OwnerRequest request;
             try
             {
                 request = await _repository.GetClientRequest(requestId);

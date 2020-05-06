@@ -27,3 +27,7 @@ namespace BR
                 .UseStartup<Startup>();
     }
 }
+
+
+// client default photo https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg
+// event default https://rb2020storage.blob.core.windows.net/photos/default-event.png   

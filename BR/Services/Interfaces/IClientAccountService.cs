@@ -27,7 +27,7 @@ namespace BR.Services.Interfaces
         
         Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient);
 
-        Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString);
+        //Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString); // was ready, no need for now
 
         Task<ServerResponse> DeleteImage(int imageId);
 

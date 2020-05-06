@@ -41,9 +41,6 @@ namespace BR.Models
 
         public DateTime? Deleted { get; set; }
 
-        [Required]
-        public string MainImagePath { get; set; }
-
         public string IdentityId { get; set; }
 
         public int OrganizationId { get; set; }
@@ -82,7 +79,7 @@ namespace BR.Models
 
         public virtual ICollection<Event> Events { get; set; }
 
-        public virtual ICollection<ClientImage> ClientImages { get; set; }
+        public virtual ICollection<ClientGalleryImage> ClientImages { get; set; }
 
         public virtual ICollection<ClientFavourite> ClientFavourites { get; set; }
 
@@ -105,7 +102,7 @@ namespace BR.Models
             News = new HashSet<News>();
             Waiters = new HashSet<Waiter>();
             Events = new HashSet<Event>();
-            ClientImages = new HashSet<ClientImage>();
+            ClientImages = new HashSet<ClientGalleryImage>();
             ClientRatings = new HashSet<ClientRating>();
             ClientFavourites = new HashSet<ClientFavourite>();
             ClientSpecialDiets = new HashSet<ClientSpecialDiet>();

@@ -152,7 +152,7 @@ namespace BR.Services
                         Images = images,
                         Lat = client.Lat,
                         Long = client.Long,
-                        MainImagePath = client.MainImagePath,
+                        MainImagePath = client.ClientImages.FirstOrDefault(item=>item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item=>item.IsMain).ImagePath,
                         OrganizationId = client.OrganizationId,
                         MaxReserveDays = client.MaxReserveDays,
                         ClientTypeIds = clientTypes,
@@ -506,45 +506,47 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString)
-        {
-            Client client;
-            try
-            {
-                client = await _repository.GetClient(identityId);
-                if (client is null)
-                {
-                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
-                }
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-            try
-            {
-                client.MainImagePath = await _blobService.UploadImage(imageString);
+        // no need for now
+        //public async Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString)
+        //{
+            //Client client;
+            //try
+            //{
+            //    client = await _repository.GetClient(identityId);
+            //    if (client is null)
+            //    {
+            //        return new ServerResponse<string>(StatusCode.UserNotFound, null);
+            //    }
+            //}
+            //catch
+            //{
+            //    return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            //}
+            //try
+            //{
+            //    client.MainImagePath = await _blobService.UploadImage(imageString);
 
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.BlobError, null);
-            }
-            try
-            {
-                await _repository.UpdateClient(client);
-                return new ServerResponse<string>(StatusCode.Ok, client.MainImagePath);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
+            //}
+            //catch
+            //{
+            //    return new ServerResponse<string>(StatusCode.BlobError, null);
+            //}
+            //try
+            //{
+            //    await _repository.UpdateClient(client);
+            //    return new ServerResponse<string>(StatusCode.Ok, client.MainImagePath);
+            //}
+            //catch
+            //{
+            //    return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            //}
 
-        }
+
+        //}
 
         public async Task<ServerResponse> SetAsMainImage(int imageId)
         {
-            ClientImage clientImage;
+            ClientGalleryImage clientImage;
             try
             {
                 clientImage = await _repository.GetClientImage(imageId);
@@ -558,28 +560,34 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
 
+            var mainImage = clientImage.Client.ClientImages.FirstOrDefault(item => item.IsMain);
+            if (mainImage != null)
+            {
+                mainImage.IsMain = false;
+                try
+                {
+                    await _repository.UpdateClientImage(mainImage);
+                }
+                catch
+                {
+                    return new ServerResponse(StatusCode.DbConnectionError);
+                }
+            }
+
             var client = clientImage.Client;
 
-            try
-            {
-                await _blobService.DeleteImage(client.MainImagePath);
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.BlobError);
-            }
+            clientImage.IsMain = true;
 
-            client.MainImagePath = clientImage.ImagePath;
             try
             {
-                await _repository.UpdateClient(client);
-                await _repository.DeleteClientImage(clientImage);
+                clientImage = await _repository.UpdateClientImage(clientImage);
                 return new ServerResponse(StatusCode.Ok);
             }
             catch
             {
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
+
         }
 
 
@@ -599,15 +607,16 @@ namespace BR.Services
                 return new ServerResponse<ICollection<ClientImageInfo>>(StatusCode.DbConnectionError, null);
             }
 
-            ICollection<ClientImage> clientImages = new List<ClientImage>();
+            ICollection<ClientGalleryImage> clientImages = new List<ClientGalleryImage>();
             try
             {
                 foreach (var item in imagesString)
                 {
-                    clientImages.Add(new ClientImage()
+                    clientImages.Add(new ClientGalleryImage()
                     {
                         ClientId = client.Id,
-                        ImagePath = await _blobService.UploadImage(item)
+                        ImagePath = await _blobService.UploadImage(item),
+                        IsMain = false
                     });
                 }
             }
@@ -645,7 +654,7 @@ namespace BR.Services
 
         public async Task<ServerResponse> DeleteImage(int imageId)
         {
-            ClientImage clientImage;
+            ClientGalleryImage clientImage;
             try
             {
                 clientImage = await _repository.GetClientImage(imageId);

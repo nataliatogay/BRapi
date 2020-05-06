@@ -20,10 +20,11 @@ namespace BR.EF
         Task<ClientFavourite> GetFavourite(int clientId, int userId);
         Task<ClientFavourite> AddFavourite(ClientFavourite clientFav);
         Task<bool> DeleteFavourite(ClientFavourite clientFav);
-        Task<ClientImage> GetClientImage(int id);
-        Task<ClientImage> AddClientImage(ClientImage image);
-        Task AddClientImages(ICollection<ClientImage> images);
-        Task<bool> DeleteClientImage(ClientImage image);
+        Task<ClientGalleryImage> GetClientImage(int id);
+        Task<ClientGalleryImage> AddClientImage(ClientGalleryImage image);
+        Task<ClientGalleryImage> UpdateClientImage(ClientGalleryImage image);
+        Task AddClientImages(ICollection<ClientGalleryImage> images);
+        Task<bool> DeleteClientImage(ClientGalleryImage image);
         Task<IEnumerable<Client>> GetClientsByMeal(string mealType);
         Task<IEnumerable<Client>> GetClientsByName(string title);
         Task<Client> UpdateClient(Client client);
@@ -80,12 +81,12 @@ namespace BR.EF
 
         // Requests
 
-        Task<ICollection<ClientRequest>> GetClientRequests();
-        Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip);
+        Task<ICollection<OwnerRequest>> GetClientRequests();
+        Task<ICollection<OwnerRequest>> GetClientRequests(int take, int skip);
         //  Task<ICollection<ClientRequest>> GetUndoneClientRequests();
-        Task<ClientRequest> GetClientRequest(int id);
-        Task UpdateClientRequest(ClientRequest clientRequest);
-        Task<ClientRequest> AddClientRequest(ClientRequest clientRequest);
+        Task<OwnerRequest> GetClientRequest(int id);
+        Task UpdateClientRequest(OwnerRequest clientRequest);
+        Task<OwnerRequest> AddClientRequest(OwnerRequest clientRequest);
 
 
         // Tokens

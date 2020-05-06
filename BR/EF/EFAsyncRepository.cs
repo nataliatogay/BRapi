@@ -105,29 +105,36 @@ namespace BR.EF
             return await _db.Clients.FirstOrDefaultAsync(c => c.IdentityId == identityId);
         }
 
-        public async Task<ClientImage> GetClientImage(int id)
+        public async Task<ClientGalleryImage> GetClientImage(int id)
         {
-            return await _db.ClientImages.FindAsync(id);
+            return await _db.ClientGalleryImages.FindAsync(id);
         }
 
-        public async Task<ClientImage> AddClientImage(ClientImage image)
+        public async Task<ClientGalleryImage> AddClientImage(ClientGalleryImage image)
         {
-            var img = _db.ClientImages.Add(image);
+            var res = _db.ClientGalleryImages.Add(image);
             await _db.SaveChangesAsync();
-            return img.Entity;
+            return res.Entity;
         }
 
-        public async Task AddClientImages(ICollection<ClientImage> images)
+        public async Task<ClientGalleryImage> UpdateClientImage(ClientGalleryImage image)
         {
-            _db.ClientImages.AddRange(images.ToArray());
+            var res = _db.ClientGalleryImages.Update(image);
+            await _db.SaveChangesAsync();
+            return res.Entity;
+        }
+
+        public async Task AddClientImages(ICollection<ClientGalleryImage> images)
+        {
+            _db.ClientGalleryImages.AddRange(images.ToArray());
             await _db.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteClientImage(ClientImage image)
+        public async Task<bool> DeleteClientImage(ClientGalleryImage image)
         {
             try
             {
-                _db.ClientImages.Remove(image);
+                _db.ClientGalleryImages.Remove(image);
                 await _db.SaveChangesAsync();
                 return true;
             }
@@ -342,14 +349,14 @@ namespace BR.EF
 
         // Requests
 
-        public async Task<ICollection<ClientRequest>> GetClientRequests()
+        public async Task<ICollection<OwnerRequest>> GetClientRequests()
         {
-            return await _db.ClientRequests.ToListAsync();
+            return await _db.OwnerRequests.ToListAsync();
         }
 
-        public async Task<ICollection<ClientRequest>> GetClientRequests(int take, int skip)
+        public async Task<ICollection<OwnerRequest>> GetClientRequests(int take, int skip)
         {
-            return await _db.ClientRequests.Skip(skip).Take(take).ToListAsync();
+            return await _db.OwnerRequests.Skip(skip).Take(take).ToListAsync();
         }
 
         //public async Task<ICollection<ClientRequest>> GetUndoneClientRequests()
@@ -357,21 +364,21 @@ namespace BR.EF
         //    return await _db.ClientRequests.Where(r => !r.IsDone).ToListAsync();
         //}
 
-        public async Task<ClientRequest> GetClientRequest(int id)
+        public async Task<OwnerRequest> GetClientRequest(int id)
         {
-            return await _db.ClientRequests
+            return await _db.OwnerRequests
                 .FindAsync(id);
         }
 
-        public async Task UpdateClientRequest(ClientRequest clientRequest)
+        public async Task UpdateClientRequest(OwnerRequest clientRequest)
         {
-            _db.ClientRequests.Update(clientRequest);
+            _db.OwnerRequests.Update(clientRequest);
             await _db.SaveChangesAsync();
         }
 
-        public async Task<ClientRequest> AddClientRequest(ClientRequest clientRequest)
+        public async Task<OwnerRequest> AddClientRequest(OwnerRequest clientRequest)
         {
-            var res = await _db.ClientRequests.AddAsync(clientRequest);
+            var res = await _db.OwnerRequests.AddAsync(clientRequest);
             await _db.SaveChangesAsync();
             return res.Entity;
         }
