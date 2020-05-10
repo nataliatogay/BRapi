@@ -27,7 +27,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ICollection<UserShortInfoForAdminResponse>>> GetUserShortInfoForAdmin()
+        public async Task<ServerResponse<ICollection<UserShortInfoForAdmin>>> GetUserShortInfoForAdmin()
         {
             ICollection<User> users;
             try
@@ -36,15 +36,15 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Error, null);
+                return new ServerResponse<ICollection<UserShortInfoForAdmin>>(StatusCode.Error, null);
             }
             if (users is null)
-                return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Ok, null);
+                return new ServerResponse<ICollection<UserShortInfoForAdmin>>(StatusCode.Ok, null);
 
-            var res = new List<UserShortInfoForAdminResponse>();
+            var res = new List<UserShortInfoForAdmin>();
             foreach (var user in users)
             {
-                res.Add(new UserShortInfoForAdminResponse()
+                res.Add(new UserShortInfoForAdmin()
                 {
                     Email = user.Identity.Email,
                     FirstName = user.FirstName,
@@ -57,20 +57,20 @@ namespace BR.Services
                     RegistrationDate = user.RegistrationDate
                 });
             }
-            return new ServerResponse<ICollection<UserShortInfoForAdminResponse>>(StatusCode.Ok, res);
+            return new ServerResponse<ICollection<UserShortInfoForAdmin>>(StatusCode.Ok, res);
         }
 
 
-        public async Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id)
+        public async Task<ServerResponse<UserInfoForAdmin>> GetUserInfoForAdmin(int id)
         {
             try
             {
                 var user = await _repository.GetUser(id);
                 if (user is null)
                 {
-                    return new ServerResponse<UserInfoForAdminResponse>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<UserInfoForAdmin>(StatusCode.UserNotFound, null);
                 }
-                var res = new UserInfoForAdminResponse()
+                var res = new UserInfoForAdmin()
                 {
                     BirthDate = user.BirthDate,
                     Blocked = user.Blocked,
@@ -84,11 +84,11 @@ namespace BR.Services
                     PhoneNumber = user.Identity.PhoneNumber,
                     RegistrationDate = user.RegistrationDate
                 };
-                return new ServerResponse<UserInfoForAdminResponse>(StatusCode.Ok, res);
+                return new ServerResponse<UserInfoForAdmin>(StatusCode.Ok, res);
             }
             catch
             {
-                return new ServerResponse<UserInfoForAdminResponse>(StatusCode.Error, null);
+                return new ServerResponse<UserInfoForAdmin>(StatusCode.Error, null);
             }
         }
 
@@ -121,16 +121,16 @@ namespace BR.Services
 
 
 
-        public async Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id)
+        public async Task<ServerResponse<UserInfoForUsers>> GetUserInfoForUsers(int id)
         {
             try
             {
                 var user = await _repository.GetUser(id);
                 if (user is null)
                 {
-                    return new ServerResponse<UserInfoForUsersResponse>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<UserInfoForUsers>(StatusCode.UserNotFound, null);
                 }
-                var res = new UserInfoForUsersResponse()
+                var res = new UserInfoForUsers()
                 {
                     BirthDate = user.BirthDate,
                     Email = user.Identity.Email,
@@ -139,11 +139,11 @@ namespace BR.Services
                     ImagePath = user.ImagePath,
                     LastName = user.LastName
                 };
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, res);
+                return new ServerResponse<UserInfoForUsers>(StatusCode.Ok, res);
             }
             catch
             {
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
+                return new ServerResponse<UserInfoForUsers>(StatusCode.Error, null);
             }
         }
 

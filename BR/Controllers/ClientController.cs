@@ -50,7 +50,7 @@ namespace BR.Controllers
 
         // NEW CLIENT
 
-            // change return type
+        // change return type
         [Authorize(Roles = "Admin")]
         [HttpPost("NewByAdmin")]
         public async Task<ActionResult<ServerResponse<ClientShortInfoForAdmin>>> NewClientByAdmin([FromBody]NewClientByAdminRequest newClientRequest)
@@ -174,17 +174,18 @@ namespace BR.Controllers
                     {
                         return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
                     }
-                    try
-                    {
-                        string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
+                    return new JsonResult(clientAddResponse);
+                    //try
+                    //{
+                    //    string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
 
-                        await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
-                        return new JsonResult(clientAddResponse);
-                    }
-                    catch
-                    {
-                        return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
-                    }
+                    //    await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
+                    //    
+                    //}
+                    //catch
+                    //{
+                    //    return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.Error, null));
+                    //}
                 }
                 else
                 {
@@ -195,6 +196,61 @@ namespace BR.Controllers
             {
                 return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.EmailUsed, null));
             }
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("ConfirmClientRegistration")]
+        public async Task<ActionResult<ServerResponse>> ConfirmClientRegistration([FromBody]int clientId)
+        {
+            var confirmRes = await _clientService.ConfirmClientRegistration(clientId);
+            if (confirmRes.StatusCode != Utils.StatusCode.Ok)
+            {
+                return new JsonResult(Response(confirmRes.StatusCode));
+            }
+
+            string password = _authenticationService.GeneratePassword();
+            var clientName = await _clientService.GetClientName(clientId);
+            if (clientName.StatusCode != Utils.StatusCode.Ok)
+            {
+                return new JsonResult(Response(clientName.StatusCode));
+            }
+            var clientIdentity = await _userManager.FindByNameAsync(clientName.Data);
+
+            var _passwordValidator =
+                    HttpContext.RequestServices.GetService(typeof(IPasswordValidator<IdentityUser>)) as IPasswordValidator<IdentityUser>;
+            var _passwordHasher =
+                HttpContext.RequestServices.GetService(typeof(IPasswordHasher<IdentityUser>)) as IPasswordHasher<IdentityUser>;
+
+            IdentityResult result =
+                await _passwordValidator.ValidateAsync(_userManager, clientIdentity, password);
+
+            if (result.Succeeded)
+            {
+                clientIdentity.PasswordHash = _passwordHasher.HashPassword(clientIdentity, password);
+                var updateResult = await _userManager.UpdateAsync(clientIdentity);
+                if (!updateResult.Succeeded)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                try
+                {
+                    string msgBody = $"Login: {clientIdentity.Email}\nPassword: {password}";
+
+                    await _emailService.SendAsync(clientIdentity.Email, "Registration info ", msgBody);
+                    return new JsonResult(Response(Utils.StatusCode.Ok));
+                }
+                catch
+                {
+                    return new JsonResult(new ServerResponse<ClientShortInfoForOwners>(Utils.StatusCode.SendingMailError, null));
+                }
+
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+
         }
 
 
@@ -276,29 +332,27 @@ namespace BR.Controllers
 
         // MAIN IMAGE
 
-        // no need for now
 
-        //[Authorize(Roles ="Admin")]
-        //[HttpPost("UploadMainImageByAdmin")]
-        //public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByAdmin([FromBody]UploadMainImageRequest uploadRequest)
-        //{
-        //    return new JsonResult(await _clientService.UploadMainImageByAdmin(uploadRequest));
-        //}
+        [Authorize(Roles = "Admin")]
+        [HttpPost("UploadLogoByAdmin")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadLogoByAdmin([FromBody]UploadLogoRequest uploadRequest)
+        {
+            return new JsonResult(await _clientService.UploadLogoByAdmin(uploadRequest));
+        }
 
 
-        // no need for now
 
-        //[Authorize(Roles = "Owner")]
-        //[HttpPost("UploadMainImageByOwner")]
-        //public async Task<ActionResult<ServerResponse<string>>> UploadMainImageByOwner([FromBody]UploadMainImageRequest uploadRequest)
-        //{
-        //    var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-        //    if (ownerIdentityUser is null)
-        //    {
-        //        return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
-        //    }
-        //    return new JsonResult(await _clientService.UploadMainImageByOwner(uploadRequest, ownerIdentityUser.Id));
-        //}
+        [Authorize(Roles = "Owner")]
+        [HttpPost("UploadLogoByOwner")]
+        public async Task<ActionResult<ServerResponse<string>>> UploadLogoByOwner([FromBody]UploadLogoRequest uploadRequest)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
+            }
+            return new JsonResult(await _clientService.UploadLogoByOwner(uploadRequest, ownerIdentityUser.Id));
+        }
 
 
 
@@ -372,7 +426,7 @@ namespace BR.Controllers
 
         // BLOCK/UNBLOCK
 
-        [Authorize(Roles="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("Block")]
         public async Task<ActionResult<ServerResponse>> BlockClient([FromBody]int clientId)
         {
@@ -389,9 +443,68 @@ namespace BR.Controllers
         }
 
 
+        // FOR USERS
 
 
-        // ----------------------------------------------------------------------------
+        [Authorize(Roles = "User")]
+        [HttpGet("FullForUsers/{id}")]
+        public async Task<ActionResult<ServerResponse<ClientFullInfoForUsers>>> FullInfoForUsers(int id)
+        {
+            return new JsonResult(Response(await _clientService.GetFullClientInfoForUsers(id)));
+        }
+
+
+        [Authorize(Roles = "User")]
+        [HttpGet("FavouriteId")]
+        public async Task<ActionResult<ServerResponse>> GetFavouritesIds()
+        {
+            var userIdentity = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (userIdentity is null)
+            {
+                return new JsonResult(new ServerResponse(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientService.GetFavouritesIds(userIdentity.Id));
+        }
+
+
+        [Authorize(Roles = "User")]
+        [HttpPost("Favourite")]
+        public async Task<ActionResult<ServerResponse>> AddFavourite([FromBody]int clientId)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientService.AddFavourite(clientId, identityUser.Id));
+        }
+
+
+        [Authorize(Roles = "User")]
+        [HttpDelete("Favourite")]
+        public async Task<ActionResult<ServerResponse>> DeleteFavourite(int clientId)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _clientService.DeleteFavourite(clientId, identityUser.Id));
+        }
+
+
+        [Authorize(Roles = "User")]
+        [HttpGet("ComingSoon")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> GetComingSoon(int skip, int take)
+        {
+            return new JsonResult(await _clientService.GetComingSoon(skip, take));
+        }
+
+
+
+
+
+        // ================================================================================================
 
 
 
@@ -404,11 +517,7 @@ namespace BR.Controllers
         }
 
 
-        [HttpGet("ForUsers/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientFullInfoForAdmin>>> FullInfoForUsers(int id)
-        {
-            return new JsonResult(Response(await _clientService.GetFullClientInfoForUsers(id)));
-        }
+        
 
 
         [HttpGet("Favourite")]
@@ -423,28 +532,8 @@ namespace BR.Controllers
             return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
         }
 
-        [HttpPost("Favourite")]
-        public async Task<ActionResult<ServerResponse>> AddFavourite(int clientId)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(await _clientService.AddFavourite(clientId, identityUser.Id));
-        }
 
 
-        [HttpDelete("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> DeleteFavourite(int clientId)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(await _clientService.DeleteFavourite(clientId, identityUser.Id));
-        }
 
 
 
@@ -467,7 +556,7 @@ namespace BR.Controllers
 
 
         [HttpGet("schema/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientHallsInfoResponse>>> ClientSchema(int id)
+        public async Task<ActionResult<ServerResponse<ClientHallsInfo>>> ClientSchema(int id)
         {
             return new JsonResult(Response(await _clientService.GetClientHalls(id)));
         }
@@ -477,13 +566,6 @@ namespace BR.Controllers
 
 
 
-
-        // by admin
-        [HttpPut("Confirm")]
-        public async Task<ActionResult<ServerResponse>> ConfirmClient([FromBody]int clientId)
-        {
-            return new JsonResult(await _clientService.UnblockClient(clientId));
-        }
 
         // DONE
         [HttpPut("Delete")]

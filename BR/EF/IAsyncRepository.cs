@@ -17,6 +17,7 @@ namespace BR.EF
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
         Task<IEnumerable<Client>> GetClients();
+        Task<IEnumerable<Client>> GetComingSoon(int skip, int take);
         Task<ClientFavourite> GetFavourite(int clientId, int userId);
         Task<ClientFavourite> AddFavourite(ClientFavourite clientFav);
         Task<bool> DeleteFavourite(ClientFavourite clientFav);
@@ -220,6 +221,8 @@ namespace BR.EF
         Task<Table> AddTable(Table table);
         Task<Table> UpdateTable(Table table);
         Task<bool> DeleteTable(Table table);
+        Task<ICollection<Table>> GetClientTables(int clientId);
+
         //Task<ICollection<Table>> GetTablesByClientId(int clientId);
 
 

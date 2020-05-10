@@ -12,16 +12,22 @@ namespace BR.DTO.Clients
         public int Id { get; set; }
 
         public string ClientName { get; set; }
-
+ 
         public OrganizationInfo Organization { get; set; }
 
         public string Email { get; set; }
+
+        public string AdminName { get; set; }
+
+        public string AdminPhoneNumber { get; set; }
 
         public string MainImagePath { get; set; }
 
         public ICollection<ClientImageInfo> Images { get; set; }
 
         public DateTime RegistrationDate { get; set; }
+
+        public DateTime? Confirmed { get; set; }
 
         public DateTime? Blocked { get; set; }
 

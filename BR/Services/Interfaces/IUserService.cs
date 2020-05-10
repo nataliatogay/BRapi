@@ -11,15 +11,15 @@ namespace BR.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<ServerResponse<ICollection<UserShortInfoForAdminResponse>>> GetUserShortInfoForAdmin();
+        Task<ServerResponse<ICollection<UserShortInfoForAdmin>>> GetUserShortInfoForAdmin();
 
-        Task<ServerResponse<UserInfoForAdminResponse>> GetUserInfoForAdmin(int id);
+        Task<ServerResponse<UserInfoForAdmin>> GetUserInfoForAdmin(int id);
 
        
 
 
         // =======================================================================================
-        Task<ServerResponse<UserInfoForUsersResponse>> GetUserInfoForUsers(int id);
+        Task<ServerResponse<UserInfoForUsers>> GetUserInfoForUsers(int id);
         Task<ServerResponse> BlockUser(int userId);
         Task<ServerResponse> UnblockUser(int userId);
     }

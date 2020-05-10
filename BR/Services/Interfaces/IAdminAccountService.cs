@@ -21,7 +21,7 @@ namespace BR.Services.Interfaces
         
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
 
-        Task<ServerResponse<AdminInfoResponse>> GetAdminInfo(string identityId);
+        Task<ServerResponse<AdminInfo>> GetAdminInfo(string identityId);
         
         Task<Admin> AddNewAdmin(Admin admin);
 

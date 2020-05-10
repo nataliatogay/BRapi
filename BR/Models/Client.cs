@@ -13,6 +13,15 @@ namespace BR.Models
         [Required]
         public string RestaurantName { get; set; }
 
+        [Required]
+        public string AdminName { get; set; }
+
+        [Required]
+        public string AdminPhoneNumber { get; set; }
+
+        [Required]
+        public string LogoPath { get; set; }
+
         public double Lat { get; set; }
 
         public double Long { get; set; }
@@ -35,7 +44,7 @@ namespace BR.Models
 
         public DateTime RegistrationDate { get; set; }
 
-        public bool IsConfirmedByAdmin { get; set; }
+        public DateTime? AdminConfirmation { get; set; }
 
         public DateTime? Blocked { get; set; }
 

@@ -165,136 +165,36 @@ namespace BR.Controllers
         }
 
 
-        [Authorize]
-        [HttpPut("Restore")]
-        public async Task<ActionResult<ServerResponse>> RestoreDeletedUser()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser != null)
-            {
-                return new JsonResult(await _userAccountService.RestoreUser(identityUser.Id));
-            }
-            else
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-        }
 
 
-        [Authorize]
-        [HttpPut("FinallyDelete")]
-        public async Task<ActionResult<ServerResponse<LogInUserResponse>>> FinallyDelete(string notificationTag)
+
+        // DONE
+        [Authorize(Roles = "User")]
+        [HttpPost("Register")]
+        public async Task<ActionResult<ServerResponse<UserInfoForUsers>>> Register([FromBody]NewUserRequest newUserRequest)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+
             if (identityUser is null)
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            var userPhone = identityUser.UserName;
+            var isRegistered = await _userAccountService.UserIsRegistered(identityUser.Id);
 
-
-            // check unique
-            var newName = identityUser.UserName + "_DELETED_" + DateTime.Now.ToString();
-            identityUser.UserName = newName;
-
-            var changeRes = await _userManager.UpdateAsync(identityUser);
-            if (!changeRes.Succeeded)
+            if (isRegistered.StatusCode != Utils.StatusCode.Ok)
             {
-                return new JsonResult(Response(Utils.StatusCode.Error));
+                return new JsonResult(Response(isRegistered.StatusCode));
             }
-            var newUserRes = await _userManager.CreateAsync(new IdentityUser()
+
+            if (!isRegistered.Data)
             {
-                PhoneNumber = userPhone,
-                UserName = userPhone
-            },
-            "1234");
-            if (!newUserRes.Succeeded)
-            {
-                identityUser.UserName = userPhone;
-                await _userManager.UpdateAsync(identityUser);
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            else
-            {
-                var newIdentityId = await _userManager.FindByNameAsync(userPhone);
-                if (newIdentityId is null)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-                var roleRes = await _userManager.AddToRoleAsync(newIdentityId, "User");
-                if (!roleRes.Succeeded)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-                await _userAccountService.FinallyDelete(notificationTag);
-                return new JsonResult(await _userAccountService.LogIn(userPhone, newIdentityId.Id, notificationTag));
-            }
-        }
 
-
-        // DONE
-        [Authorize]
-        [HttpPost("Register")]
-        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> Register([FromBody]NewUserRequest newUserRequest)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-
-            if (identityUser != null)
-            {
-                var isRegistered = await _userAccountService.UserIsRegistered(identityUser.Id);
-                if (isRegistered.StatusCode == Utils.StatusCode.Ok)
-                {
-                    if (!isRegistered.Data)
-                    {
-
-                        var userResponse = await _userAccountService.Register(newUserRequest, identityUser.Id);
-                        if (userResponse.StatusCode != Utils.StatusCode.Ok)
-                        {
-                            return new JsonResult(Response(userResponse.StatusCode));
-                        }
-
-                        //if (newUserRequest.Email != null)
-                        //{
-                        //    _cache.Set(identityUser.Id, newUserRequest.Email, TimeSpan.FromMinutes(3));
-
-
-                        //    var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                        //    var callbackUrl = Url.Action(
-                        //                "ConfirmEmail",
-                        //                "UserAccount",
-                        //                new { userId = identityUser.Id, code = emailConfirmationCode },
-                        //                protocol: HttpContext.Request.Scheme);
-
-                        //    try
-                        //    {
-                        //        string msgBody = $"<a href='{callbackUrl}'>link</a>";
-                        //        await _emailService.SendAsync(newUserRequest.Email, "Confirm your email", msgBody);
-                        //    }
-                        //    catch
-                        //    {
-                        //        _cache.Remove(identityUser.Id);
-                        //        return new JsonResult(Response(Utils.StatusCode.SendingMailError, userResponse));
-                        //    }
-                        //}
-                        
-                        
-                        return new JsonResult(Response(userResponse));
-
-                    }
-                    else
-                    {
-                        return new JsonResult(Response(Utils.StatusCode.UserRegistered));
-                    }
-                }
-                else
-                {
-                    return new JsonResult(Response(isRegistered.StatusCode));
-                }
+                return new JsonResult(await _userAccountService.Register(newUserRequest, identityUser.Id));
 
             }
             else
             {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+                return new JsonResult(Response(Utils.StatusCode.UserRegistered));
             }
         }
 
@@ -370,7 +270,7 @@ namespace BR.Controllers
                         if (res.Succeeded)
                         {
                             _cache.Remove(identityUser.Id);
-                            
+
                             return new JsonResult(Response(Utils.StatusCode.Ok));
                         }
                     }
@@ -385,14 +285,13 @@ namespace BR.Controllers
 
 
 
-
-
         [HttpPost("LogOut")]
         public async Task<ActionResult<ServerResponse>> LogOut([FromBody]string notificationTag)
         {
             await _userAccountService.LogOut(notificationTag);
             return new JsonResult(Response(Utils.StatusCode.Ok));
         }
+
 
 
         // DONE
@@ -403,8 +302,8 @@ namespace BR.Controllers
         }
 
 
-        // return void
-        [Authorize]
+
+        [Authorize(Roles = "User")]
         [HttpPost("UpdateProfile")]
         public async Task<ActionResult<ServerResponse>> UpdateProfile([FromBody]UpdateUserRequest updateUserRequest)
         {
@@ -413,20 +312,13 @@ namespace BR.Controllers
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            var res = await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id);
-            if (res is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            else
-            {
-                return new JsonResult(Response(Utils.StatusCode.Ok));
-            }
+            return new JsonResult(await _userAccountService.UpdateProfile(updateUserRequest, identityUser.Id));
+
 
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost("UploadImage")]
         public async Task<ActionResult<ServerResponse<string>>> UploadImage([FromBody]string imageString)
         {
@@ -437,8 +329,26 @@ namespace BR.Controllers
             }
             try
             {
-                var res = await _userAccountService.UploadImage(identityUser.Id, imageString);
-                return new JsonResult(Response(res));
+                return new JsonResult(await _userAccountService.UploadImage(identityUser.Id, imageString));
+            }
+            catch
+            {
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPost("DeleteImage")]
+        public async Task<ActionResult<ServerResponse<string>>> DeleteImage()
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            try
+            {
+                return new JsonResult(await _userAccountService.DeleteImage(identityUser.Id));
             }
             catch
             {
@@ -447,7 +357,10 @@ namespace BR.Controllers
         }
 
 
-        // DONE
+
+        // ================================================================================
+
+
         [HttpPut]
         public async Task<ActionResult<ServerResponse>> Delete()
         {
@@ -457,6 +370,72 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _userAccountService.DeleteUser(identityUser.Id));
+        }
+
+        [Authorize]
+        [HttpPut("Restore")]
+        public async Task<ActionResult<ServerResponse>> RestoreDeletedUser()
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser != null)
+            {
+                return new JsonResult(await _userAccountService.RestoreUser(identityUser.Id));
+            }
+            else
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+        }
+
+
+        [Authorize]
+        [HttpPut("FinallyDelete")]
+        public async Task<ActionResult<ServerResponse<LogInUserResponse>>> FinallyDelete(string notificationTag)
+        {
+            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (identityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            var userPhone = identityUser.UserName;
+
+
+            // check unique
+            var newName = identityUser.UserName + "_DELETED_" + DateTime.Now.ToString();
+            identityUser.UserName = newName;
+
+            var changeRes = await _userManager.UpdateAsync(identityUser);
+            if (!changeRes.Succeeded)
+            {
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+            var newUserRes = await _userManager.CreateAsync(new IdentityUser()
+            {
+                PhoneNumber = userPhone,
+                UserName = userPhone
+            },
+            "1234");
+            if (!newUserRes.Succeeded)
+            {
+                identityUser.UserName = userPhone;
+                await _userManager.UpdateAsync(identityUser);
+                return new JsonResult(Response(Utils.StatusCode.Error));
+            }
+            else
+            {
+                var newIdentityId = await _userManager.FindByNameAsync(userPhone);
+                if (newIdentityId is null)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                var roleRes = await _userManager.AddToRoleAsync(newIdentityId, "User");
+                if (!roleRes.Succeeded)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+                await _userAccountService.FinallyDelete(notificationTag);
+                return new JsonResult(await _userAccountService.LogIn(userPhone, newIdentityId.Id, notificationTag));
+            }
         }
     }
 

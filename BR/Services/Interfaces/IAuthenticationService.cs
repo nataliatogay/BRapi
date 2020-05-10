@@ -12,6 +12,8 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<LogInResponse>> Authentication(string userName, string notificationTag);
         Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
 
+        Task<ServerResponse> FullLogOut(string identityId);
+
         string GeneratePassword();
 
         string GenerateCode();

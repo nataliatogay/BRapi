@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Requests
 {
-    public class RequestInfoResponse
+    public class OwnerRequestInfo
     {
         public int Id { get; set; }
 

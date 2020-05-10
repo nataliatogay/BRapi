@@ -17,6 +17,8 @@ namespace BR.DTO.Clients
 
         public DateTime RegistrationDate { get; set; }
 
+        public DateTime? Confirmed { get; set; }
+
         public DateTime? Blocked { get; set; }
 
         public DateTime? Deleted { get; set; }

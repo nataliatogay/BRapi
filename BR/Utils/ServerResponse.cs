@@ -58,6 +58,7 @@
         NotFound,                       // 22
         Duplicate,                      // 23
         EmailNotConfirmed,              // 24
-        BlobError                       // 25
+        BlobError,                      // 25
+        ClientNotConfirmed              // 26
     }
 }

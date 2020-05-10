@@ -20,15 +20,15 @@ namespace BR.Models
 
         public bool? Done { get; set; }
 
-        public int? RequestId { get; set; }
+        public int? OwnerRequestId { get; set; }
 
         public int? ClientId { get; set; }
 
         [ForeignKey("NotificationTypeId")]
         public virtual NotificationType NotificationType { get; set; }
 
-        [ForeignKey("RequestId")]
-        public virtual OwnerRequest Request { get; set; }
+        [ForeignKey("OwnerRequestId")]
+        public virtual OwnerRequest OwnerRequest { get; set; }
 
         [ForeignKey("ClientId")]
         public virtual Client Client { get; set; }

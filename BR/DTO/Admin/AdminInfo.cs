@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Admin
 {
-    public class AdminInfoResponse
+    public class AdminInfo
     {
         public string Email { get; set; }
     }

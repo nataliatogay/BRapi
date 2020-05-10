@@ -64,7 +64,7 @@ namespace BR.Services
             return await _authenticationService.UpdateToken(refreshToken);
         }
 
-        public async Task<ServerResponse<AdminInfoResponse>> GetAdminInfo(string identityId)
+        public async Task<ServerResponse<AdminInfo>> GetAdminInfo(string identityId)
         {
             Admin admin;
             try
@@ -72,18 +72,18 @@ namespace BR.Services
                 admin = await _repository.GetAdmin(identityId);
                 if (admin is null)
                 {
-                    return new ServerResponse<AdminInfoResponse>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<AdminInfo>(StatusCode.UserNotFound, null);
                 }
-                return new ServerResponse<AdminInfoResponse>(
+                return new ServerResponse<AdminInfo>(
                     StatusCode.Ok,
-                    new AdminInfoResponse()
+                    new AdminInfo()
                     {
                         Email = admin.Identity.Email
                     });
             }
             catch
             {
-                return new ServerResponse<AdminInfoResponse>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<AdminInfo>(StatusCode.DbConnectionError, null);
             }
         }
 

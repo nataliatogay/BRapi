@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Requests
 {
-    public class NewClientRequestRequest
+    public class NewOwnerRequestRequest
     {
         [Required]
         public string OwnerName { get; set; }

@@ -40,22 +40,21 @@ namespace BR.Services
 
         }
 
-        public async Task<UserInfoForUsersResponse> GetInfo(string identityId)
-        {
-            var user = await _repository.GetUser(identityId);
-            if (user != null)
-            {
-                return this.UserToUserInfoResponse(user);
-            }
-            return null;
-        }
-
         public async Task<ServerResponse<LogInUserResponse>> LogIn(string userName, string identityId, string notificationTag)
         {
             var resp = await _authenticationService.Authentication(userName, notificationTag);
             if (resp.StatusCode == StatusCode.Ok)
             {
-                User user = await _repository.GetUser(identityId);
+                User user;
+                try
+                {
+                    user = await _repository.GetUser(identityId);
+                }
+                catch
+                {
+                    return new ServerResponse<LogInUserResponse>(StatusCode.DbConnectionError, null);
+                }
+
                 var res = new LogInUserResponse()
                 {
                     AccessToken = resp.Data.AccessToken,
@@ -77,7 +76,7 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<UserInfoForUsersResponse>> Register(NewUserRequest newUserRequest, string identityUserId)
+        public async Task<ServerResponse<UserInfoForUsers>> Register(NewUserRequest newUserRequest, string identityUserId)
         {
             User user = new User()
             {
@@ -87,18 +86,18 @@ namespace BR.Services
                 Gender = newUserRequest.Gender,
                 BirthDate = DateTime.ParseExact(newUserRequest.BirthDate, "dd/MM/yyyy", CultureInfo.InvariantCulture),
                 RegistrationDate = DateTime.Now,
-                ImagePath = "https://rb2020storage.blob.core.windows.net/photos/default-profile.png"
+                ImagePath = null
             };
 
             try
             {
 
                 var userAdded = await _repository.AddUser(user);
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, this.UserToUserInfoResponse(userAdded));
+                return new ServerResponse<UserInfoForUsers>(StatusCode.Ok, this.UserToUserInfoResponse(userAdded));
             }
             catch
             {
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
+                return new ServerResponse<UserInfoForUsers>(StatusCode.Error, null);
             }
         }
 
@@ -110,10 +109,18 @@ namespace BR.Services
 
         public async Task<ServerResponse<bool>> UserIsBlocked(string identityId)
         {
-            var user = await _repository.GetUser(identityId);
-            if (user is null)
+            User user;
+            try
             {
-                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                user = await _repository.GetUser(identityId);
+                if (user is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
             }
             if (user.Blocked is null)
             {
@@ -127,10 +134,18 @@ namespace BR.Services
 
         public async Task<ServerResponse<bool>> UserIsDeleted(string identityId)
         {
-            var user = await _repository.GetUser(identityId);
-            if (user is null)
+            User user;
+            try
             {
-                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                user = await _repository.GetUser(identityId);
+                if (user is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
             }
             if (user.Deleted is null)
             {
@@ -166,10 +181,19 @@ namespace BR.Services
 
         public async Task<ServerResponse<string>> UploadImage(string identityId, string imageString)
         {
-            var user = await _repository.GetUser(identityId);
-            if (user is null)
+            User user;
+            try
             {
-                return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                user = await _repository.GetUser(identityId);
+
+                if (user is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
             }
             try
             {
@@ -184,13 +208,56 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<UserInfoForUsersResponse>> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
+        public async Task<ServerResponse> DeleteImage(string identityId)
         {
-            var userToUpdate = await _repository.GetUser(identityId);
-            if (userToUpdate is null)
+            User user;
+            try
             {
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.UserNotFound, null);
+                user = await _repository.GetUser(identityId);
+                if (user is null)
+                {
+                    return new ServerResponse(StatusCode.UserNotFound);
+                }
             }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+
+            try
+            {
+                await _blobService.DeleteImage(user.ImagePath);
+            }
+            catch { }
+            try
+            {
+                user.ImagePath = null;
+                await _repository.UpdateUser(user);
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+
+        }
+
+        public async Task<ServerResponse<UserInfoForUsers>> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId)
+        {
+            User userToUpdate;
+            try
+            {
+                userToUpdate = await _repository.GetUser(identityId);
+                if (userToUpdate is null)
+                {
+                    return new ServerResponse<UserInfoForUsers>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<UserInfoForUsers>(StatusCode.DbConnectionError, null);
+            }
+
             userToUpdate.FirstName = updateUserRequest.FirstName;
             userToUpdate.LastName = updateUserRequest.LastName;
             userToUpdate.Gender = updateUserRequest.Gender;
@@ -199,14 +266,38 @@ namespace BR.Services
             try
             {
                 var user = await _repository.UpdateUser(userToUpdate);
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Ok, this.UserToUserInfoResponse(user));
+                return new ServerResponse<UserInfoForUsers>(StatusCode.Ok, this.UserToUserInfoResponse(user));
 
             }
             catch
             {
-                return new ServerResponse<UserInfoForUsersResponse>(StatusCode.Error, null);
+                return new ServerResponse<UserInfoForUsers>(StatusCode.DbConnectionError, null);
             }
         }
+
+
+        private UserInfoForUsers UserToUserInfoResponse(User user)
+        {
+            if (user is null)
+            {
+                return null;
+            }
+            return new UserInfoForUsers()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath,
+                Email = user.Identity.Email,
+
+            };
+
+        }
+
+
+        //=================================================================================================
+
 
 
         // CHANGE
@@ -304,61 +395,9 @@ namespace BR.Services
             }
             return new ServerResponse(StatusCode.Error);
         }
-        
 
 
-        private UserInfoForUsersResponse UserToUserInfoResponse(User user)
-        {
-            //if (user is null)
-            //{
-            //    return null;
-            //}
-            //var reservations = new List<ReservationInfo>();
-            //if (user.Reservations != null)
-            //{
-            //    foreach (var res in user.Reservations)
-            //    {
-            //        var tableNums = new List<int>();
-            //        if (res.TableReservations != null)
-            //        {
-            //            foreach (var t in res.TableReservations)
-            //            {
-            //                tableNums.Add(t.Table.Number);
-            //            }
-            //        }
 
-            //        var title = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName;
-            //        var floor = res.TableReservations.First().Table.Hall.Floor.Number;
-            //        var hallTitle = res.TableReservations.First().Table.Hall.Title;
 
-            //        var resInfo = new ReservationInfo()
-            //        {
-            //            Id = res.Id,
-            //            Date = res.ReservationDate,
-            //            ReservationState = res.ReservationState is null ? "idle" : res.ReservationState.Title,
-            //            //ChildFree = res.ChildFree,
-            //            ClientTitle = res.TableReservations.First().Table.Hall.Floor.Client.RestaurantName,
-            //            Floor = res.TableReservations.First().Table.Hall.Floor.Number,
-            //            HallTitle = res.TableReservations.First().Table.Hall.Title,
-            //            GuestCount = res.GuestCount,
-            //            TableNumbers = tableNums,
-            //            Comments = res.Comments
-            //        };
-            //        reservations.Add(resInfo);
-            //    }
-            //}
-            //return new UserInfoForUsersResponse()
-            //{
-            //    FirstName = user.FirstName,
-            //    LastName = user.LastName,
-            //    BirthDate = user.BirthDate,
-            //    Gender = user.Gender,
-            //    ImagePath = user.ImagePath,
-            //    Email = user.Identity.Email,
-
-            //};
-
-            return new UserInfoForUsersResponse(); // <- delete this
-        }
     }
 }

@@ -17,7 +17,12 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<ClientShortInfoForAdmin>> AddNewClientByAdmin(NewClientByAdminRequest newRequest, string clientIdentityId);
 
         Task<ServerResponse<ClientShortInfoForOwners>> AddNewClientByOwner(NewClientByOwnerRequest newRequest, string clientIdentityId, string ownerIdentityId);
-        
+
+        Task<ServerResponse> ConfirmClientRegistration(int clientId);
+
+        Task<ServerResponse<string>> GetClientName(int clientId);
+
+
         Task<ServerResponse<ICollection<ClientShortInfoForAdmin>>> GetShortClientInfoForAdmin();
 
         Task<ServerResponse<ICollection<ClientShortInfoForOwners>>> GetShortClientInfoForOwners(string ownerIdentityId);
@@ -30,9 +35,9 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ClientShortInfoForOwners>> UpdateClientByOwner(UpdateClientRequest updateRequest, string ownerIdentityId);
 
-        //Task<ServerResponse<string>> UploadMainImageByAdmin(UploadMainImageRequest uploadRequest); // was ready, now need change
+        Task<ServerResponse<string>> UploadLogoByAdmin(UploadLogoRequest uploadRequest); 
 
-        //Task<ServerResponse<string>> UploadMainImageByOwner(UploadMainImageRequest uploadRequest, string ownerIdentityId);  // was ready, now need change
+        Task<ServerResponse<string>> UploadLogoByOwner(UploadLogoRequest uploadRequest, string ownerIdentityId);
 
         Task<ServerResponse> SetAsMainImageByAdmin(int imageId);
 
@@ -51,8 +56,19 @@ namespace BR.Services.Interfaces
         Task<ServerResponse> DeleteImageByOwner(int imageId, string ownerIdentityId);
 
 
+        // FOR USERS
+        Task<ServerResponse<ClientFullInfoForUsers>> GetFullClientInfoForUsers(int id);
 
-        // ------------------------------------------------------------------------------
+        Task<ServerResponse<ICollection<int>>> GetFavouritesIds(string userIdentityId);
+        
+        Task<ServerResponse> AddFavourite(int clientId, string identityUserId);
+
+        Task<ServerResponse> DeleteFavourite(int clientId, string identityUserId);
+
+        Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetComingSoon(int skip, int take);
+
+
+        // ================================================================================
 
 
 
@@ -63,9 +79,7 @@ namespace BR.Services.Interfaces
 
         Task<ICollection<ClientShortInfoForUsers>> GetFavourites(string identityUserId);
         
-        Task<ServerResponse> AddFavourite(int clientId, string identityUserId);
-        
-        Task<ServerResponse> DeleteFavourite(int clientId, string identityUserId);
+       
         
         Task<ICollection<ClientFullInfoForUsers>> GetClientsByMeal(string mealType);
         
@@ -73,34 +87,15 @@ namespace BR.Services.Interfaces
 
         Task<ICollection<ClientShortInfoForUsers>> GetShortClientInfoForUsers();
 
-        Task<ClientFullInfoForUsers> GetFullClientInfoForUsers(int id);
+        
         
         Task<ICollection<ClientFullInfoForUsers>> GetFullClientInfoForUsers();
         
-        Task<ClientHallsInfoResponse> GetClientHalls(int id);
+        Task<ClientHallsInfo> GetClientHalls(int id);
 
         
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-        
-
-        Task<ServerResponse> ConfirmClient(int clientId);
 
         Task<ServerResponse> DeleteClient(int clientId);
     }

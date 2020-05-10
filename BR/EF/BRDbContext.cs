@@ -168,6 +168,8 @@ namespace BR.EF
 
             modelBuilder.Entity<BarReservation>().HasOne(r => r.Client).WithMany(c => c.BarReservations).OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Client>().HasIndex(c => c.RestaurantName).IsUnique();
+
             modelBuilder.Entity<Cuisine>().HasIndex(u => u.Title).IsUnique();
 
             modelBuilder.Entity<MealType>().HasIndex(t => t.Title).IsUnique();

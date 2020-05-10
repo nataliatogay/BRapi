@@ -27,11 +27,17 @@ namespace BR.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpGet()]
-        public async Task<ActionResult<ServerResponse<ClientParametersInfoResponse>>> GetInfo()
+        public async Task<ActionResult<ServerResponse<ClientParametersInfo>>> GetInfo()
         {
             return new JsonResult(await _parameterService.GetClientParamenters());
+        }
+
+
+        [HttpGet("parmetersForUsers")]
+        public async Task<ActionResult<ServerResponse<ClientParametersForUsers>>> GetInfoForUsers()
+        {
+            return new JsonResult(await _parameterService.GetClientParamentersForUsers());
         }
 
 

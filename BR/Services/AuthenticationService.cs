@@ -109,6 +109,27 @@ namespace BR.Services
             return await this.Authentication(identityUser.UserName, token.NotificationTag);
         }
 
+
+        public async Task<ServerResponse> FullLogOut(string identityId)
+        {
+            IEnumerable<AccountToken> tokens;
+            try
+            {
+                tokens = await _repository.GetTokens(identityId);
+                if (tokens != null)
+                {
+                    foreach (var item in tokens)
+                    {
+                        await _repository.RemoveToken(item);
+                    }
+                }
+                return new ServerResponse(StatusCode.Ok);
+            }
+            catch
+            {
+                return new ServerResponse(StatusCode.DbConnectionError);
+            }
+        }
         public string GeneratePassword()
         {
             Random random = new Random();

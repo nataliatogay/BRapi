@@ -4,13 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BR.DTO.Clients
+namespace BR.DTO.Account
 {
-    public class UploadMainImageRequest
+    public class ChangeClientPasswordByOwnerRequest
     {
         public int ClientId { get; set; }
 
         [Required]
-        public string ImageString { get; set; }
+        public string NewPassword { get; set; }
     }
 }

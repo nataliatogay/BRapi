@@ -22,7 +22,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ClientParametersInfoResponse>> GetClientParamenters()
+        public async Task<ServerResponse<ClientParametersInfo>> GetClientParamenters()
         {
             var cuisines = await this.GetAllCuisines();
             var clientTypes = await this.GetAllClientTypes();
@@ -40,9 +40,9 @@ namespace BR.Services
                 specialDiets.StatusCode == StatusCode.Ok &&
                 goodFors.StatusCode == StatusCode.Ok)
             {
-                return new ServerResponse<ClientParametersInfoResponse>(
+                return new ServerResponse<ClientParametersInfo>(
                     StatusCode.Ok,
-                    new ClientParametersInfoResponse()
+                    new ClientParametersInfo()
                     {
                         ClientTypes = clientTypes.Data,
                         Cuisines = cuisines.Data,
@@ -56,13 +56,129 @@ namespace BR.Services
 
             else
             {
-                return new ServerResponse<ClientParametersInfoResponse>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ClientParametersInfo>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+
+        public async Task<ServerResponse<ClientParametersForUsers>> GetClientParamentersForUsers()
+        {
+            ICollection<Cuisine> cuisines;
+            ICollection<ClientType> clientTypes;
+            ICollection<MealType> mealTypes;
+            ICollection<Feature> features;
+            ICollection<Dish> dishes;
+            ICollection<SpecialDiet> specialDiets;
+            ICollection<GoodFor> goodFors;
+            try
+            {
+                cuisines = await _repository.GetAllCuisines();
+                clientTypes = await _repository.GetAllClientTypes();
+                mealTypes = await _repository.GetAllMealTypes();
+                features = await _repository.GetAllFeatures();
+                dishes = await _repository.GetAllDishes();
+                specialDiets = await _repository.GetAllSpecialDiets();
+                goodFors = await _repository.GetAllGoodFors();
+            }
+            catch
+            {
+                return new ServerResponse<ClientParametersForUsers>(StatusCode.DbConnectionError, null);
             }
 
+            var response = new ClientParametersForUsers();
 
+            if (cuisines != null)
+            {
+                response.Cuisines = new List<ParameterInfoForUsers>();
+                foreach (var item in cuisines)
+                {
+                    response.Cuisines.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
 
+            if (clientTypes != null)
+            {
+                response.ClientTypes = new List<ParameterInfoForUsers>();
+                foreach (var item in clientTypes)
+                {
+                    response.ClientTypes.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
 
+            if (mealTypes != null)
+            {
+                response.MealTypes = new List<ParameterInfoForUsers>();
+                foreach (var item in mealTypes)
+                {
+                    response.MealTypes.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
 
+            if (features != null)
+            {
+                response.Features = new List<ParameterInfoForUsers>();
+                foreach (var item in features)
+                {
+                    response.Features.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
+
+            if (dishes != null)
+            {
+                response.Dishes = new List<ParameterInfoForUsers>();
+                foreach (var item in dishes)
+                {
+                    response.Dishes.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
+
+            if (specialDiets != null)
+            {
+                response.SpecialDiets = new List<ParameterInfoForUsers>();
+                foreach (var item in specialDiets)
+                {
+                    response.SpecialDiets.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
+
+            if (goodFors != null)
+            {
+                response.GoodFors = new List<ParameterInfoForUsers>();
+                foreach (var item in goodFors)
+                {
+                    response.GoodFors.Add(new ParameterInfoForUsers()
+                    {
+                        Id = item.Id,
+                        Title = item.Title
+                    });
+                }
+            }
+            return new ServerResponse<ClientParametersForUsers>(StatusCode.Ok, response);
         }
 
         public async Task<ServerResponse<ICollection<ParameterInfo>>> GetAllMealTypes()
@@ -744,7 +860,7 @@ namespace BR.Services
                 Id = id,
                 Title = title,
                 Editable = editable
-            }; 
+            };
         }
     }
 }

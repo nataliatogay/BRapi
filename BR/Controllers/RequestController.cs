@@ -25,17 +25,17 @@ namespace BR.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewClientRequestRequest newClientRequest)
+        public async Task<ActionResult<ServerResponse>> Post([FromBody]NewOwnerRequestRequest newClientRequest)
         {
-            return new JsonResult(await _clientRequestService.AddNewClientRequest(newClientRequest));
+            return new JsonResult(await _clientRequestService.AddNewOwnerRequest(newClientRequest));
         }
 
 
 
         [HttpGet("")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<RequestInfoResponse>>>> Get()
+        public async Task<ActionResult<ServerResponse<IEnumerable<OwnerRequestInfo>>>> Get()
         {
-            return new JsonResult(await _clientRequestService.GetAllClientRequests());
+            return new JsonResult(await _clientRequestService.GetAllOwnerRequests());
         }
 
 
@@ -49,7 +49,7 @@ namespace BR.Controllers
         [HttpGet("Count")]
         public async Task<ActionResult<ServerResponse<int>>> GetCount()
         {
-            return new JsonResult(await _clientRequestService.ClientRequestCount());
+            return new JsonResult(await _clientRequestService.OwnerRequestCount());
         }
 
 
@@ -57,7 +57,7 @@ namespace BR.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ServerResponse<OwnerRequest>>> Get(int id)
         {
-            return new JsonResult(await _clientRequestService.GetClientRequest(id));
+            return new JsonResult(await _clientRequestService.GetOwnerRequest(id));
         }
 
 
@@ -65,7 +65,7 @@ namespace BR.Controllers
         [HttpPut("Decline")]
         public async Task<ActionResult<ServerResponse<OwnerRequest>>> DeclineRequest([FromBody]int id)
         {
-            return new JsonResult(await _clientRequestService.DeclineRequest(id));
+            return new JsonResult(await _clientRequestService.DeclineOwnerRequest(id));
         }
 
 

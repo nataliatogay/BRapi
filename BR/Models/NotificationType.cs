@@ -24,6 +24,6 @@ namespace BR.Models
 
 
 // request
-// newClientConfirm
-// updateClientConfirm
-// deleteClientConfirm
+// registration
+// update
+// delete

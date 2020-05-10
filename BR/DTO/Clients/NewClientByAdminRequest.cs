@@ -14,6 +14,12 @@ namespace BR.DTO.Clients
         public string RestaurantName { get; set; }
 
         [Required]
+        public string AdminName { get; set; }
+
+        [Required]
+        public string AdminPhoneNumber { get; set; }
+
+        [Required]
         public string Email { get; set; }
 
         public double Lat { get; set; }
@@ -26,7 +32,8 @@ namespace BR.DTO.Clients
         
         public string Description { get; set; }
         
-        public string MainImage { get; set; }
+        [Required]
+        public string LogoString { get; set; }
         
         public int MaxReserveDays { get; set; }
         

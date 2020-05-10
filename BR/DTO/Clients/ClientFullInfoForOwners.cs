@@ -17,6 +17,10 @@ namespace BR.DTO.Clients
 
         public string Email { get; set; }
 
+        public string AdminName { get; set; }
+
+        public string AdminPhoneNumber { get; set; }
+
         public string MainImagePath { get; set; }
 
         public ICollection<ClientImageInfo> Images { get; set; }
@@ -32,6 +36,8 @@ namespace BR.DTO.Clients
         public int CloseTime { get; set; }
 
         public int PriceCategory { get; set; }
+
+        public DateTime? Confirmed { get; set; }
 
         public DateTime? Blocked { get; set; }
 

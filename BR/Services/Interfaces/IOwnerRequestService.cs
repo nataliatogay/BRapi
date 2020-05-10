@@ -11,20 +11,20 @@ namespace BR.Services.Interfaces
 {
     public interface IOwnerRequestService
     {
-        Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests();
+        Task<ServerResponse<IEnumerable<OwnerRequestInfo>>> GetAllOwnerRequests();
 
-        Task<ServerResponse<ICollection<RequestInfoResponse>>> GetAllClientRequests(int take, int skip);
+        Task<ServerResponse<ICollection<OwnerRequestInfo>>> GetAllOwnerRequests(int take, int skip);
 
         
-        Task<ServerResponse<RequestInfoResponse>> GetClientRequest(int id);
+        Task<ServerResponse<OwnerRequestInfo>> GetOwnerRequest(int id);
         
-        Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest);
+        Task<ServerResponse> AddNewOwnerRequest(NewOwnerRequestRequest newClientRequest);
         
         //Task<ServerResponse<int>> UndoneClientRequestCount();
 
-        Task<ServerResponse<int>> ClientRequestCount();
+        Task<ServerResponse<int>> OwnerRequestCount();
 
-        Task<ServerResponse> DeclineRequest(int requestId);
+        Task<ServerResponse> DeclineOwnerRequest(int requestId);
 
 
     }

@@ -13,6 +13,12 @@ namespace BR.DTO.Clients
         [Required]
         public string RestaurantName { get; set; }
 
+        [Required]
+        public string AdminName { get; set; }
+
+        [Required]
+        public string AdminPhoneNumber { get; set; }
+
         public double Lat { get; set; }
 
         public double Long { get; set; }

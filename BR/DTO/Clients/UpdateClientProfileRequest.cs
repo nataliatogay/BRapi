@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
-    public class NewClientByOwnerRequest
+    public class UpdateClientProfileRequest
     {
         [Required]
         public string RestaurantName { get; set; }
-
-        [Required]
-        public string Email { get; set; }
 
         [Required]
         public string AdminName { get; set; }
@@ -29,9 +26,6 @@ namespace BR.DTO.Clients
         public int CloseTime { get; set; }
 
         public string Description { get; set; }
-
-       // [Required]
-        public string LogoString { get; set; }
 
         public int MaxReserveDays { get; set; }
 
@@ -60,5 +54,6 @@ namespace BR.DTO.Clients
         public ICollection<int> FeatureIds { get; set; }
 
         public ICollection<ClientPhoneInfo> Phones { get; set; }
+
     }
 }

@@ -40,7 +40,7 @@ namespace BR.Services
                             NotificationType = item.NotificationType.Title,
                             Title = item.Title,
                             ClientId = item.ClientId,
-                            RequestId = item.RequestId
+                            RequestId = item.OwnerRequestId
                         });
                     }
                 }

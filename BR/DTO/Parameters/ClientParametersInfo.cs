@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Parameters
 {
-    public class ClientParametersInfoResponse
+    public class ClientParametersInfo
     {
         public ICollection<ParameterInfo> Cuisines { get; set; }
 
@@ -22,12 +22,5 @@ namespace BR.DTO.Parameters
         public ICollection<ParameterInfo> Dishes { get; set; }
     }
 
-    public class ParameterInfo
-    {
-        public int Id { get; set; }
-
-        public string Title { get; set; }
-
-        public bool Editable { get; set; }
-    }
+    
 }

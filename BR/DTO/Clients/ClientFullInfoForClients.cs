@@ -15,6 +15,10 @@ namespace BR.DTO.Clients
 
         public string Email { get; set; }
 
+        public string AdminName { get; set; }
+
+        public string AdminPhoneNumber { get; set; }
+
         public string MainImagePath { get; set; }
 
         public ICollection<ClientImageInfo> Images { get; set; }

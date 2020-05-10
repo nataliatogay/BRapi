@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200508091142_client_edit")]
+    partial class client_edit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,12 +226,6 @@ namespace BR.Migrations
 
                     b.Property<DateTime?>("AdminConfirmation");
 
-                    b.Property<string>("AdminName")
-                        .IsRequired();
-
-                    b.Property<string>("AdminPhoneNumber")
-                        .IsRequired();
-
                     b.Property<int?>("BarReserveDurationAvg");
 
                     b.Property<DateTime?>("Blocked");
@@ -271,9 +267,6 @@ namespace BR.Migrations
                     b.HasIndex("IdentityId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("RestaurantName")
-                        .IsUnique();
 
                     b.ToTable("Clients");
                 });

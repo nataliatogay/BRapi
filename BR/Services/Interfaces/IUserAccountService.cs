@@ -13,7 +13,7 @@ namespace BR.Services.Interfaces
 {
     public interface IUserAccountService
     {
-        Task<ServerResponse<UserInfoForUsersResponse>> Register(NewUserRequest newUserRequest, string identityUserId);
+        Task<ServerResponse<UserInfoForUsers>> Register(NewUserRequest newUserRequest, string identityUserId);
         
         Task<ServerResponse<LogInUserResponse>> LogIn(string userName, string identityId, string notificationTag);
         
@@ -28,8 +28,13 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<bool>> UserIsRegistered(string identityId);
         
         Task<ServerResponse<string>> UploadImage(string identityId, string imageString);
-        
-        Task<ServerResponse<UserInfoForUsersResponse>> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId);
+
+        Task<ServerResponse> DeleteImage(string identityId);
+
+        Task<ServerResponse<UserInfoForUsers>> UpdateProfile(UpdateUserRequest updateUserRequest, string identityId);
+
+
+        // =======================================================================
         
         Task<ServerResponse> DeleteUser(string identityId);
 

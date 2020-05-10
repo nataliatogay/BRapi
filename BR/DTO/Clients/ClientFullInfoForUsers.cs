@@ -1,4 +1,5 @@
 ﻿using BR.DTO.Events;
+using BR.DTO.Parameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,30 +10,34 @@ namespace BR.DTO.Clients
     public class ClientFullInfoForUsers
     {
         public int Id { get; set; }
+
         public string Name { get; set; }
-        public string Address { get; set; }
+
+        public double Lat { get; set; }
+        
+        public double Long { get; set; }
+
         public string MainImage { get; set; }
-        public float Lat { get; set; }
-        public float Long { get; set; }
+
         public int OpenTime { get; set; }
+        
         public int CloseTime { get; set; }
-        public bool IsParking { get; set; }
-        public bool IsWiFi { get; set; }
-        public bool? IsLiveMusic { get; set; }
-        public bool IsOpenSpace { get; set; }
-        public bool IsChildrenZone { get; set; }
-        public bool IsBusinessLunch { get; set; }
-        public int MaxReserveDays { get; set; }
-        public bool IsBarReservation { get; set; }
-        public int ReserveDurationAvg { get; set; }
-        public int ConfirmationDuration { get; set; }
-        public ICollection<string> Photos { get; set; }
+
+        public string Description { get; set; }
+
+        public ICollection<ParameterInfoForUsers> Cuisines { get; set; }
+
+        public ICollection<ParameterInfoForUsers> MealTypes { get; set; }
+
+        public ICollection<ParameterInfoForUsers> ClientTypes { get; set; }
+
+        public ICollection<ParameterInfoForUsers> Features { get; set; }
+
         public ICollection<string> SocialLinks { get; set; }
-        public ICollection<string> ClientTypes { get; set; }
-        public ICollection<string> MealTypes { get; set; }
-        public ICollection<string> Cuisines { get; set; }
+
+        public ICollection<string> Photos { get; set; }
+
         public ICollection<ClientPhoneInfo> Phones { get; set; }
-        public ICollection<EventInfo> Events { get; set; }
 
     }
 }

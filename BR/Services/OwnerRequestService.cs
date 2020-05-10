@@ -20,7 +20,7 @@ namespace BR.Services
             _repository = repository;
         }
 
-        public async Task<ServerResponse> AddNewClientRequest(NewClientRequestRequest newClientRequest)
+        public async Task<ServerResponse> AddNewOwnerRequest(NewOwnerRequestRequest newClientRequest)
         {
 
             OwnerRequest clientRequest = new OwnerRequest()
@@ -47,7 +47,7 @@ namespace BR.Services
                 {
                     DateTime = request.RegisteredDate,
                     NotificationTypeId = notificationType.Id,
-                    RequestId = request.Id,
+                    OwnerRequestId = request.Id,
                     Title = request.OrganizationName
                 });
 
@@ -59,21 +59,21 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<IEnumerable<RequestInfoResponse>>> GetAllClientRequests()
+        public async Task<ServerResponse<IEnumerable<OwnerRequestInfo>>> GetAllOwnerRequests()
         {
             IEnumerable<OwnerRequest> requests;
             try
             {
 
                 requests = await _repository.GetClientRequests();
-                var requestsInfo = new List<RequestInfoResponse>();
+                var requestsInfo = new List<OwnerRequestInfo>();
                 if (requests is null)
                 {
                     requestsInfo = null;
                 }
                 foreach (var item in requests)
                 {
-                    requestsInfo.Add(new RequestInfoResponse()
+                    requestsInfo.Add(new OwnerRequestInfo()
                     {
                         Id = item.Id,
                         OwnerName = item.OwnerName,
@@ -85,30 +85,30 @@ namespace BR.Services
                         OwnerId = item.OwnerId
                     });
                 }
-                return new ServerResponse<IEnumerable<RequestInfoResponse>>(StatusCode.Ok, requestsInfo);
+                return new ServerResponse<IEnumerable<OwnerRequestInfo>>(StatusCode.Ok, requestsInfo);
             }
             catch
             {
-                return new ServerResponse<IEnumerable<RequestInfoResponse>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<IEnumerable<OwnerRequestInfo>>(StatusCode.DbConnectionError, null);
             }
         }
 
 
-        public async Task<ServerResponse<ICollection<RequestInfoResponse>>> GetAllClientRequests(int take, int skip)
+        public async Task<ServerResponse<ICollection<OwnerRequestInfo>>> GetAllOwnerRequests(int take, int skip)
         {
             ICollection<OwnerRequest> requests;
 
             try
             {
                 requests = await _repository.GetClientRequests(take, skip);
-                var requestsInfo = new List<RequestInfoResponse>();
+                var requestsInfo = new List<OwnerRequestInfo>();
                 if (requests is null)
                 {
                     requestsInfo = null;
                 }
                 foreach (var item in requests)
                 {
-                    requestsInfo.Add(new RequestInfoResponse()
+                    requestsInfo.Add(new OwnerRequestInfo()
                     {
                         Id = item.Id,
                         OwnerName = item.OwnerName,
@@ -120,15 +120,15 @@ namespace BR.Services
                         OwnerId = item.OwnerId
                     });
                 }
-                return new ServerResponse<ICollection<RequestInfoResponse>>(StatusCode.Ok, requestsInfo);
+                return new ServerResponse<ICollection<OwnerRequestInfo>>(StatusCode.Ok, requestsInfo);
             }
             catch
             {
-                return new ServerResponse<ICollection<RequestInfoResponse>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<OwnerRequestInfo>>(StatusCode.DbConnectionError, null);
             }
         }
 
-        public async Task<ServerResponse<RequestInfoResponse>> GetClientRequest(int id)
+        public async Task<ServerResponse<OwnerRequestInfo>> GetOwnerRequest(int id)
         {
             OwnerRequest request;
 
@@ -137,10 +137,10 @@ namespace BR.Services
                 request = await _repository.GetClientRequest(id);
                 if (request is null)
                 {
-                    return new ServerResponse<RequestInfoResponse>(StatusCode.NotFound, null);
+                    return new ServerResponse<OwnerRequestInfo>(StatusCode.NotFound, null);
                 }
-                return new ServerResponse<RequestInfoResponse>(StatusCode.Ok,
-                new RequestInfoResponse()
+                return new ServerResponse<OwnerRequestInfo>(StatusCode.Ok,
+                new OwnerRequestInfo()
                 {
                     Id = request.Id,
                     OwnerName = request.OwnerName,
@@ -154,7 +154,7 @@ namespace BR.Services
             }
             catch
             {
-                return new ServerResponse<RequestInfoResponse>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<OwnerRequestInfo>(StatusCode.DbConnectionError, null);
             }
         }
 
@@ -179,7 +179,7 @@ namespace BR.Services
         //}
 
 
-        public async Task<ServerResponse<int>> ClientRequestCount()
+        public async Task<ServerResponse<int>> OwnerRequestCount()
         {
             IEnumerable<OwnerRequest> requests;
 
@@ -200,7 +200,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse> DeclineRequest(int requestId)
+        public async Task<ServerResponse> DeclineOwnerRequest(int requestId)
         {
             OwnerRequest request;
             try

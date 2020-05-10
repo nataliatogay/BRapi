@@ -149,10 +149,12 @@ namespace BR.Services
                         ConfirmationDuration = client.ConfirmationDuration,
                         Description = client.Description,
                         Email = client.Identity.Email,
+                        AdminName = client.AdminName,
+                        AdminPhoneNumber = client.AdminPhoneNumber,
                         Images = images,
                         Lat = client.Lat,
                         Long = client.Long,
-                        MainImagePath = client.ClientImages.FirstOrDefault(item=>item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item=>item.IsMain).ImagePath,
+                        MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
                         OrganizationId = client.OrganizationId,
                         MaxReserveDays = client.MaxReserveDays,
                         ClientTypeIds = clientTypes,
@@ -173,7 +175,33 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient)
+        public async Task<ServerResponse<string>> GetClientName(int clientId, string ownerIdentityId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+            if (client is null)
+            {
+                return new ServerResponse<string>(StatusCode.NotFound, null);
+            }
+            return new ServerResponse<string>(StatusCode.Ok, client.Identity.UserName);
+        }
+
+
+        public async Task<ServerResponse> UpdateClient(UpdateClientProfileRequest updateRequest, string identityIdClient)
         {
             Client client;
             try
@@ -189,9 +217,9 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
 
-            updateRequest.ClientId = client.Id;
+            // updateRequest.ClientId = client.Id;
 
-            client.RestaurantName = updateRequest.RestaurantName;
+            client.RestaurantName = updateRequest.RestaurantName.Trim();
             client.Lat = updateRequest.Lat;
             client.Long = updateRequest.Long;
             client.OpenTime = updateRequest.OpenTime;
@@ -471,13 +499,48 @@ namespace BR.Services
             return await _authenticationService.UpdateToken(refreshToken);
         }
 
+        public async Task<ServerResponse<bool>> ClientIsConfirmed(string identityId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(identityId);
+                if (client is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
+            }
+
+            if (client.AdminConfirmation is null)
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, false);
+            }
+            else
+            {
+                return new ServerResponse<bool>(StatusCode.Ok, true);
+            }
+        }
+
         public async Task<ServerResponse<bool>> ClientIsBlocked(string identityId)
         {
-            var client = await _repository.GetClient(identityId);
-            if (client is null)
+            Client client;
+            try
             {
-                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                client = await _repository.GetClient(identityId);
+                if (client is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                }
             }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
+            }
+
             if (client.Blocked is null)
             {
                 return new ServerResponse<bool>(StatusCode.Ok, false);
@@ -490,11 +553,20 @@ namespace BR.Services
 
         public async Task<ServerResponse<bool>> ClientIsDeleted(string identityId)
         {
-            var client = await _repository.GetClient(identityId);
-            if (client is null)
+            Client client;
+            try
             {
-                return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                client = await _repository.GetClient(identityId);
+                if (client is null)
+                {
+                    return new ServerResponse<bool>(StatusCode.UserNotFound, false);
+                }
             }
+            catch
+            {
+                return new ServerResponse<bool>(StatusCode.DbConnectionError, false);
+            }
+
             if (client.Deleted is null)
             {
                 return new ServerResponse<bool>(StatusCode.Ok, false);
@@ -506,43 +578,43 @@ namespace BR.Services
         }
 
 
-        // no need for now
-        //public async Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString)
-        //{
-            //Client client;
-            //try
-            //{
-            //    client = await _repository.GetClient(identityId);
-            //    if (client is null)
-            //    {
-            //        return new ServerResponse<string>(StatusCode.UserNotFound, null);
-            //    }
-            //}
-            //catch
-            //{
-            //    return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            //}
-            //try
-            //{
-            //    client.MainImagePath = await _blobService.UploadImage(imageString);
+        public async Task<ServerResponse<string>> UploadLogo(string identityId, string logoString)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(identityId);
+                if (client is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
 
-            //}
-            //catch
-            //{
-            //    return new ServerResponse<string>(StatusCode.BlobError, null);
-            //}
-            //try
-            //{
-            //    await _repository.UpdateClient(client);
-            //    return new ServerResponse<string>(StatusCode.Ok, client.MainImagePath);
-            //}
-            //catch
-            //{
-            //    return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            //}
+            try
+            {
+                client.LogoPath = await _blobService.UploadImage(logoString);
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            try
+            {
+                await _repository.UpdateClient(client);
+                return new ServerResponse<string>(StatusCode.Ok, client.LogoPath);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
 
 
-        //}
+        }
 
         public async Task<ServerResponse> SetAsMainImage(int imageId)
         {
@@ -680,6 +752,6 @@ namespace BR.Services
         // ===========================================================================================
 
 
-        
+
     }
 }

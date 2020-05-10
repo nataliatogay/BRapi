@@ -29,14 +29,14 @@ namespace BR.Controllers
 
 
         [HttpGet("ShortForAdmin")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForAdminResponse>>>> ShortForAdmin()
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForAdmin>>>> ShortForAdmin()
         {
             return new JsonResult(await _userService.GetUserShortInfoForAdmin());
         }
 
         [Authorize]
         [HttpGet("ForAdmin/{id}")]
-        public async Task<ActionResult<ServerResponse<UserInfoForAdminResponse>>> GetInfoForAdmin(int id)
+        public async Task<ActionResult<ServerResponse<UserInfoForAdmin>>> GetInfoForAdmin(int id)
         {
             return new JsonResult(await _userService.GetUserInfoForAdmin(id));
         }
@@ -63,7 +63,7 @@ namespace BR.Controllers
 
 
         [HttpGet("ForUsers/{id}")]
-        public async Task<ActionResult<ServerResponse<UserInfoForUsersResponse>>> GetInfoForUser(int id)
+        public async Task<ActionResult<ServerResponse<UserInfoForUsers>>> GetInfoForUser(int id)
         {
             return new JsonResult(await _userService.GetUserInfoForUsers(id));
         }

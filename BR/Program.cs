@@ -31,3 +31,4 @@ namespace BR
 
 // client default photo https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg
 // event default https://rb2020storage.blob.core.windows.net/photos/default-event.png   
+// user default https://rb2020storage.blob.core.windows.net/photos/default-profile.png

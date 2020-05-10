@@ -11,7 +11,9 @@ namespace BR.Services.Interfaces
 {
     public interface IParameterService
     {
-        Task<ServerResponse<ClientParametersInfoResponse>> GetClientParamenters();
+        Task<ServerResponse<ClientParametersInfo>> GetClientParamenters();
+
+        Task<ServerResponse<ClientParametersForUsers>> GetClientParamentersForUsers();
 
         Task<ServerResponse<ICollection<ParameterInfo>>> GetAllMealTypes();
 

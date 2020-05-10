@@ -107,7 +107,7 @@ namespace BR.Controllers
 
         [Authorize]
         [HttpGet("Info")]
-        public async Task<ActionResult<ServerResponse<AdminInfoResponse>>> GetInfo()
+        public async Task<ActionResult<ServerResponse<AdminInfo>>> GetInfo()
         { // claim based policy               
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -143,72 +143,57 @@ namespace BR.Controllers
         public async Task<IActionResult> AdminRegister([FromBody]string adminEmail)
         {
             var identityUser = await _userManager.FindByEmailAsync(adminEmail);
-            if (identityUser is null)// || !(await _userManager.IsEmailConfirmedAsync(identityUser)))
+            if(identityUser != null)
             {
-                if (identityUser == null)
-                {
-                    identityUser = new IdentityUser()
-                    {
-                        Email = adminEmail,
-                        UserName = adminEmail
-                    };
-                    IdentityResult res = await _userManager.CreateAsync(identityUser, "admin");
-                    if (!res.Succeeded)
-                    {
-                        StringBuilder errors = new StringBuilder();
-                        foreach (var error in res.Errors)
-                        {
-                            errors.Append(error);
-                        }
-                        return new JsonResult(errors.ToString());
-                    }
-                    identityUser = await _userManager.FindByNameAsync(adminEmail);
-                    var role = await _roleManager.FindByNameAsync("Admin");
-                    if (role != null)
-                    {
-                        var resp = await _userManager.AddToRoleAsync(identityUser, "Admin");
-                        if (!resp.Succeeded)
-                        {
-                            return new JsonResult(Response(Utils.StatusCode.Error));
-                        }
-                    }
-                }
-                else
-                {
-                    string emailCache = null;
-                    _cache.TryGetValue(identityUser.Id, out emailCache);
-                    if (emailCache != null)
-                    {
-                        return new JsonResult("Link has already been sent");
-                    }
-                }
-
-                _cache.Set(identityUser.Id, adminEmail, TimeSpan.FromMinutes(3));
-
-                var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                var callbackUrl = Url.Action(
-                            "ConfirmEmail",
-                            "AdminAccount",
-                            new { userId = identityUser.Id, code = emailConfirmationCode },
-                            protocol: HttpContext.Request.Scheme);
-
-                try
-                {
-                    string msgBody = $"<a href='{callbackUrl}'>link</a>";
-
-                    await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
-                    return Ok();
-                }
-                catch (Exception ex)
-                {
-                    _cache.Remove(identityUser.Id);
-                    throw ex;
-                }
-
+                return new JsonResult("Mail used");
             }
-            else
+
+            identityUser = new IdentityUser()
             {
-                return new JsonResult("Email is already used");
+                Email = adminEmail,
+                UserName = adminEmail
+            };
+            IdentityResult res = await _userManager.CreateAsync(identityUser, "admin");
+            if (!res.Succeeded)
+            {
+                StringBuilder errors = new StringBuilder();
+                foreach (var error in res.Errors)
+                {
+                    errors.Append(error);
+                }
+                return new JsonResult(errors.ToString());
+            }
+            identityUser = await _userManager.FindByNameAsync(adminEmail);
+            var role = await _roleManager.FindByNameAsync("Admin");
+            if (role != null)
+            {
+                var resp = await _userManager.AddToRoleAsync(identityUser, "Admin");
+                if (!resp.Succeeded)
+                {
+                    return new JsonResult(Response(Utils.StatusCode.Error));
+                }
+            }
+
+            _cache.Set(identityUser.Id, adminEmail, TimeSpan.FromMinutes(3));
+
+            var emailConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+            var callbackUrl = Url.Action(
+                        "ConfirmEmail",
+                        "AdminAccount",
+                        new { userId = identityUser.Id, code = emailConfirmationCode },
+                        protocol: HttpContext.Request.Scheme);
+
+            try
+            {
+                string msgBody = $"<a href='{callbackUrl}'>link</a>";
+
+                await _emailService.SendAsync(identityUser.Email, "Confirm your email", msgBody);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _cache.Remove(identityUser.Id);
+                throw ex;
             }
         }
 

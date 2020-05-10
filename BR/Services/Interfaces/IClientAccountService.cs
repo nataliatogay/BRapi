@@ -16,24 +16,28 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<LogInResponse>> LogIn(string userName, string notificationTag);
 
         Task<ServerResponse<ClientFullInfoForClients>> GetProfileInfo(string clientIdentityId);
-        
-        Task LogOut(string refreshToken);
-        
-        Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
-        
-        Task<ServerResponse<bool>> ClientIsBlocked(string identityId);
-        
-        Task<ServerResponse<bool>> ClientIsDeleted(string identityId);
-        
-        Task<ServerResponse> UpdateClient(UpdateClientRequest updateRequest, string identityIdClient);
 
-        //Task<ServerResponse<string>> UploadMainImage(string identityId, string imageString); // was ready, no need for now
+        Task LogOut(string refreshToken);
+
+        Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
+
+        Task<ServerResponse<bool>> ClientIsConfirmed(string identityId);
+
+        Task<ServerResponse<bool>> ClientIsBlocked(string identityId);
+
+        Task<ServerResponse<bool>> ClientIsDeleted(string identityId);
+
+        Task<ServerResponse> UpdateClient(UpdateClientProfileRequest updateRequest, string identityIdClient);
+
+        Task<ServerResponse<string>> UploadLogo(string identityId, string logoString);
 
         Task<ServerResponse> DeleteImage(int imageId);
 
         Task<ServerResponse<ICollection<ClientImageInfo>>> UploadImages(string identityId, ICollection<string> imagesString);
 
         Task<ServerResponse> SetAsMainImage(int imageId);
+
+        Task<ServerResponse<string>> GetClientName(int clientId, string ownerIdentityId);
 
 
 
