@@ -19,6 +19,8 @@ namespace BR.DTO.Clients
 
         public string MainImage { get; set; }
 
+        public string LogoPath { get; set; }
+
         public int OpenTime { get; set; }
         
         public int CloseTime { get; set; }

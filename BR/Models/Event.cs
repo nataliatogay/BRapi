@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -27,7 +28,11 @@ namespace BR.Models
         public string ImagePath { get; set; }
         
         public int ClientId { get; set; }
-        
+
+        public bool IsPosted { get; set; }
+
+        public bool IsCancelled { get; set; }
+
         public virtual Client Client { get; set; }
 
         public string AddedByIdentityId { get; set; }

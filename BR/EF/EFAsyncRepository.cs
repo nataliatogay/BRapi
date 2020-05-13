@@ -999,9 +999,9 @@ namespace BR.EF
             return await _db.Events.Where(e => e.ClientId == clientId).ToListAsync();
         }
 
-        public async Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId)
+        public async Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId, int skip, int take)
         {
-            return await _db.Events.Where(e => e.ClientId == clientId && e.Date > DateTime.Now).ToListAsync();
+            return await _db.Events.Where(e => e.ClientId == clientId && e.Date > DateTime.Now).Skip(skip).Take(take).ToListAsync();
         }
 
         public async Task<Event> GetEvent(int id)
@@ -1010,9 +1010,9 @@ namespace BR.EF
         }
 
 
-        public async Task<IEnumerable<Event>> GetEventsByName(string title)
+        public async Task<IEnumerable<Event>> GetUpcomingEventsByName(string title, int skip, int take)
         {
-            return await _db.Events.Where(e => e.Title.ToUpper().Contains(title.ToUpper())).ToListAsync();
+            return await _db.Events.Where(e => e.Title.ToUpper().Contains(title.ToUpper()) && e.Date > DateTime.Now).Skip(skip).Take(take).ToListAsync();
         }
 
 
@@ -1035,6 +1035,12 @@ namespace BR.EF
             var eventUpdated = _db.Events.Update(clientEvent);
             await _db.SaveChangesAsync();
             return eventUpdated.Entity;
+        }
+
+        public async Task RemoveEvent(Event clientEvent)
+        {
+            _db.Events.Remove(clientEvent);
+            await _db.SaveChangesAsync();
         }
 
 

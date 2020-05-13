@@ -10,11 +10,16 @@ namespace BR.DTO.Events
         public int Id { get; set; }
 
         public string Title { get; set; }
-        
+
         public string ImagePath { get; set; }
-        
+
         public DateTime Date { get; set; }
-        
+
         public int MarkCount { get; set; }
+
+        public bool IsPosted { get; set; }
+
+        public bool IsCancelled { get; set; }
+
     }
 }

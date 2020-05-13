@@ -16,6 +16,8 @@ namespace BR.DTO.Clients
 
         public string MainImage { get; set; }
 
+        public string LogoPath { get; set; }
+
         public List<ParameterInfoForUsers> ClientTypes { get; set; }
 
         public List<ParameterInfoForUsers> MealTypes { get; set; }

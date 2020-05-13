@@ -250,12 +250,13 @@ namespace BR.EF
         Task<ICollection<Event>> GetEvents();
         Task<ICollection<Event>> GetUpcomingEvents();
         Task<ICollection<Event>> GetEventsByClient(int clientId);
-        Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId);
+        Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId, int skip, int take);
         Task<Event> GetEvent(int id);
-        Task<IEnumerable<Event>> GetEventsByName(string title);
+        Task<IEnumerable<Event>> GetUpcomingEventsByName(string title, int skip, int take);
         Task<IEnumerable<Event>> GetEventsByNameAndDescription(string text);
         Task<Event> AddEvent(Event clientEvent);
         Task<Event> UpdateEvent(Event clientEvent);
+        Task RemoveEvent(Event clientEvent);
 
         Task<EventMark> GetEventMark(int eventId, int userId);
         Task<EventMark> AddEventMark(EventMark eventMark);

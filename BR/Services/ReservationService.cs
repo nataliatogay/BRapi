@@ -522,7 +522,7 @@ namespace BR.Services
                 if (res)
                 {
                     var key = Guid.NewGuid().ToString();
-                    int timerTime = 2 * 60 * 1000; // add to appsettings
+                    int timerTime = 20 * 60 * 1000; // add to appsettings
                     Timer timer = new Timer(timerTime);
                     timer.Elapsed += async (sender, e) => await HandlePendingTimer(key, timer);
 
@@ -1171,7 +1171,7 @@ namespace BR.Services
                 LastName = user.LastName,
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
-                ImagePath = user.ImagePath,
+                ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath,
                 PhoneNumber = user.Identity.PhoneNumber,
                 Email = user.Identity.Email
             };

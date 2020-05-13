@@ -447,6 +447,15 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "User")]
+        [HttpGet("ByFiltersForUsers")]
+        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> GetClientsByFiltersForUsers(ClientFilter filter, int skip, int take)
+        {
+            return new JsonResult(await _clientService.GetClientsByFilterForUsers(filter, skip, take));
+        }
+
+
+
+        [Authorize(Roles = "User")]
         [HttpGet("FullForUsers/{id}")]
         public async Task<ActionResult<ServerResponse<ClientFullInfoForUsers>>> FullInfoForUsers(int id)
         {
@@ -455,7 +464,7 @@ namespace BR.Controllers
 
 
         [Authorize(Roles = "User")]
-        [HttpGet("FavouriteId")]
+        [HttpGet("FavouriteIds")]
         public async Task<ActionResult<ServerResponse>> GetFavouritesIds()
         {
             var userIdentity = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -517,7 +526,7 @@ namespace BR.Controllers
         }
 
 
-        
+
 
 
         [HttpGet("Favourite")]

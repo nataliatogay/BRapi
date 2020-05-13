@@ -1372,6 +1372,9 @@ namespace BR.Services
         // FOR USERS
 
 
+           
+
+
         public async Task<ServerResponse<ClientFullInfoForUsers>> GetFullClientInfoForUsers(int id)
         {
             Client client;
@@ -1387,13 +1390,6 @@ namespace BR.Services
             if (client is null)
             {
                 return null;
-            }
-
-            string mainImage = null;
-
-            if (client.ClientImages.Count > 0)
-            {
-                mainImage = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? client.ClientImages.First().ImagePath : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath;
             }
 
             var clientTypes = new List<ParameterInfoForUsers>();
@@ -1455,7 +1451,8 @@ namespace BR.Services
                 Name = client.RestaurantName,
                 OpenTime = client.OpenTime,
                 CloseTime = client.CloseTime,
-                MainImage = mainImage,
+                MainImage = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? null : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
+                LogoPath = client.LogoPath,
                 ClientTypes = clientTypes,
                 MealTypes = mealTypes,
                 Cuisines = cuisines,
@@ -1645,6 +1642,7 @@ namespace BR.Services
                 Lat = client.Lat,
                 Long = client.Long,
                 MainImage = mainImage,
+                LogoPath = client.LogoPath,
                 TableTotalCount = tables.Count,
                 MealTypes = mealTypes,
                 ClientTypes = clientTypes,
@@ -1662,19 +1660,11 @@ namespace BR.Services
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // change
+        public async Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take)
+        {
+            return new ServerResponse<ICollection<ClientShortInfoForUsers>>(StatusCode.Ok, new List<ClientShortInfoForUsers>());
+        }
 
 
 

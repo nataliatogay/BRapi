@@ -10,6 +10,7 @@ namespace BR.DTO.Users
         [Required]
         public string LastName { get; set; }
 
+        [Required]
         public bool Gender { get; set; }
 
         [Required]

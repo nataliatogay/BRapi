@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace BR.DTO.Clients
 
         public ICollection<int> MealTypeIds { get; set; }
 
-        public ICollection<int> CuisineId { get; set; }
+        public ICollection<int> CuisineIds { get; set; }
 
         public ICollection<int> ClientTypeIds { get; set; }
 
@@ -27,15 +28,18 @@ namespace BR.DTO.Clients
 
         public ICollection<int> PriceCategories { get; set; }
 
-        public bool IsFavourite { get; set; }
+        public bool? IsFavourite { get; set; }
     }
 
     public class CoordinatesFilter
     {
+        [Required]
         public double Lat { get; set; }
 
+        [Required]
         public double Long { get; set; }
 
+        [Required]
         public double Radius { get; set; }
     }
 }

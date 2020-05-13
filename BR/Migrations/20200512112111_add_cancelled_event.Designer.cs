@@ -4,14 +4,16 @@ using BR.EF;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    partial class BRDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200512112111_add_cancelled_event")]
+    partial class add_cancelled_event
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

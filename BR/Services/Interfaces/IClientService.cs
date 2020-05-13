@@ -35,7 +35,7 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ClientShortInfoForOwners>> UpdateClientByOwner(UpdateClientRequest updateRequest, string ownerIdentityId);
 
-        Task<ServerResponse<string>> UploadLogoByAdmin(UploadLogoRequest uploadRequest); 
+        Task<ServerResponse<string>> UploadLogoByAdmin(UploadLogoRequest uploadRequest);
 
         Task<ServerResponse<string>> UploadLogoByOwner(UploadLogoRequest uploadRequest, string ownerIdentityId);
 
@@ -60,7 +60,7 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<ClientFullInfoForUsers>> GetFullClientInfoForUsers(int id);
 
         Task<ServerResponse<ICollection<int>>> GetFavouritesIds(string userIdentityId);
-        
+
         Task<ServerResponse> AddFavourite(int clientId, string identityUserId);
 
         Task<ServerResponse> DeleteFavourite(int clientId, string identityUserId);
@@ -71,6 +71,9 @@ namespace BR.Services.Interfaces
         // ================================================================================
 
 
+            // change
+        Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take);
+
 
 
 
@@ -78,22 +81,22 @@ namespace BR.Services.Interfaces
 
 
         Task<ICollection<ClientShortInfoForUsers>> GetFavourites(string identityUserId);
-        
-       
-        
+
+
+
         Task<ICollection<ClientFullInfoForUsers>> GetClientsByMeal(string mealType);
-        
+
         Task<IEnumerable<ClientFullInfoForUsers>> GetClientsByName(string title);
 
         Task<ICollection<ClientShortInfoForUsers>> GetShortClientInfoForUsers();
 
-        
-        
+
+
         Task<ICollection<ClientFullInfoForUsers>> GetFullClientInfoForUsers();
-        
+
         Task<ClientHallsInfo> GetClientHalls(int id);
 
-        
+
 
 
 

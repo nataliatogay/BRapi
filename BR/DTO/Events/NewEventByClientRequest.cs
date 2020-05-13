@@ -21,6 +21,6 @@ namespace BR.DTO.Events
 
         public int EntranceFee { get; set; }
 
-        public string Image { get; set; }
+        public string ImageString { get; set; }
     }
 }
