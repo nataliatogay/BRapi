@@ -184,6 +184,7 @@ namespace BR.EF
         Task<ReservationState> GetReservationState(string title);
         Task<CancelReason> GetCancelReason(int id);
         Task<CancelReason> GetCancelReason(string title);
+        Task<ICollection<Reservation>> GetAllUserReservations(string identityId);
 
 
         // Reservation Requests

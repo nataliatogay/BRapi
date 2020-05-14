@@ -70,7 +70,7 @@ namespace BR.Services
                     var invitees = new List<UserFullInfoForClient>();
                     foreach (var inv in item.Invitees)
                     {
-                        invitees.Add(UserToUserFullInfoForClient(inv.User));
+                        invitees.Add(await UserToUserFullInfoForClient(inv.User, client.Id));
                     }
                     response.Add(
                         new ReservationInfoForClient()
@@ -85,7 +85,7 @@ namespace BR.Services
                             Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
-                            User = UserToUserFullInfoForClient(user),
+                            User = await UserToUserFullInfoForClient(user, client.Id),
                             ApplicationDate = item.ReservationRequest.IssueDate,
                             Invitees = invitees
                         });
@@ -119,7 +119,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in item.Invitees)
                 {
-                    invitees.Add(UserToUserFullInfoForClient(inv.User));
+                    invitees.Add(await UserToUserFullInfoForClient(inv.User, client.Id));
                 }
                 response.Add(
                     new ReservationInfoForClient()
@@ -135,7 +135,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
-                        User = UserToUserFullInfoForClient(user),
+                        User = await UserToUserFullInfoForClient(user, client.Id),
                         Invitees = invitees
                     });
             }
@@ -170,7 +170,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in inviteeIds)
                 {
-                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                    invitees.Add(await UserToUserFullInfoForClient(await _repository.GetUser(inv), client.Id));
                 }
                 res.Add(
                     new ReservationRequestInfoForClient()
@@ -185,7 +185,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
-                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
                         State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
                     });
@@ -223,7 +223,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in inviteeIds)
                 {
-                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                    invitees.Add(await UserToUserFullInfoForClient(await _repository.GetUser(inv), client.Id));
                 }
                 res.Add(
                     new ReservationRequestInfoForClient()
@@ -238,7 +238,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
-                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        User =await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
                         State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
                     });
@@ -287,7 +287,7 @@ namespace BR.Services
                     var invitees = new List<UserFullInfoForClient>();
                     foreach (var inv in item.Invitees)
                     {
-                        invitees.Add(UserToUserFullInfoForClient(inv.User));
+                        invitees.Add(await UserToUserFullInfoForClient(inv.User, clientId));
                     }
                     response.Add(
                         new ReservationInfoForClient()
@@ -303,7 +303,7 @@ namespace BR.Services
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                             ApplicationDate = item.ReservationRequest.IssueDate,
-                            User = UserToUserFullInfoForClient(user),
+                            User = await UserToUserFullInfoForClient(user, client.Id),
                             Invitees = invitees
                         });
                 }
@@ -345,7 +345,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in item.Invitees)
                 {
-                    invitees.Add(UserToUserFullInfoForClient(inv.User));
+                    invitees.Add(await UserToUserFullInfoForClient(inv.User, client.Id));
                 }
                 response.Add(
                     new ReservationInfoForClient()
@@ -361,7 +361,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
-                        User = UserToUserFullInfoForClient(user),
+                        User = await UserToUserFullInfoForClient(user, client.Id),
                         Invitees = invitees
                     });
             }
@@ -404,7 +404,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in inviteeIds)
                 {
-                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                    invitees.Add(await UserToUserFullInfoForClient(await _repository.GetUser(inv), client.Id));
                 }
                 res.Add(
                     new ReservationRequestInfoForClient()
@@ -419,7 +419,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
-                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
                         State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
                     });
@@ -465,7 +465,7 @@ namespace BR.Services
                 var invitees = new List<UserFullInfoForClient>();
                 foreach (var inv in inviteeIds)
                 {
-                    invitees.Add(this.UserToUserFullInfoForClient(await _repository.GetUser(inv)));
+                    invitees.Add(await UserToUserFullInfoForClient(await _repository.GetUser(inv), client.Id));
                 }
                 res.Add(
                     new ReservationRequestInfoForClient()
@@ -480,7 +480,7 @@ namespace BR.Services
                         PetsFree = item.PetsFree,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         IssueDate = item.IssueDate,
-                        User = this.UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId)),
+                        User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
                         State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
                     });
@@ -1158,13 +1158,16 @@ namespace BR.Services
 
 
 
-        private UserFullInfoForClient UserToUserFullInfoForClient(User user)
+        private async Task<UserFullInfoForClient> UserToUserFullInfoForClient(User user, int clientId)
         {
             if (user is null)
             {
                 return null;
             }
-            return new UserFullInfoForClient()
+            var reservations = await _repository.GetAllUserReservations(user.IdentityId);
+            var clientReservations = reservations.Where(item => item.ClientId == clientId);
+            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
+            var result = new UserFullInfoForClient()
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
@@ -1173,8 +1176,23 @@ namespace BR.Services
                 Gender = user.Gender,
                 ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath,
                 PhoneNumber = user.Identity.PhoneNumber,
-                Email = user.Identity.Email
+                Email = user.Identity.Email,
+                RegistrationDate = user.RegistrationDate,
+                ReservationCount = clientReservations.Count()
             };
+
+            //result.LastVisitDate = (lastVisit == null ? null : lastVisit.ReservationDate);
+
+            if (lastVisit is null)
+            {
+                result.LastVisitDate = null;
+            }
+            else
+            {
+                result.LastVisitDate = lastVisit.ReservationDate;
+            }
+
+            return result;
         }
 
 

@@ -93,12 +93,13 @@ namespace BR.Services
         }
 
 
-        private UserFullInfoForClient UserToUserFullInfoForClient(User user)
+        private async Task<UserFullInfoForClient> UserToUserFullInfoForClient(User user)
         {
             if (user is null)
             {
                 return null;
             }
+            var reservations = await _repository.GetAllUserReservations(user.IdentityId);
             return new UserFullInfoForClient()
             {
                 Id = user.Id,
@@ -108,7 +109,9 @@ namespace BR.Services
                 Gender = user.Gender,
                 ImagePath = user.ImagePath,
                 PhoneNumber = user.Identity.PhoneNumber,
-                Email = user.Identity.Email
+                Email = user.Identity.Email,
+                RegistrationDate=user.RegistrationDate,
+                //LastVisitDate = reservations.Where(item=>item)
             };
         }
 

@@ -144,7 +144,7 @@ namespace BR.Services
             var eventInfos = new List<EventInfoShort>();
             foreach (var item in client.Events)
             {
-                if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                if (item.IsPosted && !item.IsCancelled && item.Date.AddMinutes(item.Duration) > DateTime.Now)
                 {
                     eventInfos.Add(this.ToShortEventInfo(item));
                 }

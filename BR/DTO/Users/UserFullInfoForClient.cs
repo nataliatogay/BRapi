@@ -23,5 +23,11 @@ namespace BR.DTO.Users
 
         public string Email { get; set; }
 
+        public DateTime RegistrationDate { get; set; }
+
+        public int ReservationCount { get; set; }
+
+        public DateTime? LastVisitDate { get; set; }
+
     }
 }

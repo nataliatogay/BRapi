@@ -798,6 +798,11 @@ namespace BR.EF
             return await _db.CancelReasons.FirstOrDefaultAsync(r => r.Title.ToUpper().Equals(title.ToUpper()));
         }
 
+        public async Task<ICollection<Reservation>> GetAllUserReservations(string identityId)
+        {
+            return await _db.Reservations.Where(item => item.IdentityUserId.Equals(identityId)).ToListAsync();
+        }
+
 
         // Reservation Requests
 
@@ -840,7 +845,7 @@ namespace BR.EF
         public async Task<ICollection<ReservationRequest>> GetRejectedReservationRequestsByClientId(int clientId, DateTime date)
         {
             var tables = await GetClientTables(clientId);
-            
+
             var state = await _db.ReservationRequestStates.FirstOrDefaultAsync(item => item.Title.ToUpper().Equals("Rejected".ToUpper()));
 
             var requests = new List<ReservationRequest>();
