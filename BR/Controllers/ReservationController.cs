@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using BR.DTO.Redis;
+using BR.DTO.Users;
 
 namespace BR.Controllers
 {
@@ -184,6 +185,34 @@ namespace BR.Controllers
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
             return new JsonResult(await _reservationService.AddConfirmedReservationByOwner(confirmRequest, ownerIdentityUser.Id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("GetVisitorsByClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByClient()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetAllVisitorsByClient(clientIdentityUser.Id));
+
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("GetVisitorsByOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _reservationService.GetAllVisitorsByOwner(ownerIdentityUser.Id, clientId));
+
         }
 
 

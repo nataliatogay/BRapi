@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BR.DTO.Redis;
+using BR.DTO.Users;
 
 namespace BR.Services.Interfaces
 {
@@ -36,6 +37,10 @@ namespace BR.Services.Interfaces
         Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetReservationRequestsForOwner(string ownerIdentityId, int clientId);
 
         Task<ServerResponse<ICollection<ReservationRequestInfoForClient>>> GetRejectedReservationRequestsForOwner(string ownerIdentityId, int clientId, string date);
+        
+        Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId);
+
+        Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId);
 
 
 
