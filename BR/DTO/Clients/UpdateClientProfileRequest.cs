@@ -55,5 +55,7 @@ namespace BR.DTO.Clients
 
         public ICollection<ClientPhoneInfo> Phones { get; set; }
 
+        public string LogoString { get; set; }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿ using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -21,9 +21,12 @@ namespace BR.Controllers
     public class UserController : ResponseController
     {
         private readonly IUserService _userService;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public UserController(IUserService userService)
+        public UserController(UserManager<IdentityUser> userManager,
+            IUserService userService)
         {
+            _userManager = userManager;
             _userService = userService;
         }
 
@@ -39,6 +42,59 @@ namespace BR.Controllers
         public async Task<ActionResult<ServerResponse<UserInfoForAdmin>>> GetInfoForAdmin(int id)
         {
             return new JsonResult(await _userService.GetUserInfoForAdmin(id));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("GetVisitorsByClient")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByClient()
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _userService.GetAllVisitorsByClient(clientIdentityUser.Id));
+
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("GetVisitorsByOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _userService.GetAllVisitorsByOwner(ownerIdentityUser.Id, clientId));
+        }
+
+
+        [Authorize(Roles = "Client")]
+        [HttpGet("GetVisitorFullInfoByClient")]
+        public async Task<ActionResult<ServerResponse<UserFullInfoForClient>>> GetUserFullInfoByClient(int userId)
+        {
+            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (clientIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _userService.GetUserFullInfoByClient(clientIdentityUser.Id, userId));
+        }
+
+
+        [Authorize(Roles = "Owner")]
+        [HttpGet("GetVisitorFullInfoByOwner")]
+        public async Task<ActionResult<ServerResponse<UserFullInfoForClient>>> GetUserFullInfoByOwner(int userId, int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+            }
+            return new JsonResult(await _userService.GetUserFullInfoByOwner(ownerIdentityUser.Id, clientId, userId));
         }
 
 
@@ -68,9 +124,9 @@ namespace BR.Controllers
             return new JsonResult(await _userService.GetUserInfoForUsers(id));
         }
 
-       
 
-        
+
+
 
     }
 }

@@ -69,11 +69,15 @@ namespace BR.Services
                 var images = new List<ClientImageInfo>();
                 foreach (var item in client.ClientImages)
                 {
+
                     images.Add(new ClientImageInfo()
                     {
                         Id = item.Id,
-                        Path = item.ImagePath
+                        Path = item.ImagePath,
+                        IsMain = item.IsMain
+
                     });
+
                 }
 
                 var cuisines = new List<int>();
@@ -130,7 +134,8 @@ namespace BR.Services
                     phones.Add(new ClientPhoneInfo()
                     {
                         Number = item.Number,
-                        IsWhatsApp = item.IsWhatsApp
+                        IsWhatsApp = item.IsWhatsApp,
+                        IsTelegram = item.IsTelegram
                     });
                 }
 
@@ -151,10 +156,10 @@ namespace BR.Services
                         Email = client.Identity.Email,
                         AdminName = client.AdminName,
                         AdminPhoneNumber = client.AdminPhoneNumber,
+                        LogoPath = client.LogoPath,
                         Images = images,
                         Lat = client.Lat,
                         Long = client.Long,
-                        MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
                         OrganizationId = client.OrganizationId,
                         MaxReserveDays = client.MaxReserveDays,
                         ClientTypeIds = clientTypes,
@@ -217,7 +222,25 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
 
-            // updateRequest.ClientId = client.Id;
+            if (updateRequest.LogoString != null)
+            {
+
+                // delete previous logo from blob
+                //try
+                //{
+                //    await _blobService.DeleteImage(client.LogoPath);
+                //}
+                //catch { }
+
+                try
+                {
+                    client.LogoPath = await _blobService.UploadImage(updateRequest.LogoString);
+                }
+                catch
+                {
+                    return new ServerResponse<ClientShortInfoForOwners>(StatusCode.BlobError, null);
+                }
+            }
 
             client.RestaurantName = updateRequest.RestaurantName.Trim();
             client.Lat = updateRequest.Lat;
@@ -483,7 +506,8 @@ namespace BR.Services
                             {
                                 ClientId = clientId,
                                 Number = phone.Number,
-                                IsWhatsApp = phone.IsWhatsApp
+                                IsWhatsApp = phone.IsWhatsApp,
+                                IsTelegram = phone.IsTelegram
                             });
                     }
                     catch { }
@@ -711,7 +735,8 @@ namespace BR.Services
                         images.Add(new ClientImageInfo()
                         {
                             Id = item.Id,
-                            Path = item.ImagePath
+                            Path = item.ImagePath,
+                            IsMain = item.IsMain
                         });
                     }
                 }

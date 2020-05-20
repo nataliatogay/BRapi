@@ -412,7 +412,8 @@ namespace BR.Services
                             {
                                 ClientId = clientId,
                                 Number = phone.Number,
-                                IsWhatsApp = phone.IsWhatsApp
+                                IsWhatsApp = phone.IsWhatsApp,
+                                IsTelegram = phone.IsTelegram
                             });
                     }
                     catch { }
@@ -609,6 +610,7 @@ namespace BR.Services
                     Id = client.Id,
                     ClientName = client.RestaurantName,
                     Email = client.Identity.Email,
+                    LogoPath = client.LogoPath,
                     MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
                     RegistrationDate = client.RegistrationDate,
                     Confirmed = client.AdminConfirmation,
@@ -642,7 +644,8 @@ namespace BR.Services
                 images.Add(new ClientImageInfo()
                 {
                     Id = item.Id,
-                    Path = item.ImagePath
+                    Path = item.ImagePath,
+                    IsMain = item.IsMain
                 });
             }
             var clientInfo = new ClientFullInfoForAdmin()
@@ -655,7 +658,7 @@ namespace BR.Services
                     Title = client.Organization.Title,
                     LogoPath = client.Organization.LogoPath
                 },
-                MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
+
                 Email = client.Identity.Email,
                 AdminName = client.AdminName,
                 AdminPhoneNumber = client.AdminPhoneNumber,
@@ -717,16 +720,18 @@ namespace BR.Services
                 images.Add(new ClientImageInfo()
                 {
                     Id = item.Id,
-                    Path = item.ImagePath
+                    Path = item.ImagePath,
+                    IsMain = item.IsMain
                 });
             }
+
             var clientInfo = new ClientFullInfoForOwners()
             {
                 Id = client.Id,
                 ClientName = client.RestaurantName,
                 OrganizationId = client.OrganizationId,
                 OrganizationName = client.Organization.Title,
-                MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
+                LogoPath = client.LogoPath,
                 Email = client.Identity.Email,
                 AdminName = client.AdminName,
                 AdminPhoneNumber = client.AdminPhoneNumber,
@@ -776,7 +781,6 @@ namespace BR.Services
             {
                 return new ServerResponse<ClientShortInfoForAdmin>(StatusCode.UserNotFound, null);
             }
-
 
             client.RestaurantName = updateRequest.RestaurantName.Trim();
             client.AdminName = updateRequest.AdminName.Trim();
@@ -849,6 +853,27 @@ namespace BR.Services
                 return new ServerResponse<ClientShortInfoForOwners>(StatusCode.UserNotFound, null);
             }
 
+            if (updateRequest.LogoString != null)
+            {
+                // delete previous logo from blob
+                //try
+                //{
+                //    await _blobService.DeleteImage(client.LogoPath);
+                //}
+                //catch { }
+
+                try
+                {
+                    client.LogoPath = await _blobService.UploadImage(updateRequest.LogoString);
+
+                }
+                catch
+                {
+                    return new ServerResponse<ClientShortInfoForOwners>(StatusCode.BlobError, null);
+                }
+            }
+
+
 
             client.RestaurantName = updateRequest.RestaurantName.Trim();
             client.AdminName = updateRequest.AdminName.Trim();
@@ -890,6 +915,7 @@ namespace BR.Services
                     Deleted = client.Deleted,
                     Confirmed = client.AdminConfirmation,
                     Email = client.Identity.Email,
+                    LogoPath = client.LogoPath,
                     MainImagePath = client.ClientImages.FirstOrDefault(item => item.IsMain) is null ? "https://rb2020storage.blob.core.windows.net/photos/default_restaurant.jpg" : client.ClientImages.FirstOrDefault(item => item.IsMain).ImagePath,
                     RegistrationDate = client.RegistrationDate
                 });
@@ -1125,7 +1151,8 @@ namespace BR.Services
                         images.Add(new ClientImageInfo()
                         {
                             Id = item.Id,
-                            Path = item.ImagePath
+                            Path = item.ImagePath,
+                            IsMain = item.IsMain
                         });
                     }
                 }
@@ -1372,7 +1399,7 @@ namespace BR.Services
         // FOR USERS
 
 
-           
+
 
 
         public async Task<ServerResponse<ClientFullInfoForUsers>> GetFullClientInfoForUsers(int id)
@@ -2009,7 +2036,8 @@ namespace BR.Services
                 res.Add(new ClientPhoneInfo()
                 {
                     Number = item.Number,
-                    IsWhatsApp = item.IsWhatsApp
+                    IsWhatsApp = item.IsWhatsApp,
+                    IsTelegram = item.IsTelegram
                 });
             }
             return res;

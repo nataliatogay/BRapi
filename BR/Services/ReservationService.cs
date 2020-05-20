@@ -84,7 +84,7 @@ namespace BR.Services
                             Invalids = item.Invalids,
                             Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                             PetsFree = item.PetsFree,
-                            State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
+                            State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                             User = await UserToUserFullInfoForClient(user, client.Id),
                             ApplicationDate = item.ReservationRequest.IssueDate,
                             Invitees = invitees
@@ -133,7 +133,7 @@ namespace BR.Services
                         Invalids = item.Invalids,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         PetsFree = item.PetsFree,
-                        State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
+                        State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
                         User = await UserToUserFullInfoForClient(user, client.Id),
                         Invitees = invitees
@@ -187,7 +187,7 @@ namespace BR.Services
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
-                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                        State = item.ReservationRequestStateId is null ? "waiting" : item.ReservationRequestState.Title
                     });
             }
             return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
@@ -240,7 +240,7 @@ namespace BR.Services
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
-                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                        State = item.ReservationRequestStateId is null ? "waiting" : item.ReservationRequestState.Title
                     });
             }
             return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
@@ -299,7 +299,7 @@ namespace BR.Services
                             Invalids = item.Invalids,
                             Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                             PetsFree = item.PetsFree,
-                            State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
+                            State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                             ApplicationDate = item.ReservationRequest.IssueDate,
                             User = await UserToUserFullInfoForClient(user, client.Id),
                             Invitees = invitees
@@ -357,7 +357,7 @@ namespace BR.Services
                         Invalids = item.Invalids,
                         Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
                         PetsFree = item.PetsFree,
-                        State = item.ReservationState is null ? "idle" : item.ReservationState.Title,
+                        State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
                         User = await UserToUserFullInfoForClient(user, client.Id),
                         Invitees = invitees
@@ -419,7 +419,7 @@ namespace BR.Services
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
-                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                        State = item.ReservationRequestStateId is null ? "waiting" : item.ReservationRequestState.Title
                     });
             }
             return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
@@ -480,7 +480,7 @@ namespace BR.Services
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
-                        State = item.ReservationRequestStateId is null ? "idle" : item.ReservationRequestState.Title
+                        State = item.ReservationRequestStateId is null ? "waiting" : item.ReservationRequestState.Title
                     });
             }
             return new ServerResponse<ICollection<ReservationRequestInfoForClient>>(StatusCode.Ok, res);
@@ -1148,133 +1148,9 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId)
-        {
-            Client client;
-            try
-            {
-                client = await _repository.GetClient(clientIdentityId);
-                if (client is null)
-                {
-                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
-                }
-            }
-            catch
-            {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
-            }
+        
 
-            var userIdentities = new List<string>();
-            foreach (var item in client.Reservations)
-            {
-                if (item.ReservationDate < DateTime.Now && item.ReservationState != null && item.ReservationState.Title.ToUpper().Equals("COMPLETED"))
-                {
-
-                    if (!userIdentities.Contains(item.IdentityUserId))
-                    {
-                        userIdentities.Add(item.IdentityUserId);
-                    }
-                }
-
-            }
-
-            var res = new List<UserShortInfoForClient>();
-            try
-            {
-
-                foreach (var item in userIdentities)
-                {
-                    var user = await _repository.GetUser(item);
-                    if (user != null)
-                    {
-                        res.Add(new UserShortInfoForClient()
-                        {
-                            Id = user.Id,
-                            BirthDate = user.BirthDate,
-                            FirstName = user.FirstName,
-                            LastName = user.LastName,
-                            PhoneNumber = user.Identity.PhoneNumber,
-                            RegistrationDate = user.RegistrationDate
-                        });
-                    }
-                }
-            }
-            catch
-            {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
-            }
-            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
-        }
-
-
-        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId)
-        {
-            Owner owner;
-            try
-            {
-                owner = await _repository.GetOwner(ownerIdentityId);
-                if (owner is null || owner.Organization is null)
-                {
-                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
-                }
-
-            }
-            catch
-            {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
-            }
-
-
-            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
-
-            if (client is null)
-            {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.NotFound, null);
-            }
-
-            var userIdentities = new List<string>();
-            foreach (var item in client.Reservations)
-            {
-                if (item.ReservationDate < DateTime.Now && item.ReservationState != null && item.ReservationState.Title.ToUpper().Equals("COMPLETED"))
-                {
-
-                    if (!userIdentities.Contains(item.IdentityUserId))
-                    {
-                        userIdentities.Add(item.IdentityUserId);
-                    }
-                }
-
-            }
-
-            var res = new List<UserShortInfoForClient>();
-            try
-            {
-
-                foreach (var item in userIdentities)
-                {
-                    var user = await _repository.GetUser(item);
-                    if (user != null)
-                    {
-                        res.Add(new UserShortInfoForClient()
-                        {
-                            Id = user.Id,
-                            BirthDate = user.BirthDate,
-                            FirstName = user.FirstName,
-                            LastName = user.LastName,
-                            PhoneNumber = user.Identity.PhoneNumber,
-                            RegistrationDate = user.RegistrationDate
-                        });
-                    }
-                }
-            }
-            catch
-            {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
-            }
-            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
-
-        }
-
+        
 
 
 
@@ -1289,7 +1165,8 @@ namespace BR.Services
             }
             var reservations = await _repository.GetAllUserReservations(user.IdentityId);
             var clientReservations = reservations.Where(item => item.ClientId == clientId);
-            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
+            var resStateCompleted = await _repository.GetReservationState("Completed");
+            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now && item.ReservationStateId != null && item.ReservationStateId==resStateCompleted.Id).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
             var result = new UserFullInfoForClient()
             {
                 Id = user.Id,

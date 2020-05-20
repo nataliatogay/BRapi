@@ -11,16 +11,20 @@ namespace BR.DTO.Reservations
         [Required]
         public string Code { get; set; }
 
+        [Required]
         public bool IsChildFree { get; set; }
-        
+
+        [Required]
         public bool IsPetsFree { get; set; }
-        
+
+        [Required]
         public bool Invalids { get; set; }
-        
+
+        [Required]
         public int GuestCount { get; set; }
 
         public ICollection<int> InviteeIds { get; set; }
-        
+
         public string Comments { get; set; }
     }
 }

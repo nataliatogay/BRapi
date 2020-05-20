@@ -19,7 +19,7 @@ namespace BR.DTO.Clients
 
         public string AdminPhoneNumber { get; set; }
 
-        public string MainImagePath { get; set; }
+        public string LogoPath { get; set; }
 
         public ICollection<ClientImageInfo> Images { get; set; }
 

@@ -13,13 +13,17 @@ namespace BR.DTO.Events
 
         public string ImagePath { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime StartDateTime { get; set; }
+
+        public DateTime EndDateTime { get; set; }
 
         public int MarkCount { get; set; }
 
         public bool IsPosted { get; set; }
 
         public bool IsCancelled { get; set; }
+
+        public int EntranceFee { get; set; }
 
     }
 }

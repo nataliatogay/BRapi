@@ -146,7 +146,7 @@ namespace BR.Controllers
 
 
         // by user
-        [HttpPost("newReservation")]
+        [HttpPost("newReservation")]    
         public async Task<ActionResult<ServerResponse>> NewReservation([FromBody]NewReservationByUserRequest newReservation)
         {
             // add notification to waiters
@@ -188,32 +188,14 @@ namespace BR.Controllers
         }
 
 
-        [Authorize(Roles = "Client")]
-        [HttpGet("GetVisitorsByClient")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByClient()
+        [HttpGet("TableStates")]
+        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableState tableStatesRequests)
         {
-            var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (clientIdentityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(await _reservationService.GetAllVisitorsByClient(clientIdentityUser.Id));
-
+            return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
         }
 
 
-        [Authorize(Roles = "Owner")]
-        [HttpGet("GetVisitorsByOwner/{clientId}")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByOwner(int clientId)
-        {
-            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (ownerIdentityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(await _reservationService.GetAllVisitorsByOwner(ownerIdentityUser.Id, clientId));
 
-        }
 
 
 
@@ -283,13 +265,6 @@ namespace BR.Controllers
         {
             return new JsonResult(await _reservationService.AddBarConfirmedReservation(confirmRequest));
         }
-
-        [HttpGet("TableStates")]
-        public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetTableStates(TableState tableStatesRequests)
-        {
-            return new JsonResult(await _reservationService.GetTablesStates(tableStatesRequests));
-        }
-
 
         [HttpGet("BarStates")]
         public async Task<ActionResult<ServerResponse<ICollection<TableCurrentStateCacheData>>>> GetBarStates(BarStates barStatesRequests)

@@ -21,8 +21,6 @@ namespace BR.DTO.Clients
 
         public string AdminPhoneNumber { get; set; }
 
-        public string MainImagePath { get; set; }
-
         public ICollection<ClientImageInfo> Images { get; set; }
 
         public DateTime RegistrationDate { get; set; }

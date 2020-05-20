@@ -60,7 +60,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Owner")]
         [HttpGet("UpcomingForOwner/{clientId}")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetUpcomingEventsForClients(int clientId)
+        public async Task<ActionResult<ServerResponse<ICollection<EventInfoShort>>>> GetUpcomingEventsForOwners(int clientId)
         {
             var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (ownerIdentityUser is null)
@@ -272,7 +272,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("UpcomingMarkedEvents")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventShortInfoForUsers>>>> GetUpcomingMarkedEvents()
+        public async Task<ActionResult<ServerResponse<ICollection<EventShortInfoForUsers>>>> GetUpcomingMarkedEvents(int skip, int take)
         {
             var userIdentity = await _userManager.FindByNameAsync(User.Identity.Name);
             if (userIdentity is null)
@@ -280,7 +280,7 @@ namespace BR.Controllers
                 return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
             }
 
-            return new JsonResult(await _eventService.GetUpcomingMarkedEvents(userIdentity.Id));
+            return new JsonResult(await _eventService.GetUpcomingMarkedEvents(userIdentity.Id, skip, take));
         }
 
 

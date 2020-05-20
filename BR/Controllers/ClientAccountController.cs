@@ -200,8 +200,8 @@ namespace BR.Controllers
 
 
 
-        [Authorize(Roles = "Client")]
-        [Authorize(Roles = "Owner")]
+        [Authorize(Roles = "Client, Owner")]
+     //   [Authorize(Roles = "Owner")]
         [HttpPost("ChangePassword")]
         public async Task<ActionResult<ServerResponse>> ChangePassword([FromBody]string newPassword)
         {

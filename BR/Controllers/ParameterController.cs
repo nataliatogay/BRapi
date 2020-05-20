@@ -34,7 +34,7 @@ namespace BR.Controllers
         }
 
 
-        [HttpGet("parmetersForUsers")]
+        [HttpGet("parametersForUsers")]
         public async Task<ActionResult<ServerResponse<ClientParametersForUsers>>> GetInfoForUsers()
         {
             return new JsonResult(await _parameterService.GetClientParamentersForUsers());

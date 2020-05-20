@@ -339,21 +339,14 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPost("DeleteImage")]
-        public async Task<ActionResult<ServerResponse<string>>> DeleteImage()
+        public async Task<ActionResult<ServerResponse>> DeleteImage()
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
             {
                 return new JsonResult(Response(Utils.StatusCode.UserNotFound));
             }
-            try
-            {
-                return new JsonResult(await _userAccountService.DeleteImage(identityUser.Id));
-            }
-            catch
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
+            return new JsonResult(await _userAccountService.DeleteImage(identityUser.Id));
         }
 
 

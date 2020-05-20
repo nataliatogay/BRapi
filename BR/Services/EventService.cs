@@ -104,7 +104,7 @@ namespace BR.Services
                 var eventInfos = new List<EventInfoShort>();
                 foreach (var item in client.Events)
                 {
-                    if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                    if (item.IsPosted && !item.IsCancelled && item.Date.AddMinutes(item.Duration) > DateTime.Now)
                     {
                         eventInfos.Add(this.ToShortEventInfo(item));
                     }
@@ -243,7 +243,7 @@ namespace BR.Services
             var eventInfos = new List<EventFullInfo>();
             foreach (var item in client.Events)
             {
-                if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                if (item.Date.AddMinutes(item.Duration) > DateTime.Now && !item.IsCancelled)
                 {
                     eventInfos.Add(this.ToFullEventInfo(item));
                 }
@@ -266,7 +266,7 @@ namespace BR.Services
                 var eventInfos = new List<EventFullInfo>();
                 foreach (var item in client.Events)
                 {
-                    if (item.Date.AddMinutes(item.Duration) > DateTime.Now)
+                    if (item.Date.AddMinutes(item.Duration) > DateTime.Now && !item.IsCancelled)
                     {
                         eventInfos.Add(this.ToFullEventInfo(item));
                     }
@@ -778,7 +778,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingMarkedEvents(string userIdentityId)
+        public async Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingMarkedEvents(string userIdentityId, int skip, int take)
         {
             User user;
             try
@@ -794,15 +794,13 @@ namespace BR.Services
                 return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.DbConnectionError, null);
             }
 
-            var events = new List<EventShortInfoForUsers>();
-            foreach (var item in user.EventMarks)
+            var res = new List<EventShortInfoForUsers>();
+            var events = user.EventMarks.Where(item => item.Event.Date.AddMinutes(item.Event.Duration) > DateTime.Now).Skip(skip).Take(take);
+            foreach (var item in events)
             {
-                if (item.Event.Date > DateTime.Now)
-                {
-                    events.Add(this.EventToEventShortInfoForUsers(item.Event));
-                }
+                res.Add(this.EventToEventShortInfoForUsers(item.Event));
             }
-            return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.Ok, events);
+            return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.Ok, res);
         }
 
 
@@ -873,7 +871,8 @@ namespace BR.Services
                 phones.Add(new ClientPhoneInfo()
                 {
                     Number = item.Number,
-                    IsWhatsApp = item.IsWhatsApp
+                    IsWhatsApp = item.IsWhatsApp,
+                    IsTelegram = item.IsTelegram
                 });
             }
 
@@ -1359,12 +1358,14 @@ namespace BR.Services
             return new EventInfoShort()
             {
                 Id = clientEvent.Id,
-                Date = clientEvent.Date,
+                StartDateTime = clientEvent.Date,
+                EndDateTime = clientEvent.Date.AddMinutes(clientEvent.Duration),
                 ImagePath = clientEvent.ImagePath,
                 Title = clientEvent.Title,
                 MarkCount = clientEvent.EventMarks.Count(),
                 IsCancelled = clientEvent.IsCancelled,
-                IsPosted = clientEvent.IsPosted
+                IsPosted = clientEvent.IsPosted,
+                EntranceFee = clientEvent.EntranceFee
             };
         }
 

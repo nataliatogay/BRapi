@@ -342,17 +342,18 @@ namespace BR.Controllers
 
 
 
-        [Authorize(Roles = "Owner")]
-        [HttpPost("UploadLogoByOwner")]
-        public async Task<ActionResult<ServerResponse<string>>> UploadLogoByOwner([FromBody]UploadLogoRequest uploadRequest)
-        {
-            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (ownerIdentityUser is null)
-            {
-                return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
-            }
-            return new JsonResult(await _clientService.UploadLogoByOwner(uploadRequest, ownerIdentityUser.Id));
-        }
+        // no need for now
+        //[Authorize(Roles = "Owner")]
+        //[HttpPost("UploadLogoByOwner")]
+        //public async Task<ActionResult<ServerResponse<string>>> UploadLogoByOwner([FromBody]UploadLogoRequest uploadRequest)
+        //{
+        //    var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (ownerIdentityUser is null)
+        //    {
+        //        return new JsonResult(new ServerResponse<string>(Utils.StatusCode.UserNotFound, null));
+        //    }
+        //    return new JsonResult(await _clientService.UploadLogoByOwner(uploadRequest, ownerIdentityUser.Id));
+        //}
 
 
 

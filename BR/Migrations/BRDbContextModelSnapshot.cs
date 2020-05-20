@@ -394,6 +394,8 @@ namespace BR.Migrations
 
                     b.Property<string>("Number");
 
+                    b.Property<bool>("IsTelegram");
+
                     b.Property<bool>("IsWhatsApp");
 
                     b.HasKey("ClientId", "Number");

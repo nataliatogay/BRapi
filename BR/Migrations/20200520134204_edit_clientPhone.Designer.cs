@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    [Migration("20200511115228_new_migr")]
-    partial class new_migr
+    [Migration("20200520134204_edit_clientPhone")]
+    partial class edit_clientPhone
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -396,6 +396,8 @@ namespace BR.Migrations
 
                     b.Property<string>("Number");
 
+                    b.Property<bool>("IsTelegram");
+
                     b.Property<bool>("IsWhatsApp");
 
                     b.HasKey("ClientId", "Number");
@@ -502,6 +504,10 @@ namespace BR.Migrations
 
                     b.Property<string>("ImagePath")
                         .IsRequired();
+
+                    b.Property<bool>("IsCancelled");
+
+                    b.Property<bool>("IsPosted");
 
                     b.Property<string>("Title")
                         .IsRequired();

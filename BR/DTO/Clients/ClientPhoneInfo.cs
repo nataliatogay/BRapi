@@ -12,5 +12,7 @@ namespace BR.DTO.Clients
         public string Number { get; set; }
 
         public bool IsWhatsApp { get; set; }
+
+        public bool IsTelegram { get; set; }
     }
 }

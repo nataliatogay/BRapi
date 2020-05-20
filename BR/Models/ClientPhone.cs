@@ -19,6 +19,8 @@ namespace BR.Models
 
         public bool IsWhatsApp { get; set; }
 
+        public bool IsTelegram { get; set; }
+
         [ForeignKey("ClientId")]
         public virtual Client Client { get; set; }
     }

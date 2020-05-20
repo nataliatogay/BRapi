@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BR.Migrations
 {
     [DbContext(typeof(BRDbContext))]
-    [Migration("20200512053033_edit_event")]
-    partial class edit_event
+    [Migration("20200520080318_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -503,7 +503,9 @@ namespace BR.Migrations
                     b.Property<string>("ImagePath")
                         .IsRequired();
 
-                    b.Property<DateTime?>("Posted");
+                    b.Property<bool>("IsCancelled");
+
+                    b.Property<bool>("IsPosted");
 
                     b.Property<string>("Title")
                         .IsRequired();

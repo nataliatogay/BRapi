@@ -288,7 +288,7 @@ namespace BR.Services
                 LastName = user.LastName,
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
-                ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath,
+                ImagePath = user.ImagePath,
                 Email = user.Identity.Email,
 
             };

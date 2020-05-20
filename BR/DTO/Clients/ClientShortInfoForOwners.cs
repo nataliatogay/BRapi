@@ -13,6 +13,8 @@ namespace BR.DTO.Clients
 
         public string Email { get; set; }
 
+        public string LogoPath { get; set; }
+
         public string MainImagePath { get; set; }
 
         public DateTime RegistrationDate { get; set; }

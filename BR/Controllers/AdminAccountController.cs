@@ -24,9 +24,6 @@ using Newtonsoft.Json.Linq;
 namespace BR.Controllers
 {
 
-
-
-
     [Route("api/[controller]")]
     [ApiController]
     public class AdminAccountController : ResponseController
@@ -50,7 +47,7 @@ namespace BR.Controllers
             _userManager = userManager;
             _emailService = emailService;
             _cache = cache;
-            _roleManager = roleManager; _roleManager = roleManager;
+            _roleManager = roleManager;
         }
 
 

@@ -15,7 +15,15 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<UserInfoForAdmin>> GetUserInfoForAdmin(int id);
 
-       
+        Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId);
+
+        Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId);
+
+        Task<ServerResponse<UserFullInfoForClient>> GetUserFullInfoByClient(string clientIdentityId, int userId);
+
+        Task<ServerResponse<UserFullInfoForClient>> GetUserFullInfoByOwner(string ownerIdentityId, int clientId, int userId);
+
+
 
 
         // =======================================================================================

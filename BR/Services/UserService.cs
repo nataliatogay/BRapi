@@ -16,13 +16,10 @@ namespace BR.Services
     public class UserService : IUserService
     {
         private readonly IAsyncRepository _repository;
-        private readonly IReservationService _reservationService;
 
-        public UserService(IAsyncRepository repository,
-            IReservationService reservationService)
+        public UserService(IAsyncRepository repository)
         {
             _repository = repository;
-            _reservationService = reservationService;
 
         }
 
@@ -92,27 +89,238 @@ namespace BR.Services
             }
         }
 
+        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId)
+        {
+            Client client;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                if (client is null)
+                {
+                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
 
-        private async Task<UserFullInfoForClient> UserToUserFullInfoForClient(User user)
+            var userIdentities = new List<string>();
+            foreach (var item in client.Reservations)
+            {
+                if (!userIdentities.Contains(item.IdentityUserId))
+                {
+                    userIdentities.Add(item.IdentityUserId);
+                }
+
+            }
+
+            var res = new List<UserShortInfoForClient>();
+            try
+            {
+
+                foreach (var item in userIdentities)
+                {
+                    var user = await _repository.GetUser(item);
+                    if (user != null)
+                    {
+                        res.Add(new UserShortInfoForClient()
+                        {
+                            Id = user.Id,
+                            BirthDate = user.BirthDate,
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            PhoneNumber = user.Identity.PhoneNumber,
+                            RegistrationDate = user.RegistrationDate,
+                            ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath
+                        });
+                    }
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
+        }
+
+        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId)
+        {
+            Owner owner;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null || owner.Organization is null)
+                {
+                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+
+
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+
+            if (client is null)
+            {
+                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.NotFound, null);
+            }
+
+            var userIdentities = new List<string>();
+            foreach (var item in client.Reservations)
+            {
+                if (!userIdentities.Contains(item.IdentityUserId))
+                {
+                    userIdentities.Add(item.IdentityUserId);
+                }
+
+            }
+
+            var res = new List<UserShortInfoForClient>();
+            try
+            {
+                foreach (var item in userIdentities)
+                {
+                    var user = await _repository.GetUser(item);
+                    if (user != null)
+                    {
+                        res.Add(new UserShortInfoForClient()
+                        {
+                            Id = user.Id,
+                            BirthDate = user.BirthDate,
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            PhoneNumber = user.Identity.PhoneNumber,
+                            RegistrationDate = user.RegistrationDate,
+                            ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath
+                        });
+                    }
+                }
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+            }
+            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
+
+        }
+
+        public async Task<ServerResponse<UserFullInfoForClient>> GetUserFullInfoByClient(string clientIdentityId, int userId)
+        {
+            Client client;
+            User user;
+            try
+            {
+                client = await _repository.GetClient(clientIdentityId);
+                user = await _repository.GetUser(userId);
+                if (client is null)
+                {
+                    return new ServerResponse<UserFullInfoForClient>(StatusCode.UserNotFound, null);
+                }
+                if (user is null || client.Reservations.FirstOrDefault(item => item.IdentityUserId.Equals(user.IdentityId)) is null)
+                {
+                    return new ServerResponse<UserFullInfoForClient>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.DbConnectionError, null);
+            }
+
+            UserFullInfoForClient result;
+
+            try
+            {
+                result = await this.UserToUserFullInfoForClient(user, client.Id);
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.Ok, result);
+            }
+            catch
+            {
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<UserFullInfoForClient>> GetUserFullInfoByOwner(string ownerIdentityId, int clientId, int userId)
+        {
+            Owner owner;
+            User user;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                user = await _repository.GetUser(userId);
+                Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+                if (owner is null)
+                {
+                    return new ServerResponse<UserFullInfoForClient>(StatusCode.UserNotFound, null);
+                }
+
+                if ( user is null || client is null || client.Reservations.FirstOrDefault(item => item.IdentityUserId.Equals(user.IdentityId)) is null)
+                {
+                    return new ServerResponse<UserFullInfoForClient>(StatusCode.NotFound, null);
+                }
+
+            }
+            catch
+            {
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.DbConnectionError, null);
+            }
+
+            UserFullInfoForClient result;
+
+            try
+            {
+                result = await this.UserToUserFullInfoForClient(user, clientId);
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.Ok, result);
+            }
+            catch
+            {
+                return new ServerResponse<UserFullInfoForClient>(StatusCode.DbConnectionError, null);
+            }
+
+        }
+
+
+
+        private async Task<UserFullInfoForClient> UserToUserFullInfoForClient(User user, int clientId)
         {
             if (user is null)
             {
                 return null;
             }
             var reservations = await _repository.GetAllUserReservations(user.IdentityId);
-            return new UserFullInfoForClient()
+            var clientReservations = reservations.Where(item => item.ClientId == clientId);
+            var resStateCompleted = await _repository.GetReservationState("Completed");
+            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now && item.ReservationStateId != null && item.ReservationStateId == resStateCompleted.Id).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
+            var result = new UserFullInfoForClient()
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
-                ImagePath = user.ImagePath,
+                ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath,
                 PhoneNumber = user.Identity.PhoneNumber,
                 Email = user.Identity.Email,
-                RegistrationDate=user.RegistrationDate,
-                //LastVisitDate = reservations.Where(item=>item)
+                RegistrationDate = user.RegistrationDate,
+                ReservationCount = clientReservations.Count()
             };
+
+            //result.LastVisitDate = (lastVisit == null ? null : lastVisit.ReservationDate);
+
+            if (lastVisit is null)
+            {
+                result.LastVisitDate = null;
+            }
+            else
+            {
+                result.LastVisitDate = lastVisit.ReservationDate;
+            }
+
+            return result;
         }
 
 

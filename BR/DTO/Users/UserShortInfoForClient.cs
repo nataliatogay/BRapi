@@ -18,5 +18,7 @@ namespace BR.DTO.Users
         public string PhoneNumber { get; set; }
 
         public DateTime RegistrationDate { get; set; }
+
+        public string ImagePath { get; set; }
     }
 }
