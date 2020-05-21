@@ -130,6 +130,20 @@ namespace BR.Services
                 return new ServerResponse(StatusCode.DbConnectionError);
             }
         }
+
+
+        public async Task<ServerResponse<IList<string>>> GetRoles(string identityId)
+        {
+            var identityUser = await _userManager.FindByIdAsync(identityId);
+            if (identityUser is null)
+            {
+                return new ServerResponse<IList<string>>(StatusCode.UserNotFound, null);
+            }
+            var roles = await _userManager.GetRolesAsync(identityUser);
+            return new ServerResponse<IList<string>>(StatusCode.Ok, roles);
+        }
+
+
         public string GeneratePassword()
         {
             Random random = new Random();

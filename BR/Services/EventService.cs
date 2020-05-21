@@ -778,7 +778,7 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingMarkedEvents(string userIdentityId, int skip, int take)
+        public async Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingMarkedEvents(string userIdentityId, int skip, int take)
         {
             User user;
             try
@@ -786,35 +786,44 @@ namespace BR.Services
                 user = await _repository.GetUser(userIdentityId);
                 if (user is null)
                 {
-                    return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.UserNotFound, null);
                 }
             }
             catch
             {
-                return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.DbConnectionError, null);
             }
 
             var res = new List<EventShortInfoForUsers>();
-            var events = user.EventMarks.Where(item => item.Event.Date.AddMinutes(item.Event.Duration) > DateTime.Now).Skip(skip).Take(take);
+            var events = user.EventMarks.Where(item => item.Event.Date.AddMinutes(item.Event.Duration) > DateTime.Now);
+            int count = events.Count();
+            events = events.Skip(skip).Take(take);
             foreach (var item in events)
             {
                 res.Add(this.EventToEventShortInfoForUsers(item.Event));
             }
-            return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.Ok, res);
+            return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.Ok,
+                new EventShortInfoForUsersResponse()
+                {
+                    TotalCount = count,
+                    Events = res
+                });
         }
 
 
-        public async Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingEventsByName(string name, int skip, int take)
+        public async Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingEventsByName(string name, int skip, int take)
         {
 
             IEnumerable<Event> events;
+            int count;
             try
             {
                 events = await _repository.GetUpcomingEventsByName(name, skip, take);
+                count = await _repository.GetUpcomingEventsByNameCount(name);
             }
             catch
             {
-                return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.DbConnectionError, null);
             }
 
             var res = new List<EventShortInfoForUsers>();
@@ -822,20 +831,27 @@ namespace BR.Services
             {
                 res.Add(this.EventToEventShortInfoForUsers(item));
             }
-            return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.Ok, res);
+            return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.Ok,
+                new EventShortInfoForUsersResponse()
+                {
+                    TotalCount = count,
+                    Events = res
+                });
         }
 
 
-        public async Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingEventsByClient(int clientId, int skip, int take)
+        public async Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingEventsByClient(int clientId, int skip, int take)
         {
             IEnumerable<Event> events;
+            int count;
             try
             {
                 events = await _repository.GetUpcomingEventsByClient(clientId, skip, take);
+                count = await _repository.GetUpcomingEventsByClientCount(clientId);
             }
             catch
             {
-                return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.DbConnectionError, null);
             }
 
             var res = new List<EventShortInfoForUsers>();
@@ -843,7 +859,12 @@ namespace BR.Services
             {
                 res.Add(this.EventToEventShortInfoForUsers(item));
             }
-            return new ServerResponse<ICollection<EventShortInfoForUsers>>(StatusCode.Ok, res);
+            return new ServerResponse<EventShortInfoForUsersResponse>(StatusCode.Ok,
+                new EventShortInfoForUsersResponse()
+                {
+                    TotalCount = count,
+                    Events = res
+                });
 
         }
 

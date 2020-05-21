@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Clients
 {
+    public class ClientShortInfoForUsersResponse
+    {
+        public int TotalCount { get; set; }
+
+        public ICollection<ClientShortInfoForUsers> Clients { get; set; }
+    }
+
 
     public class ClientShortInfoForUsers
     {

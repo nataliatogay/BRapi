@@ -50,11 +50,11 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ICollection<int>>> GetUpcomingMarkedEventIds(string userIdentityId);
 
-        Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingMarkedEvents(string userIdentityId, int skip, int take);
+        Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingMarkedEvents(string userIdentityId, int skip, int take);
 
-        Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingEventsByName(string name, int skip, int take);
+        Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingEventsByName(string name, int skip, int take);
 
-        Task<ServerResponse<ICollection<EventShortInfoForUsers>>> GetUpcomingEventsByClient(int clientId, int skip, int take);
+        Task<ServerResponse<EventShortInfoForUsersResponse>> GetUpcomingEventsByClient(int clientId, int skip, int take);
 
         Task<ServerResponse<EventFullInfoForUsers>> GetEventFullInfoForUsers(int eventId);
 

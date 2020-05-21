@@ -449,7 +449,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("ByFiltersForUsers")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> GetClientsByFiltersForUsers(ClientFilter filter, int skip, int take)
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForUsersResponse>>> GetClientsByFiltersForUsers(ClientFilter filter, int skip, int take)
         {
             return new JsonResult(await _clientService.GetClientsByFilterForUsers(filter, skip, take));
         }
@@ -505,7 +505,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("ComingSoon")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> GetComingSoon(int skip, int take)
+        public async Task<ActionResult<ServerResponse<ClientShortInfoForUsersResponse>>> GetComingSoon(int skip, int take)
         {
             return new JsonResult(await _clientService.GetComingSoon(skip, take));
         }
@@ -520,56 +520,56 @@ namespace BR.Controllers
 
 
 
-        [HttpGet("ShortForUsers")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> ShortForUsers()
-        {
-            return new JsonResult(Response(await _clientService.GetShortClientInfoForUsers()));
-        }
+        //[HttpGet("ShortForUsers")]
+        //public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> ShortForUsers()
+        //{
+        //    return new JsonResult(Response(await _clientService.GetShortClientInfoForUsers()));
+        //}
 
 
 
 
 
-        [HttpGet("Favourite")]
-        public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> Favourite()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
+        //[HttpGet("Favourite")]
+        //public async Task<ActionResult<ServerResponse<ICollection<ClientShortInfoForUsers>>>> Favourite()
+        //{
+        //    var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (identityUser is null)
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+        //    }
 
-            return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
-        }
-
-
+        //    return new JsonResult(Response(await _clientService.GetFavourites(identityUser.Id)));
+        //}
 
 
 
 
 
-        [HttpGet("mealtype")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Get(string mealType)
-        {
-            return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType)));
-        }
 
 
-        [HttpGet("search")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Search(string name)
-        {
-            return new JsonResult(Response(await _clientService.GetClientsByName(name)));
-        }
+        //[HttpGet("mealtype")]
+        //public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Get(string mealType)
+        //{
+        //    return new JsonResult(Response(await _clientService.GetClientsByMeal(mealType)));
+        //}
+
+
+        //[HttpGet("search")]
+        //public async Task<ActionResult<ServerResponse<IEnumerable<ClientFullInfoForUsers>>>> Search(string name)
+        //{
+        //    return new JsonResult(Response(await _clientService.GetClientsByName(name)));
+        //}
 
 
 
 
 
-        [HttpGet("schema/{id}")]
-        public async Task<ActionResult<ServerResponse<ClientHallsInfo>>> ClientSchema(int id)
-        {
-            return new JsonResult(Response(await _clientService.GetClientHalls(id)));
-        }
+        //[HttpGet("schema/{id}")]
+        //public async Task<ActionResult<ServerResponse<ClientHallsInfo>>> ClientSchema(int id)
+        //{
+        //    return new JsonResult(Response(await _clientService.GetClientHalls(id)));
+        //}
 
 
 
@@ -578,11 +578,11 @@ namespace BR.Controllers
 
 
         // DONE
-        [HttpPut("Delete")]
-        public async Task<ActionResult<ServerResponse>> Delete(int id)
-        {
-            return new JsonResult(await _clientService.DeleteClient(id));
-        }
+        //[HttpPut("Delete")]
+        //public async Task<ActionResult<ServerResponse>> Delete(int id)
+        //{
+        //    return new JsonResult(await _clientService.DeleteClient(id));
+        //}
 
 
 

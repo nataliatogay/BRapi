@@ -518,10 +518,43 @@ namespace BR.Services
 
 
 
-        public async Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken)
+        public async Task<ServerResponse<LogInClientOwnerResponse>> UpdateToken(string refreshToken)
         {
-            return await _authenticationService.UpdateToken(refreshToken);
+            var authResponse = await _authenticationService.UpdateToken(refreshToken);
+            if (authResponse.StatusCode != StatusCode.Ok)
+            {
+                return new ServerResponse<LogInClientOwnerResponse>(authResponse.StatusCode, null);
+            }
+
+            AccountToken token;
+            try
+            {
+                token = await _repository.GetToken(refreshToken);
+                if (token is null)
+                {
+                    return new ServerResponse<LogInClientOwnerResponse>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<LogInClientOwnerResponse>(StatusCode.DbConnectionError, null);
+            }
+            var roleResp = await _authenticationService.GetRoles(token.IdentityUserId);
+            if(roleResp.StatusCode != StatusCode.Ok)
+            {
+                return new ServerResponse<LogInClientOwnerResponse>(roleResp.StatusCode, null);
+            }
+
+            return new ServerResponse<LogInClientOwnerResponse>(StatusCode.Ok,
+                new LogInClientOwnerResponse()
+                {
+                    AccessToken = authResponse.Data.AccessToken,
+                    RefreshToken = authResponse.Data.RefreshToken,
+                    Role = roleResp.Data[0]
+                });
         }
+
+
 
         public async Task<ServerResponse<bool>> ClientIsConfirmed(string identityId)
         {

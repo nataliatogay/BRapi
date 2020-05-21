@@ -272,7 +272,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("UpcomingMarkedEvents")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventShortInfoForUsers>>>> GetUpcomingMarkedEvents(int skip, int take)
+        public async Task<ActionResult<ServerResponse<EventShortInfoForUsersResponse>>> GetUpcomingMarkedEvents(int skip, int take)
         {
             var userIdentity = await _userManager.FindByNameAsync(User.Identity.Name);
             if (userIdentity is null)
@@ -286,7 +286,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("UpcomingByName")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventShortInfoForUsers>>>> GetUpcomingEventsByName(string name, int skip, int take)
+        public async Task<ActionResult<ServerResponse<EventShortInfoForUsersResponse>>> GetUpcomingEventsByName(string name, int skip, int take)
         {
             return new JsonResult(await _eventService.GetUpcomingEventsByName(name, skip, take));
         }
@@ -294,7 +294,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet("UpcomingByClient/{clientId}")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventShortInfoForUsers>>>> GetUpcomingEventsByClient(int clientId, int skip, int take)
+        public async Task<ActionResult<ServerResponse<EventShortInfoForUsersResponse>>> GetUpcomingEventsByClient(int clientId, int skip, int take)
         {
             return new JsonResult(await _eventService.GetUpcomingEventsByClient(clientId, skip, take));
         }
@@ -308,72 +308,7 @@ namespace BR.Controllers
         }
 
 
-
-        // ============================================================================================
-
-
-
-
-
-        [Authorize(Roles = "Owner")]
-        [HttpPut("UpdateImageByOwner")]
-        public async Task<ActionResult<ServerResponse<string>>> UpdateImageByOwner([FromBody]UpdateEventImageRequest updateRequest)
-        {
-            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (ownerIdentityUser is null)
-            {
-                return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
-            }
-
-            return new JsonResult(await _eventService.UpdateEventImageByOwner(updateRequest, ownerIdentityUser.Id));
-        }
-
-
-        [Authorize(Roles = "Client")]
-        [HttpPut("UpdateImageByClient")]
-        public async Task<ActionResult<ServerResponse<string>>> UpdateImageByClientOwner([FromBody]UpdateEventImageRequest updateRequest)
-        {
-            return new JsonResult(await _eventService.UpdateEventImageByClient(updateRequest));
-        }
-
-
-        [HttpGet("Upcoming")]
-        public async Task<ActionResult<ServerResponse<ICollection<EventInfo>>>> GetUpcoming()
-        {
-            return new JsonResult(Response(await _eventService.GetUpcomingEventsShortInfo()));
-        }
-
-
-
-
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ServerResponse<EventInfo>>> Get(int id)
-        {
-            return new JsonResult(await _eventService.GetEvent(id));
-        }
-
-
-
-
-
-
-        [HttpPut("")]
-        public async Task<ActionResult<Cuisine>> Put([FromBody]UpdateEventRequest updateRequest)
-        {
-            return new JsonResult(await _eventService.UpdateEvent(updateRequest));
-        }
-
-        [HttpPost("UpdateImage")]
-        public async Task<ActionResult<string>> UploadImage([FromBody]UpdateEventImageRequest updateRequest)
-        {
-
-            var path = await _eventService.UpdateEventImage(updateRequest);
-            return new JsonResult(path);
-        }
-
-
-        // role = user
+        [Authorize(Roles ="User")]
         [HttpPost("Mark")]
         public async Task<ActionResult<ServerResponse>> AddMark(int eventId)
         {
@@ -385,8 +320,10 @@ namespace BR.Controllers
             return new JsonResult(await _eventService.AddMark(eventId, identityUser.Id));
         }
 
+
+        [Authorize(Roles = "User")]
         [HttpDelete("Mark")]
-        public async Task<ActionResult<ServerResponse>> DeleteFavourite(int eventId)
+        public async Task<ActionResult<ServerResponse>> DeleteMark(int eventId)
         {
             var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (identityUser is null)
@@ -398,13 +335,81 @@ namespace BR.Controllers
         }
 
 
+        // ============================================================================================
 
 
-        [HttpGet("DescriptionSearch")]
-        public async Task<ActionResult<ServerResponse<IEnumerable<EventInfo>>>> DescriptionSearch(string text)
-        {
-            return new JsonResult(Response(await _eventService.GetEventsByNameAndDescription(text)));
-        }
+
+
+
+        //[Authorize(Roles = "Owner")]
+        //[HttpPut("UpdateImageByOwner")]
+        //public async Task<ActionResult<ServerResponse<string>>> UpdateImageByOwner([FromBody]UpdateEventImageRequest updateRequest)
+        //{
+        //    var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (ownerIdentityUser is null)
+        //    {
+        //        return new JsonResult(new ServerResponse<EventInfoShort>(Utils.StatusCode.UserNotFound, null));
+        //    }
+
+        //    return new JsonResult(await _eventService.UpdateEventImageByOwner(updateRequest, ownerIdentityUser.Id));
+        //}
+
+
+        //[Authorize(Roles = "Client")]
+        //[HttpPut("UpdateImageByClient")]
+        //public async Task<ActionResult<ServerResponse<string>>> UpdateImageByClientOwner([FromBody]UpdateEventImageRequest updateRequest)
+        //{
+        //    return new JsonResult(await _eventService.UpdateEventImageByClient(updateRequest));
+        //}
+
+
+
+        //[HttpGet("Upcoming")]
+        //public async Task<ActionResult<ServerResponse<ICollection<EventInfo>>>> GetUpcoming()
+        //{
+        //    return new JsonResult(Response(await _eventService.GetUpcomingEventsShortInfo()));
+        //}
+
+
+
+
+
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<ServerResponse<EventInfo>>> Get(int id)
+        //{
+        //    return new JsonResult(await _eventService.GetEvent(id));
+        //}
+
+
+
+
+
+
+        //[HttpPut("")]
+        //public async Task<ActionResult<Cuisine>> Put([FromBody]UpdateEventRequest updateRequest)
+        //{
+        //    return new JsonResult(await _eventService.UpdateEvent(updateRequest));
+        //}
+
+        //[HttpPost("UpdateImage")]
+        //public async Task<ActionResult<string>> UploadImage([FromBody]UpdateEventImageRequest updateRequest)
+        //{
+
+        //    var path = await _eventService.UpdateEventImage(updateRequest);
+        //    return new JsonResult(path);
+        //}
+
+
+        
+
+
+
+
+        //[HttpGet("DescriptionSearch")]
+        //public async Task<ActionResult<ServerResponse<IEnumerable<EventInfo>>>> DescriptionSearch(string text)
+        //{
+        //    return new JsonResult(Response(await _eventService.GetEventsByNameAndDescription(text)));
+        //}
 
     }
 }

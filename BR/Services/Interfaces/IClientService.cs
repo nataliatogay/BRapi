@@ -65,14 +65,14 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> DeleteFavourite(int clientId, string identityUserId);
 
-        Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetComingSoon(int skip, int take);
+        Task<ServerResponse<ClientShortInfoForUsersResponse>> GetComingSoon(int skip, int take);
 
 
         // ================================================================================
 
 
             // change
-        Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take);
+        Task<ServerResponse<ClientShortInfoForUsersResponse>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take);
 
 
 

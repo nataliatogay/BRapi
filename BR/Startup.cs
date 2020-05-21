@@ -69,7 +69,7 @@ namespace BR
                 options =>
                 {
                     string connStrAzure = Configuration.GetConnectionString("AzureDbConnectionString");
-                    //string connSql = Configuration.GetConnectionString("SQLConnectionString");
+                    string connSql = Configuration.GetConnectionString("SQLConnectionString");
                    // string connStrPostgre = Configuration.GetConnectionString("PostgreSQLConnectionString");
                    // options.UseNpgsql(connStrPostgre);
                     options.UseSqlServer(connStrAzure);

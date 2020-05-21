@@ -57,6 +57,11 @@ namespace BR.EF
             return await _db.Clients.ToListAsync();
         }
 
+        public async Task<int> GetComingSoonCount()
+        {
+            return (await _db.Clients.Where(item => item.AdminConfirmation == null).ToListAsync()).Count();
+        }
+
         public async Task<IEnumerable<Client>> GetComingSoon(int skip, int take)
         {
             return await _db.Clients.Where(item => item.AdminConfirmation == null).Skip(skip).Take(take).ToListAsync();
@@ -1009,11 +1014,20 @@ namespace BR.EF
             return await _db.Events.Where(e => e.ClientId == clientId && e.Date > DateTime.Now).Skip(skip).Take(take).ToListAsync();
         }
 
+        public async Task<int> GetUpcomingEventsByClientCount(int clientId)
+        {
+            return (await _db.Events.Where(e => e.ClientId == clientId && e.Date > DateTime.Now).ToListAsync()).Count();
+        }
+
         public async Task<Event> GetEvent(int id)
         {
             return await _db.Events.FindAsync(id);
         }
 
+        public async Task<int> GetUpcomingEventsByNameCount(string title)
+        {
+            return (await _db.Events.Where(e => e.Title.ToUpper().Contains(title.ToUpper()) && e.Date > DateTime.Now).ToListAsync()).Count();
+        }
 
         public async Task<IEnumerable<Event>> GetUpcomingEventsByName(string title, int skip, int take)
         {

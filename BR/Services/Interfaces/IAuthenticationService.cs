@@ -14,6 +14,8 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> FullLogOut(string identityId);
 
+        Task<ServerResponse<IList<string>>> GetRoles(string identityId);
+
         string GeneratePassword();
 
         string GenerateCode();

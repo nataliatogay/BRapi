@@ -1596,16 +1596,18 @@ namespace BR.Services
         }
 
 
-        public async Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetComingSoon(int skip, int take)
+        public async Task<ServerResponse<ClientShortInfoForUsersResponse>> GetComingSoon(int skip, int take)
         {
             IEnumerable<Client> clients;
+            int count;
             try
             {
                 clients = await _repository.GetComingSoon(skip, take);
+                count = await _repository.GetComingSoonCount();
             }
             catch
             {
-                return new ServerResponse<ICollection<ClientShortInfoForUsers>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ClientShortInfoForUsersResponse>(StatusCode.DbConnectionError, null);
             }
 
             var response = new List<ClientShortInfoForUsers>();
@@ -1613,7 +1615,12 @@ namespace BR.Services
             {
                 response.Add(await this.ClientToClientShortInfoForUsers(item));
             }
-            return new ServerResponse<ICollection<ClientShortInfoForUsers>>(StatusCode.Ok, response);
+            return new ServerResponse<ClientShortInfoForUsersResponse>(StatusCode.Ok,
+                new ClientShortInfoForUsersResponse()
+                {
+                    TotalCount = count,
+                    Clients = response
+                });
         }
 
 
@@ -1688,9 +1695,14 @@ namespace BR.Services
 
 
         // change
-        public async Task<ServerResponse<ICollection<ClientShortInfoForUsers>>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take)
+        public async Task<ServerResponse<ClientShortInfoForUsersResponse>> GetClientsByFilterForUsers(ClientFilter filter, int skip, int take)
         {
-            return new ServerResponse<ICollection<ClientShortInfoForUsers>>(StatusCode.Ok, new List<ClientShortInfoForUsers>());
+            return new ServerResponse<ClientShortInfoForUsersResponse>(StatusCode.Ok,
+                new ClientShortInfoForUsersResponse()
+                {
+                    TotalCount = 0,
+                    Clients = new List<ClientShortInfoForUsers>()
+                });
         }
 
 

@@ -19,7 +19,7 @@ namespace BR.Services.Interfaces
 
         Task LogOut(string refreshToken);
 
-        Task<ServerResponse<LogInResponse>> UpdateToken(string refreshToken);
+        Task<ServerResponse<LogInClientOwnerResponse>> UpdateToken(string refreshToken);
 
         Task<ServerResponse<bool>> ClientIsConfirmed(string identityId);
 

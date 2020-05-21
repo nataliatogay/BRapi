@@ -17,6 +17,7 @@ namespace BR.EF
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
         Task<IEnumerable<Client>> GetClients();
+        Task<int> GetComingSoonCount();
         Task<IEnumerable<Client>> GetComingSoon(int skip, int take);
         Task<ClientFavourite> GetFavourite(int clientId, int userId);
         Task<ClientFavourite> AddFavourite(ClientFavourite clientFav);
@@ -252,7 +253,9 @@ namespace BR.EF
         Task<ICollection<Event>> GetUpcomingEvents();
         Task<ICollection<Event>> GetEventsByClient(int clientId);
         Task<ICollection<Event>> GetUpcomingEventsByClient(int clientId, int skip, int take);
+        Task<int> GetUpcomingEventsByClientCount(int clientId);
         Task<Event> GetEvent(int id);
+        Task<int> GetUpcomingEventsByNameCount(string title);
         Task<IEnumerable<Event>> GetUpcomingEventsByName(string title, int skip, int take);
         Task<IEnumerable<Event>> GetEventsByNameAndDescription(string text);
         Task<Event> AddEvent(Event clientEvent);

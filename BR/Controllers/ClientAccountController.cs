@@ -437,7 +437,7 @@ namespace BR.Controllers
 
 
         [HttpPost("Token")]
-        public async Task<ActionResult<ServerResponse<LogInResponse>>> UpdateToken([FromBody]string refreshToken)
+        public async Task<ActionResult<ServerResponse<LogInClientOwnerResponse>>> UpdateToken([FromBody]string refreshToken)
         {
             return new JsonResult(await _clientAccountService.UpdateToken(refreshToken));
         }

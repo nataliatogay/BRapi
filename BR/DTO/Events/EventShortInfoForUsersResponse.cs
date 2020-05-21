@@ -5,6 +5,13 @@ using System.Threading.Tasks;
 
 namespace BR.DTO.Events
 {
+    public class EventShortInfoForUsersResponse
+    {
+        public int TotalCount { get; set; }
+
+        public ICollection<EventShortInfoForUsers> Events { get; set; }
+    }
+
     public class EventShortInfoForUsers
     {
         public int Id { get; set; }

@@ -354,82 +354,82 @@ namespace BR.Controllers
         // ================================================================================
 
 
-        [HttpPut]
-        public async Task<ActionResult<ServerResponse>> Delete()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            return new JsonResult(await _userAccountService.DeleteUser(identityUser.Id));
-        }
+        //[HttpPut]
+        //public async Task<ActionResult<ServerResponse>> Delete()
+        //{
+        //    var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (identityUser is null)
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+        //    }
+        //    return new JsonResult(await _userAccountService.DeleteUser(identityUser.Id));
+        //}
 
-        [Authorize]
-        [HttpPut("Restore")]
-        public async Task<ActionResult<ServerResponse>> RestoreDeletedUser()
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser != null)
-            {
-                return new JsonResult(await _userAccountService.RestoreUser(identityUser.Id));
-            }
-            else
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-        }
-
-
-        [Authorize]
-        [HttpPut("FinallyDelete")]
-        public async Task<ActionResult<ServerResponse<LogInUserResponse>>> FinallyDelete(string notificationTag)
-        {
-            var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
-            if (identityUser is null)
-            {
-                return new JsonResult(Response(Utils.StatusCode.UserNotFound));
-            }
-            var userPhone = identityUser.UserName;
+        //[Authorize]
+        //[HttpPut("Restore")]
+        //public async Task<ActionResult<ServerResponse>> RestoreDeletedUser()
+        //{
+        //    var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (identityUser != null)
+        //    {
+        //        return new JsonResult(await _userAccountService.RestoreUser(identityUser.Id));
+        //    }
+        //    else
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+        //    }
+        //}
 
 
-            // check unique
-            var newName = identityUser.UserName + "_DELETED_" + DateTime.Now.ToString();
-            identityUser.UserName = newName;
+        //[Authorize]
+        //[HttpPut("FinallyDelete")]
+        //public async Task<ActionResult<ServerResponse<LogInUserResponse>>> FinallyDelete(string notificationTag)
+        //{
+        //    var identityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+        //    if (identityUser is null)
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.UserNotFound));
+        //    }
+        //    var userPhone = identityUser.UserName;
 
-            var changeRes = await _userManager.UpdateAsync(identityUser);
-            if (!changeRes.Succeeded)
-            {
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            var newUserRes = await _userManager.CreateAsync(new IdentityUser()
-            {
-                PhoneNumber = userPhone,
-                UserName = userPhone
-            },
-            "1234");
-            if (!newUserRes.Succeeded)
-            {
-                identityUser.UserName = userPhone;
-                await _userManager.UpdateAsync(identityUser);
-                return new JsonResult(Response(Utils.StatusCode.Error));
-            }
-            else
-            {
-                var newIdentityId = await _userManager.FindByNameAsync(userPhone);
-                if (newIdentityId is null)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-                var roleRes = await _userManager.AddToRoleAsync(newIdentityId, "User");
-                if (!roleRes.Succeeded)
-                {
-                    return new JsonResult(Response(Utils.StatusCode.Error));
-                }
-                await _userAccountService.FinallyDelete(notificationTag);
-                return new JsonResult(await _userAccountService.LogIn(userPhone, newIdentityId.Id, notificationTag));
-            }
-        }
+
+        //    // check unique
+        //    var newName = identityUser.UserName + "_DELETED_" + DateTime.Now.ToString();
+        //    identityUser.UserName = newName;
+
+        //    var changeRes = await _userManager.UpdateAsync(identityUser);
+        //    if (!changeRes.Succeeded)
+        //    {
+        //        return new JsonResult(Response(Utils.StatusCode.Error));
+        //    }
+        //    var newUserRes = await _userManager.CreateAsync(new IdentityUser()
+        //    {
+        //        PhoneNumber = userPhone,
+        //        UserName = userPhone
+        //    },
+        //    "1234");
+        //    if (!newUserRes.Succeeded)
+        //    {
+        //        identityUser.UserName = userPhone;
+        //        await _userManager.UpdateAsync(identityUser);
+        //        return new JsonResult(Response(Utils.StatusCode.Error));
+        //    }
+        //    else
+        //    {
+        //        var newIdentityId = await _userManager.FindByNameAsync(userPhone);
+        //        if (newIdentityId is null)
+        //        {
+        //            return new JsonResult(Response(Utils.StatusCode.Error));
+        //        }
+        //        var roleRes = await _userManager.AddToRoleAsync(newIdentityId, "User");
+        //        if (!roleRes.Succeeded)
+        //        {
+        //            return new JsonResult(Response(Utils.StatusCode.Error));
+        //        }
+        //        await _userAccountService.FinallyDelete(notificationTag);
+        //        return new JsonResult(await _userAccountService.LogIn(userPhone, newIdentityId.Id, notificationTag));
+        //    }
+        //}
     }
 
 }
