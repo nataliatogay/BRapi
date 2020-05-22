@@ -13,7 +13,7 @@ namespace BR.EF
         // Clients
 
         Task<Client> AddClient(Client client);
-        Task<bool> DeleteClient(Client client);
+        Task DeleteClient(Client client);
         Task<Client> GetClient(int id);
         Task<Client> GetClient(string identityId);
         Task<IEnumerable<Client>> GetClients();

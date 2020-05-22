@@ -8,7 +8,7 @@ namespace BR.Models
         public int Id { get; set; }
 
         [Required]
-        public int Number { get; set; }
+        public string Code{ get; set; }
 
         [Required]
         public int HallId { get; set; }

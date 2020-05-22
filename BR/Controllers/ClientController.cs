@@ -424,6 +424,34 @@ namespace BR.Controllers
             return new JsonResult(await _clientService.DeleteImageByOwner(id, ownerIdentityUser.Id));
         }
 
+        // DELETE
+
+        [Authorize(Roles = "Owner")]
+        [HttpDelete("DeleteUnconfirmedClientByOwner/{clientId}")]
+        public async Task<ActionResult<ServerResponse>> DeleteUnconfirmedClientByOwner(int clientId)
+        {
+            var ownerIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            if (ownerIdentityUser is null)
+            {
+                return new JsonResult(new ServerResponse(Utils.StatusCode.UserNotFound));
+            }
+            var res = await _clientService.DeleteUnconfirmedClientByOwner(clientId, ownerIdentityUser.Id);
+            if (res.StatusCode != Utils.StatusCode.Ok)
+            {
+                return new JsonResult(Response(res.StatusCode));
+            }
+            var clientIdentity = await _userManager.FindByIdAsync(res.Data);
+            if (clientIdentity != null)
+            {
+                try
+                {
+                    var delResult = await _userManager.DeleteAsync(clientIdentity);
+                }
+                catch { }
+            }
+            return new JsonResult(Response(Utils.StatusCode.Ok));
+        }
+
 
         // BLOCK/UNBLOCK
 

@@ -58,7 +58,9 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<EventFullInfoForUsers>> GetEventFullInfoForUsers(int eventId);
 
+        Task<ServerResponse> AddMark(int eventId, string identityUserId);
 
+        Task<ServerResponse> DeleteMark(int eventId, string identityUserId);
 
 
         // ==============================================================================
@@ -82,14 +84,7 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse<ICollection<EventInfo>>> GetEventsByNameAndDescription(string name);
 
-        Task<ServerResponse<Event>> AddEvent(NewEventRequest newEventRequest, string addedByUserIdentityId, string role);
 
-        Task<ServerResponse<string>> UpdateEventImage(UpdateEventImageRequest updateRequest);
 
-        Task<ServerResponse> UpdateEvent(UpdateEventRequest updateRequest);
-
-        Task<ServerResponse> AddMark(int eventId, string identityUserId);
-
-        Task<ServerResponse> DeleteMark(int eventId, string identityUserId);
     }
 }

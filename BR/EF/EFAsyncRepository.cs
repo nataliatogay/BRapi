@@ -32,18 +32,10 @@ namespace BR.EF
             return res.Entity;
         }
 
-        public async Task<bool> DeleteClient(Client client)
+        public async Task DeleteClient(Client client)
         {
-            try
-            {
-                _db.Clients.Remove(client);
-                await _db.SaveChangesAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var res = _db.Clients.Remove(client);
+            await _db.SaveChangesAsync();
         }
 
         public async Task<Client> GetClient(int id)

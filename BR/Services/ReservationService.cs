@@ -82,7 +82,7 @@ namespace BR.Services
                             EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                             GuestCount = item.GuestCount,
                             Invalids = item.Invalids,
-                            Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                            Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                             User = await UserToUserFullInfoForClient(user, client.Id),
@@ -131,7 +131,7 @@ namespace BR.Services
                         EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
@@ -183,7 +183,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
@@ -236,7 +236,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code},
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
@@ -297,7 +297,7 @@ namespace BR.Services
                             EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                             GuestCount = item.GuestCount,
                             Invalids = item.Invalids,
-                            Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                            Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                             PetsFree = item.PetsFree,
                             State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                             ApplicationDate = item.ReservationRequest.IssueDate,
@@ -355,7 +355,7 @@ namespace BR.Services
                         EndDateTime = item.ReservationDate.AddMinutes(item.Duration),
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                         PetsFree = item.PetsFree,
                         State = item.ReservationState is null ? "accepted" : item.ReservationState.Title,
                         ApplicationDate = item.ReservationRequest.IssueDate,
@@ -415,7 +415,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
@@ -476,7 +476,7 @@ namespace BR.Services
                         GuestCount = item.GuestCount,
                         Invalids = item.Invalids,
                         PetsFree = item.PetsFree,
-                        Table = new TableInfo() { Id = item.TableId, Number = item.Table.Number },
+                        Table = new TableInfo() { Id = item.TableId, Code = item.Table.Code },
                         IssueDate = item.IssueDate,
                         User = await UserToUserFullInfoForClient(await _repository.GetUser(item.RequestedByIdentityId), client.Id),
                         Invitees = invitees,
@@ -1148,9 +1148,9 @@ namespace BR.Services
         }
 
 
-        
 
-        
+
+
 
 
 
@@ -1166,7 +1166,7 @@ namespace BR.Services
             var reservations = await _repository.GetAllUserReservations(user.IdentityId);
             var clientReservations = reservations.Where(item => item.ClientId == clientId);
             var resStateCompleted = await _repository.GetReservationState("Completed");
-            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now && item.ReservationStateId != null && item.ReservationStateId==resStateCompleted.Id).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
+            var lastVisit = clientReservations.Where(item => item.ReservationDate < DateTime.Now && item.ReservationStateId != null && item.ReservationStateId == resStateCompleted.Id).OrderByDescending(item => item.ReservationDate).FirstOrDefault();
             var result = new UserFullInfoForClient()
             {
                 Id = user.Id,

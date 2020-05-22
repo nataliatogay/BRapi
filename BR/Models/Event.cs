@@ -24,7 +24,6 @@ namespace BR.Models
 
         public int EntranceFee { get; set; }
 
-        [Required]
         public string ImagePath { get; set; }
         
         public int ClientId { get; set; }

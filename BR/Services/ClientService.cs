@@ -167,11 +167,11 @@ namespace BR.Services
                     return new ServerResponse<ClientShortInfoForOwners>(StatusCode.BlobError, null);
                 }
             }
-
+            Client addedClient;
 
             try
             {
-                Client addedClient = await _repository.AddClient(client);
+                addedClient = await _repository.AddClient(client);
 
                 await this.AddClientsParameters(client.Id, newRequest.CuisineIds, newRequest.ClientTypeIds, newRequest.MealTypeIds, newRequest.DishIds, newRequest.GoodForIds, newRequest.SpecialDietIds, newRequest.FeatureIds, newRequest.Phones, newRequest.SocialLinks);
 
@@ -217,13 +217,15 @@ namespace BR.Services
                 // CHANGE
                 return new ServerResponse<ClientShortInfoForOwners>(StatusCode.Ok, new ClientShortInfoForOwners()
                 {
-                    //Id = addedClient.Id,
-                    //Blocked = addedClient.Blocked,
-                    //Deleted = addedClient.Deleted,
-                    //ClientName = addedClient.RestaurantName,
-                    //Email = addedClient.Identity.Email,
-                    //MainImagePath = addedClient.MainImagePath,
-                    //RegistrationDate = addedClient.RegistrationDate
+                    Id = addedClient.Id,
+                    Blocked = addedClient.Blocked,
+                    Deleted = addedClient.Deleted,
+                    ClientName = addedClient.RestaurantName,
+                    Email = addedClient.Identity.Email,
+                    MainImagePath = addedClient.LogoPath,
+                    RegistrationDate = addedClient.RegistrationDate,
+                    Confirmed = addedClient.AdminConfirmation,
+                    LogoPath = addedClient.LogoPath
                 });
             }
             catch
@@ -1289,6 +1291,49 @@ namespace BR.Services
         }
 
 
+        public async Task<ServerResponse<string>> DeleteUnconfirmedClientByOwner(int clientId, string ownerIdentityId)
+        {
+            Owner owner;
+
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+            Client client = owner.Organization.Clients.FirstOrDefault(item => item.Id == clientId);
+            if (client is null)
+            {
+                return new ServerResponse<string>(StatusCode.NotFound, null);
+            }
+            if (client.AdminConfirmation != null)
+            {
+                return new ServerResponse<string>(StatusCode.Error, null);
+            }
+            try
+            {
+                await this.RemoveClientsParameters(client.ClientCuisines, client.ClientClientTypes, client.ClientMealTypes, client.ClientDishes, client.ClientGoodFors, client.ClientSpecialDiets, client.ClientFeatures, client.ClientPhones, client.SocialLinks);
+                AdminNotification notif = client.AdminNotification;
+                if (notif != null)
+                {
+                    notif.ClientId = null;
+                    await _repository.UpdateAdminNotification(notif);
+                }
+                await _repository.DeleteClient(client);
+                return new ServerResponse<string>(StatusCode.Ok, client.IdentityId);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
         public async Task<ServerResponse> BlockClient(int clientId)
         {
             Client client;
@@ -2083,7 +2128,7 @@ namespace BR.Services
                     Id = item.Id,
                     Date = item.Date,
                     Description = item.Description,
-                    ImgPath = item.ImagePath,
+                    ImgPath = item.ImagePath is null ? item.Client.LogoPath : item.ImagePath,
                     Title = item.Title
                 });
             }

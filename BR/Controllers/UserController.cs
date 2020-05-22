@@ -47,7 +47,7 @@ namespace BR.Controllers
 
         [Authorize(Roles = "Client")]
         [HttpGet("GetVisitorsByClient")]
-        public async Task<ActionResult<ServerResponse<ICollection<UserShortInfoForClient>>>> GetAllVisitorsByClient()
+        public async Task<ActionResult<ServerResponse<ICollection<UserFullInfoForClient>>>> GetAllVisitorsByClient()
         {
             var clientIdentityUser = await _userManager.FindByNameAsync(User.Identity.Name);
             if (clientIdentityUser is null)

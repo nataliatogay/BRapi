@@ -188,7 +188,7 @@ namespace BR.Services
                 IsCancelled = false
 
             };
-            string imagePath;
+            string imagePath = null;
             if (!String.IsNullOrEmpty(newRequest.ImageString))
             {
                 try
@@ -199,10 +199,6 @@ namespace BR.Services
                 {
                     return new ServerResponse<EventFullInfo>(StatusCode.BlobError, null);
                 }
-            }
-            else
-            {
-                imagePath = client.LogoPath;
             }
             clientEvent.ImagePath = imagePath;
             try
@@ -309,7 +305,7 @@ namespace BR.Services
                 IsCancelled = false
 
             };
-            string imagePath;
+            string imagePath = null;
             if (!String.IsNullOrEmpty(newRequest.ImageString))
             {
                 try
@@ -320,10 +316,6 @@ namespace BR.Services
                 {
                     return new ServerResponse<EventFullInfo>(StatusCode.BlobError, null);
                 }
-            }
-            else
-            {
-                imagePath = client.LogoPath;
             }
             clientEvent.ImagePath = imagePath;
             try
@@ -439,11 +431,15 @@ namespace BR.Services
                 {
                     return new ServerResponse<EventFullInfo>(StatusCode.BlobError, null);
                 }
-                try
+                if (clientEvent.ImagePath != null)
                 {
-                    await _blobService.DeleteImage(clientEvent.ImagePath);
+                    try
+                    {
+                        await _blobService.DeleteImage(clientEvent.ImagePath);
+                    }
+                    catch { }
                 }
-                catch { }
+
 
                 clientEvent.ImagePath = path;
             }
@@ -500,11 +496,14 @@ namespace BR.Services
                 {
                     return new ServerResponse<EventFullInfo>(StatusCode.BlobError, null);
                 }
-                try
+                if (clientEvent.ImagePath != null)
                 {
-                    await _blobService.DeleteImage(clientEvent.ImagePath);
+                    try
+                    {
+                        await _blobService.DeleteImage(clientEvent.ImagePath);
+                    }
+                    catch { }
                 }
-                catch { }
 
                 clientEvent.ImagePath = path;
             }
@@ -546,6 +545,10 @@ namespace BR.Services
             {
                 return new ServerResponse<EventFullInfo>(StatusCode.DbConnectionError, null);
             }
+            if (clientEvent.Date < DateTime.Now)
+            {
+                return new ServerResponse(StatusCode.Expired);
+            }
             clientEvent.IsPosted = true;
             try
             {
@@ -580,6 +583,10 @@ namespace BR.Services
             catch
             {
                 return new ServerResponse<EventFullInfo>(StatusCode.DbConnectionError, null);
+            }
+            if (clientEvent.Date < DateTime.Now)
+            {
+                return new ServerResponse(StatusCode.Expired);
             }
             clientEvent.IsPosted = true;
             try
@@ -916,7 +923,7 @@ namespace BR.Services
                 Description = clientEvent.Description,
                 Duration = clientEvent.Duration,
                 EntranceFee = clientEvent.EntranceFee,
-                ImagePath = clientEvent.ImagePath,
+                ImagePath = clientEvent.ImagePath is null ? clientEvent.Client.LogoPath : clientEvent.ImagePath,
                 EventMarkCount = clientEvent.EventMarks.Count(),
                 Title = clientEvent.Title,
                 Phones = phones,
@@ -924,339 +931,6 @@ namespace BR.Services
             });
 
         }
-
-
-
-
-        private EventShortInfoForUsers EventToEventShortInfoForUsers(Event clientEvent)
-        {
-            if (clientEvent is null)
-            {
-                return null;
-            }
-
-            return new EventShortInfoForUsers()
-            {
-                Id = clientEvent.Id,
-                DateTime = clientEvent.Date,
-                Description = clientEvent.Description,
-                EntranceFee = clientEvent.EntranceFee,
-                ImagePath = clientEvent.ImagePath,
-                Title = clientEvent.Title
-            };
-        }
-
-
-
-
-
-
-        // ===================================================================================
-
-
-
-
-
-        public async Task<ServerResponse<string>> UpdateEventImageByOwner(UpdateEventImageRequest updateRequest, string ownerIdentityId)
-        {
-            Owner owner;
-            Event clientEvent;
-            try
-            {
-                owner = await _repository.GetOwner(ownerIdentityId);
-                if (owner is null)
-                {
-                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
-                }
-                clientEvent = await _repository.GetEvent(updateRequest.EventId);
-                if (clientEvent is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(clientEvent.Client))
-                {
-                    return new ServerResponse<string>(StatusCode.NotFound, null);
-                }
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-
-            string path;
-            try
-            {
-                path = await _blobService.UploadImage(updateRequest.ImageString);
-
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.BlobError, null);
-            }
-            try
-            {
-                await _blobService.DeleteImage(clientEvent.ImagePath);
-            }
-            catch { }
-
-            clientEvent.ImagePath = path;
-            try
-            {
-                await _repository.UpdateEvent(clientEvent);
-                return new ServerResponse<string>(StatusCode.Ok, path);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-        }
-
-
-        public async Task<ServerResponse<string>> UpdateEventImageByClient(UpdateEventImageRequest updateRequest)
-        {
-            Event clientEvent;
-            try
-            {
-                clientEvent = await _repository.GetEvent(updateRequest.EventId);
-                if (clientEvent is null)
-                {
-                    return new ServerResponse<string>(StatusCode.NotFound, null);
-                }
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-
-            string path;
-            try
-            {
-                path = await _blobService.UploadImage(updateRequest.ImageString);
-
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.BlobError, null);
-            }
-            try
-            {
-                await _blobService.DeleteImage(clientEvent.ImagePath);
-            }
-            catch { }
-
-            clientEvent.ImagePath = path;
-            try
-            {
-                await _repository.UpdateEvent(clientEvent);
-                return new ServerResponse<string>(StatusCode.Ok, path);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-        }
-
-
-
-        public async Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo()
-        {
-            var events = await _repository.GetUpcomingEvents();
-            if (events is null)
-            {
-                return null;
-            }
-            var res = new List<EventInfoShort>();
-            foreach (var item in events)
-            {
-                res.Add(this.ToShortEventInfo(item));
-            }
-            return res;
-
-        }
-
-        public async Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId)
-        {
-            var client = await _repository.GetClient(clientIdentityId);
-            if (client is null)
-            {
-                return null;
-            }
-            return await _repository.GetEventsByClient(client.Id);
-        }
-
-        public async Task<EventInfo> GetEvent(int id)
-        {
-            var clientEvent = await _repository.GetEvent(id);
-            return this.ToEventInfo(clientEvent);
-        }
-
-
-
-
-        public async Task<ServerResponse<ICollection<EventInfo>>> GetEventsByNameAndDescription(string name)
-        {
-            try
-            {
-                var events = await _repository.GetEventsByNameAndDescription(name);
-                var res = new List<EventInfo>();
-                foreach (var item in events)
-                {
-                    res.Add(this.ToEventInfo(item));
-                }
-                return new ServerResponse<ICollection<EventInfo>>(StatusCode.Ok, res);
-            }
-            catch
-            {
-                return new ServerResponse<ICollection<EventInfo>>(StatusCode.DbConnectionError, null);
-            }
-        }
-
-
-        public async Task<ServerResponse<Event>> AddEvent(NewEventRequest newEventRequest, string addedByUserIdentityId, string role)
-        {
-            //if (role is null)
-            //{
-            //    return new ServerResponse<Event>(StatusCode.RoleNotFound, null);
-            //}
-            //if (role.Equals("OWNER") && newEventRequest.ClientId is null)
-            //{
-            //    return new ServerResponse<Event>(StatusCode.Error, null);
-            //}
-            //try
-            //{
-            //    if (role.Equals("WAITER"))
-            //    {
-            //        var waiter = await _repository.GetWaiter(addedByUserIdentityId);
-            //        if (waiter is null)
-            //        {
-            //            return new ServerResponse<Event>(StatusCode.UserNotFound, null);
-            //        }
-            //        newEventRequest.ClientId = waiter.ClientId;
-            //    }
-            //    else if (role.Equals("CLIENT"))
-            //    {
-            //        var client = await _repository.GetClient(addedByUserIdentityId);
-            //        if (client is null)
-            //        {
-            //            return new ServerResponse<Event>(StatusCode.UserNotFound, null);
-            //        }
-            //        newEventRequest.ClientId = client.Id;
-            //    }
-            //}
-            //catch
-            //{
-            //    return new ServerResponse<Event>(StatusCode.DbConnectionError, null);
-            //}
-
-
-            Event clientEvent = new Event()
-            {
-                Title = newEventRequest.Title,
-                Description = newEventRequest.Description,
-                Date = DateTime.ParseExact(newEventRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
-                //ClientId = client.Id,
-                ClientId = newEventRequest.ClientId ?? default,
-                Duration = newEventRequest.Duration,
-                EntranceFee = newEventRequest.EntranceFee,
-                //AddedByIdentityId = addedByUserIdentityId
-                AddedByIdentityId = "ghj"
-
-            };
-            string imagePath;
-            if (!String.IsNullOrEmpty(newEventRequest.Image))
-            {
-                try
-                {
-
-                    imagePath = await _blobService.UploadImage(newEventRequest.Image);
-                }
-                catch
-                {
-                    return new ServerResponse<Event>(StatusCode.BlobError, null);
-                }
-            }
-            else
-            {
-                imagePath = "https://rb2020storage.blob.core.windows.net/photos/default-event.png";
-            }
-            clientEvent.ImagePath = imagePath;
-            try
-            {
-                var newEvent = await _repository.AddEvent(clientEvent);
-                return new ServerResponse<Event>(StatusCode.Ok, newEvent);
-            }
-            catch
-            {
-                return new ServerResponse<Event>(StatusCode.Error, null);
-            }
-        }
-
-        public async Task<ServerResponse<string>> UpdateEventImage(UpdateEventImageRequest updateRequest)
-        {
-            Event clientEvent;
-            try
-            {
-
-                clientEvent = await _repository.GetEvent(updateRequest.EventId);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-            if (clientEvent is null)
-            {
-                return new ServerResponse<string>(StatusCode.NotFound, null);
-            }
-            string path;
-            try
-            {
-                path = await _blobService.UploadImage(updateRequest.ImageString);
-
-                await _blobService.DeleteImage(clientEvent.ImagePath);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.BlobError, null);
-            }
-            clientEvent.ImagePath = path;
-            try
-            {
-                await _repository.UpdateEvent(clientEvent);
-                return new ServerResponse<string>(StatusCode.Ok, path);
-            }
-            catch
-            {
-                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
-            }
-        }
-
-        public async Task<ServerResponse> UpdateEvent(UpdateEventRequest updateRequest)
-        {
-            Event clientEvent;
-            try
-            {
-                clientEvent = await _repository.GetEvent(updateRequest.EventId);
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.DbConnectionError);
-            }
-            if (clientEvent is null)
-            {
-                return new ServerResponse(StatusCode.NotFound);
-            }
-            clientEvent.Date = DateTime.ParseExact(updateRequest.Date, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-            clientEvent.Description = updateRequest.Description.Trim();
-            clientEvent.Title = updateRequest.Title.Trim();
-            clientEvent.Duration = updateRequest.Duration;
-            clientEvent.EntranceFee = updateRequest.EntranceFee;
-            try
-            {
-                await _repository.UpdateEvent(clientEvent);
-                return new ServerResponse(StatusCode.Ok);
-            }
-            catch
-            {
-                return new ServerResponse(StatusCode.DbConnectionError);
-            }
-        }
-
 
         public async Task<ServerResponse> AddMark(int eventId, string identityUserId)
         {
@@ -1347,6 +1021,26 @@ namespace BR.Services
         }
 
 
+
+
+        private EventShortInfoForUsers EventToEventShortInfoForUsers(Event clientEvent)
+        {
+            if (clientEvent is null)
+            {
+                return null;
+            }
+
+            return new EventShortInfoForUsers()
+            {
+                Id = clientEvent.Id,
+                DateTime = clientEvent.Date,
+                Description = clientEvent.Description,
+                EntranceFee = clientEvent.EntranceFee,
+                ImagePath = clientEvent.ImagePath is null ? clientEvent.Client.LogoPath : clientEvent.ImagePath,
+                Title = clientEvent.Title
+            };
+        }
+
         private EventFullInfo ToFullEventInfo(Event clientEvent)
         {
             if (clientEvent is null)
@@ -1357,7 +1051,7 @@ namespace BR.Services
             {
                 Id = clientEvent.Id,
                 Date = clientEvent.Date,
-                ImagePath = clientEvent.ImagePath,
+                ImagePath = clientEvent.ImagePath is null ? clientEvent.Client.LogoPath : clientEvent.ImagePath,
                 Title = clientEvent.Title,
                 Description = clientEvent.Description,
                 Duration = clientEvent.Duration,
@@ -1367,7 +1061,6 @@ namespace BR.Services
                 MarkCount = clientEvent.EventMarks.Count()
             };
         }
-
 
 
         private EventInfoShort ToShortEventInfo(Event clientEvent)
@@ -1381,7 +1074,7 @@ namespace BR.Services
                 Id = clientEvent.Id,
                 StartDateTime = clientEvent.Date,
                 EndDateTime = clientEvent.Date.AddMinutes(clientEvent.Duration),
-                ImagePath = clientEvent.ImagePath,
+                ImagePath = clientEvent.ImagePath is null ? clientEvent.Client.LogoPath : clientEvent.ImagePath,
                 Title = clientEvent.Title,
                 MarkCount = clientEvent.EventMarks.Count(),
                 IsCancelled = clientEvent.IsCancelled,
@@ -1389,6 +1082,180 @@ namespace BR.Services
                 EntranceFee = clientEvent.EntranceFee
             };
         }
+
+
+
+
+
+
+        // ===================================================================================
+
+
+
+
+
+        public async Task<ServerResponse<string>> UpdateEventImageByOwner(UpdateEventImageRequest updateRequest, string ownerIdentityId)
+        {
+            Owner owner;
+            Event clientEvent;
+            try
+            {
+                owner = await _repository.GetOwner(ownerIdentityId);
+                if (owner is null)
+                {
+                    return new ServerResponse<string>(StatusCode.UserNotFound, null);
+                }
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+                if (clientEvent is null || owner.Organization is null || owner.Organization.Clients is null || !owner.Organization.Clients.Contains(clientEvent.Client))
+                {
+                    return new ServerResponse<string>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+            string path;
+            try
+            {
+                path = await _blobService.UploadImage(updateRequest.ImageString);
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            if (clientEvent.ImagePath != null)
+            {
+                try
+                {
+                    await _blobService.DeleteImage(clientEvent.ImagePath);
+                }
+                catch { }
+            }
+
+            clientEvent.ImagePath = path;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+        public async Task<ServerResponse<string>> UpdateEventImageByClient(UpdateEventImageRequest updateRequest)
+        {
+            Event clientEvent;
+            try
+            {
+                clientEvent = await _repository.GetEvent(updateRequest.EventId);
+                if (clientEvent is null)
+                {
+                    return new ServerResponse<string>(StatusCode.NotFound, null);
+                }
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+
+            string path;
+            try
+            {
+                path = await _blobService.UploadImage(updateRequest.ImageString);
+
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.BlobError, null);
+            }
+            if (clientEvent.ImagePath != null)
+            {
+                try
+                {
+                    await _blobService.DeleteImage(clientEvent.ImagePath);
+                }
+                catch { }
+            }
+
+            clientEvent.ImagePath = path;
+            try
+            {
+                await _repository.UpdateEvent(clientEvent);
+                return new ServerResponse<string>(StatusCode.Ok, path);
+            }
+            catch
+            {
+                return new ServerResponse<string>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+
+        public async Task<ICollection<EventInfoShort>> GetUpcomingEventsShortInfo()
+        {
+            var events = await _repository.GetUpcomingEvents();
+            if (events is null)
+            {
+                return null;
+            }
+            var res = new List<EventInfoShort>();
+            foreach (var item in events)
+            {
+                res.Add(this.ToShortEventInfo(item));
+            }
+            return res;
+
+        }
+
+        public async Task<IEnumerable<Event>> GetEventsByClient(string clientIdentityId)
+        {
+            var client = await _repository.GetClient(clientIdentityId);
+            if (client is null)
+            {
+                return null;
+            }
+            return await _repository.GetEventsByClient(client.Id);
+        }
+
+        public async Task<EventInfo> GetEvent(int id)
+        {
+            var clientEvent = await _repository.GetEvent(id);
+            return this.ToEventInfo(clientEvent);
+        }
+
+
+
+
+        public async Task<ServerResponse<ICollection<EventInfo>>> GetEventsByNameAndDescription(string name)
+        {
+            try
+            {
+                var events = await _repository.GetEventsByNameAndDescription(name);
+                var res = new List<EventInfo>();
+                foreach (var item in events)
+                {
+                    res.Add(this.ToEventInfo(item));
+                }
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.Ok, res);
+            }
+            catch
+            {
+                return new ServerResponse<ICollection<EventInfo>>(StatusCode.DbConnectionError, null);
+            }
+        }
+
+
+
+
+
+
+
 
         private EventInfo ToEventInfo(Event clientEvent)
         {
@@ -1401,7 +1268,7 @@ namespace BR.Services
                 Id = clientEvent.Id,
                 Date = clientEvent.Date,
                 Description = clientEvent.Description,
-                ImgPath = clientEvent.ImagePath,
+                ImgPath = clientEvent.ImagePath is null ? clientEvent.Client.LogoPath : clientEvent.ImagePath,
                 Title = clientEvent.Title,
                 ClientId = clientEvent.Client.Id,
                 ClientName = clientEvent.Client.RestaurantName

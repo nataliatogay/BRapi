@@ -89,7 +89,7 @@ namespace BR.Services
             }
         }
 
-        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId)
+        public async Task<ServerResponse<ICollection<UserFullInfoForClient>>> GetAllVisitorsByClient(string clientIdentityId)
         {
             Client client;
             try
@@ -97,12 +97,12 @@ namespace BR.Services
                 client = await _repository.GetClient(clientIdentityId);
                 if (client is null)
                 {
-                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.UserNotFound, null);
                 }
             }
             catch
             {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.DbConnectionError, null);
             }
 
             var userIdentities = new List<string>();
@@ -115,7 +115,7 @@ namespace BR.Services
 
             }
 
-            var res = new List<UserShortInfoForClient>();
+            var res = new List<UserFullInfoForClient>();
             try
             {
 
@@ -124,27 +124,18 @@ namespace BR.Services
                     var user = await _repository.GetUser(item);
                     if (user != null)
                     {
-                        res.Add(new UserShortInfoForClient()
-                        {
-                            Id = user.Id,
-                            BirthDate = user.BirthDate,
-                            FirstName = user.FirstName,
-                            LastName = user.LastName,
-                            PhoneNumber = user.Identity.PhoneNumber,
-                            RegistrationDate = user.RegistrationDate,
-                            ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath
-                        });
+                        res.Add(await this.UserToUserFullInfoForClient(user, client.Id));
                     }
                 }
             }
             catch
             {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.DbConnectionError, null);
             }
-            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
+            return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.Ok, res);
         }
 
-        public async Task<ServerResponse<ICollection<UserShortInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId)
+        public async Task<ServerResponse<ICollection<UserFullInfoForClient>>> GetAllVisitorsByOwner(string ownerIdentityId, int clientId)
         {
             Owner owner;
             try
@@ -152,13 +143,13 @@ namespace BR.Services
                 owner = await _repository.GetOwner(ownerIdentityId);
                 if (owner is null || owner.Organization is null)
                 {
-                    return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.UserNotFound, null);
+                    return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.UserNotFound, null);
                 }
 
             }
             catch
             {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.DbConnectionError, null);
             }
 
 
@@ -166,7 +157,7 @@ namespace BR.Services
 
             if (client is null)
             {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.NotFound, null);
+                return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.NotFound, null);
             }
 
             var userIdentities = new List<string>();
@@ -179,7 +170,7 @@ namespace BR.Services
 
             }
 
-            var res = new List<UserShortInfoForClient>();
+            var res = new List<UserFullInfoForClient>();
             try
             {
                 foreach (var item in userIdentities)
@@ -187,24 +178,15 @@ namespace BR.Services
                     var user = await _repository.GetUser(item);
                     if (user != null)
                     {
-                        res.Add(new UserShortInfoForClient()
-                        {
-                            Id = user.Id,
-                            BirthDate = user.BirthDate,
-                            FirstName = user.FirstName,
-                            LastName = user.LastName,
-                            PhoneNumber = user.Identity.PhoneNumber,
-                            RegistrationDate = user.RegistrationDate,
-                            ImagePath = user.ImagePath is null ? "https://rb2020storage.blob.core.windows.net/photos/default-profile.png" : user.ImagePath
-                        });
+                        res.Add(await this.UserToUserFullInfoForClient(user, clientId));
                     }
                 }
             }
             catch
             {
-                return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.DbConnectionError, null);
+                return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.DbConnectionError, null);
             }
-            return new ServerResponse<ICollection<UserShortInfoForClient>>(StatusCode.Ok, res);
+            return new ServerResponse<ICollection<UserFullInfoForClient>>(StatusCode.Ok, res);
 
         }
 

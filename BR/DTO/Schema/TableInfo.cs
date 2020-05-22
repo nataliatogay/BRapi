@@ -9,6 +9,6 @@ namespace BR.DTO.Schema
     {
         public int Id { get; set; }
 
-        public int Number { get; set; }
+        public string Code { get; set; }
     }
 }

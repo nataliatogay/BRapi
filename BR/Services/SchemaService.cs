@@ -63,7 +63,7 @@ namespace BR.Services
                     //TableStateId = tableState.Id,
                     MaxGuests = node.MaxGuests,
                     MinGuests = node.MinGuests,
-                    Number = node.Number
+                    Code = node.Code
                 };
                 var newTable = await _repository.AddTable(table);
                 node.Id = newTable.Id;
@@ -95,7 +95,7 @@ namespace BR.Services
                             HallId = hall.Id,
                             MaxGuests = node.MaxGuests,
                             MinGuests = node.MinGuests,
-                            Number = node.Number,
+                            Code = node.Code,
                           //  TableStateId = tableState.Id
                         });
                     node.Id = table.Id;
@@ -109,7 +109,7 @@ namespace BR.Services
                     }
                     table.MaxGuests = node.MaxGuests;
                     table.MinGuests = node.MinGuests;
-                    table.Number = node.Number;
+                    table.Code = node.Code;
                     await _repository.UpdateTable(table);
                 }
             }

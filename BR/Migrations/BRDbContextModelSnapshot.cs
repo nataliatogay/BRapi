@@ -500,8 +500,7 @@ namespace BR.Migrations
 
                     b.Property<int>("EntranceFee");
 
-                    b.Property<string>("ImagePath")
-                        .IsRequired();
+                    b.Property<string>("ImagePath");
 
                     b.Property<bool>("IsCancelled");
 
@@ -962,13 +961,14 @@ namespace BR.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Code")
+                        .IsRequired();
+
                     b.Property<int>("HallId");
 
                     b.Property<int>("MaxGuests");
 
                     b.Property<int>("MinGuests");
-
-                    b.Property<int>("Number");
 
                     b.HasKey("Id");
 

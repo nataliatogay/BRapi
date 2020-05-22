@@ -19,7 +19,7 @@ namespace BR.DTO.Schema
         public string Group { get; set; }
         public int MaxGuests { get; set; }
         public int MinGuests { get; set; }
-        public int Number { get; set; }
+        public string Code { get; set; }
         public string Fig { get; set; }
         public string Size { get; set; }
     }

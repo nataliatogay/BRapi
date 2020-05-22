@@ -55,6 +55,8 @@ namespace BR.Services.Interfaces
 
         Task<ServerResponse> DeleteImageByOwner(int imageId, string ownerIdentityId);
 
+        Task<ServerResponse<string>> DeleteUnconfirmedClientByOwner(int clientId, string ownerIdentityId);
+
 
         // FOR USERS
         Task<ServerResponse<ClientFullInfoForUsers>> GetFullClientInfoForUsers(int id);
